@@ -30,7 +30,7 @@ export function Header() {
           <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-primary">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
           </div>
-          <span className="font-display font-bold text-lg sm:text-xl">PromptNest</span>
+          <span className="font-display font-bold text-lg sm:text-xl">Prompt SEO Nest</span>
         </Link>
 
         {/* Desktop Navigation */}
