@@ -13,9 +13,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
-import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard } from 'lucide-react';
+import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard, ImageIcon } from 'lucide-react';
 import { PlanManagement } from '@/components/admin/PlanManagement';
-
+import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 const CREDITS_BY_PLAN: Record<string, number> = {
   'Lite': 100,
   'Pro': 500,
@@ -286,7 +286,10 @@ export default function AdminPayments() {
               <TabsTrigger value="pending" className="relative">
                 Pending
                 {pendingPayments.length > 0 && (
-                  <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  <Badge
+                    variant="destructive"
+                    className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                  >
                     {pendingPayments.length}
                   </Badge>
                 )}
@@ -300,6 +303,10 @@ export default function AdminPayments() {
               <TabsTrigger value="plans">
                 <CreditCard className="h-4 w-4 mr-1" />
                 Plans
+              </TabsTrigger>
+              <TabsTrigger value="features">
+                <ImageIcon className="h-4 w-4 mr-1" />
+                Feature Cards
               </TabsTrigger>
             </TabsList>
 
@@ -421,6 +428,10 @@ export default function AdminPayments() {
 
             <TabsContent value="plans">
               <PlanManagement />
+            </TabsContent>
+
+            <TabsContent value="features">
+              <FeatureCardManagement />
             </TabsContent>
           </Tabs>
         )}
