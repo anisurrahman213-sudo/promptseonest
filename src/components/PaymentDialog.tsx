@@ -20,8 +20,8 @@ interface PaymentDialogProps {
 }
 
 const PAYMENT_NUMBERS = {
-  bkash: '01XXXXXXXXX',
-  nagad: '01XXXXXXXXX',
+  bkash: '01711464759',
+  nagad: '01711464759',
 };
 
 export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) {
