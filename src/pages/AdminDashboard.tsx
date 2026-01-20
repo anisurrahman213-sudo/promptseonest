@@ -27,8 +27,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon } from 'lucide-react';
+import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper } from 'lucide-react';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
+import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -120,14 +121,18 @@ export default function AdminDashboard() {
 
         {/* Tabs for different admin sections */}
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="users" className="gap-2">
               <Users className="h-4 w-4" />
-              Users & Credits
+              Users
+            </TabsTrigger>
+            <TabsTrigger value="hero" className="gap-2">
+              <Wallpaper className="h-4 w-4" />
+              Hero BG
             </TabsTrigger>
             <TabsTrigger value="features" className="gap-2">
               <ImageIcon className="h-4 w-4" />
-              Feature Cards
+              Features
             </TabsTrigger>
           </TabsList>
 
@@ -211,6 +216,10 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="hero">
+            <HeroBackgroundManagement />
           </TabsContent>
 
           <TabsContent value="features">

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { useFeatureCards } from "@/hooks/useFeatureCards";
+import { useSiteSetting } from "@/hooks/useSiteSettings";
 import { 
   Sparkles, 
   Image, 
@@ -29,6 +30,15 @@ const iconMap: Record<string, LucideIcon> = {
 const Index = () => {
   const { user } = useAuth();
   const { data: featureCards, isLoading: featuresLoading } = useFeatureCards();
+  const { data: heroBackgroundSetting } = useSiteSetting('hero_background_url');
+  const { data: heroSizeSetting } = useSiteSetting('hero_background_size');
+  const { data: heroPositionXSetting } = useSiteSetting('hero_background_position_x');
+  const { data: heroPositionYSetting } = useSiteSetting('hero_background_position_y');
+
+  const heroBackgroundUrl = heroBackgroundSetting?.setting_value;
+  const heroSize = heroSizeSetting?.setting_value ? parseInt(heroSizeSetting.setting_value) : 100;
+  const heroPositionX = heroPositionXSetting?.setting_value ? parseInt(heroPositionXSetting.setting_value) : 50;
+  const heroPositionY = heroPositionYSetting?.setting_value ? parseInt(heroPositionYSetting.setting_value) : 50;
 
   // Fallback features if database is empty
   const defaultFeatures = [
@@ -54,8 +64,22 @@ const Index = () => {
       
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-32">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="container relative mx-auto px-4">
+        {heroBackgroundUrl ? (
+          <div 
+            className="absolute inset-0 z-0"
+            style={{
+              backgroundImage: `url(${heroBackgroundUrl})`,
+              backgroundSize: `${heroSize}%`,
+              backgroundPosition: `${heroPositionX}% ${heroPositionY}%`,
+              backgroundRepeat: 'no-repeat',
+            }}
+          >
+            <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        )}
+        <div className="container relative z-10 mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
               <Sparkles className="h-4 w-4" />
