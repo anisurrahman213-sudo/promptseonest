@@ -27,6 +27,7 @@ export function HeroBackgroundManagement() {
   const { data: sizeSetting } = useSiteSetting('hero_background_size');
   const { data: positionXSetting } = useSiteSetting('hero_background_position_x');
   const { data: positionYSetting } = useSiteSetting('hero_background_position_y');
+  const { data: opacitySetting } = useSiteSetting('hero_overlay_opacity');
   
   const uploadMutation = useUploadHeroImage();
   const deleteMutation = useDeleteHeroImage();
@@ -35,12 +36,14 @@ export function HeroBackgroundManagement() {
   const [size, setSize] = useState<number>(100);
   const [positionX, setPositionX] = useState<number>(50);
   const [positionY, setPositionY] = useState<number>(50);
+  const [opacity, setOpacity] = useState<number>(70);
 
   // Initialize state from settings when loaded
   const currentUrl = heroSetting?.setting_value;
   const currentSize = sizeSetting?.setting_value ? parseInt(sizeSetting.setting_value) : 100;
   const currentPositionX = positionXSetting?.setting_value ? parseInt(positionXSetting.setting_value) : 50;
   const currentPositionY = positionYSetting?.setting_value ? parseInt(positionYSetting.setting_value) : 50;
+  const currentOpacity = opacitySetting?.setting_value ? parseInt(opacitySetting.setting_value) : 70;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -88,6 +91,14 @@ export function HeroBackgroundManagement() {
 
   const handlePositionYSave = () => {
     updateSetting.mutate({ key: 'hero_background_position_y', value: positionY.toString() });
+  };
+
+  const handleOpacityChange = (value: number[]) => {
+    setOpacity(value[0]);
+  };
+
+  const handleOpacitySave = () => {
+    updateSetting.mutate({ key: 'hero_overlay_opacity', value: opacity.toString() });
   };
 
   if (isLoading) {
@@ -194,6 +205,31 @@ export function HeroBackgroundManagement() {
                   Save
                 </Button>
               </div>
+            </div>
+
+            {/* Overlay Opacity Control */}
+            <div className="space-y-2">
+              <Label>Overlay Opacity: {opacity}%</Label>
+              <div className="flex items-center gap-4">
+                <Slider
+                  value={[opacity]}
+                  onValueChange={handleOpacityChange}
+                  min={0}
+                  max={100}
+                  step={5}
+                  className="flex-1"
+                />
+                <Button 
+                  size="sm" 
+                  onClick={handleOpacitySave}
+                  disabled={updateSetting.isPending}
+                >
+                  Save
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                0% = No overlay (full image), 100% = Full overlay (image hidden)
+              </p>
             </div>
 
             {/* Actions */}
