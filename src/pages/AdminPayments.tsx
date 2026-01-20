@@ -13,7 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
-import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle } from 'lucide-react';
+import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard } from 'lucide-react';
+import { PlanManagement } from '@/components/admin/PlanManagement';
 
 const CREDITS_BY_PLAN: Record<string, number> = {
   'Lite': 100,
@@ -296,6 +297,10 @@ export default function AdminPayments() {
                 <Users className="h-4 w-4 mr-1" />
                 Customers
               </TabsTrigger>
+              <TabsTrigger value="plans">
+                <CreditCard className="h-4 w-4 mr-1" />
+                Plans
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="pending" className="space-y-4">
@@ -412,6 +417,10 @@ export default function AdminPayments() {
                   ))}
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="plans">
+              <PlanManagement />
             </TabsContent>
           </Tabs>
         )}
