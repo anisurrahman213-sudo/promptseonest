@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { MediaUploader, MediaFile } from '@/components/MediaUploader';
@@ -11,10 +11,10 @@ import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgres
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { ExportDialog } from '@/components/dashboard/ExportDialog';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { Pagination } from '@/components/dashboard/Pagination';
+import { InfiniteScrollTrigger } from '@/components/dashboard/InfiniteScrollTrigger';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
-import { usePaginatedGenerations } from '@/hooks/usePaginatedGenerations';
+import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Sparkles, History, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,22 +23,20 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const PAGE_SIZE = 12;
-
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const { credits, refreshCredits } = useCredits();
   const { 
     generations, 
     totalCount,
-    currentPage,
-    totalPages,
-    goToPage,
+    hasMore,
+    loadMore,
+    loadingMore,
     addGeneration, 
     deleteGeneration, 
     refreshGenerations,
     loading: generationsLoading 
-  } = usePaginatedGenerations({ pageSize: PAGE_SIZE });
+  } = useInfiniteGenerations({ pageSize: 12 });
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingFiles, setProcessingFiles] = useState<ProcessingFile[]>([]);
   const [currentProcessingIndex, setCurrentProcessingIndex] = useState(0);
@@ -555,13 +553,11 @@ export default function Dashboard() {
                         </AnimatePresence>
                       </motion.div>
                       
-                      {/* Pagination */}
-                      <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={goToPage}
-                        totalCount={totalCount}
-                        pageSize={PAGE_SIZE}
+                      {/* Infinite Scroll Trigger */}
+                      <InfiniteScrollTrigger
+                        onLoadMore={loadMore}
+                        hasMore={hasMore}
+                        isLoading={loadingMore}
                       />
                     </>
                   )}
