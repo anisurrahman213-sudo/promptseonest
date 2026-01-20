@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/dashboard/EmptyState';
 import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { ExportDialog } from '@/components/dashboard/ExportDialog';
+import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useGenerations } from '@/hooks/useGenerations';
@@ -346,6 +347,9 @@ export default function Dashboard() {
             credits={credits}
             todayGenerations={todayGenerations}
           />
+
+          {/* Recent Activity Feed */}
+          <RecentActivity generations={generations} maxItems={5} />
 
           {/* Bulk Progress */}
           <AnimatePresence>
