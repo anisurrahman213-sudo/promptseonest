@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
+import { EventCalendar } from "@/components/EventCalendar";
 import { useAuth } from "@/hooks/useAuth";
 import { 
   Sparkles, 
@@ -136,6 +137,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Event Calendar 2026 */}
+      <EventCalendar />
 
       {/* How It Works */}
       <section className="py-24">
