@@ -13,46 +13,93 @@ interface AnalysisResult {
   tags: string;
 }
 
-Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+interface MetadataSettings {
+  exportPlatform: string;
+  titleLength: number;
+  titleLengthMix: boolean;
+  descriptionLength: number;
+  descriptionLengthFixed: boolean;
+  keywordsCount: number;
+  imageType: string;
+  prefix: string;
+  suffix: string;
+  negativeTitleWords: string;
+  negativeKeywords: string;
+}
 
-  try {
-    const { imageBase64, imageName, mediaType = 'image' } = await req.json();
+const platformNames: Record<string, string> = {
+  adobe_stock: "Adobe Stock",
+  shutterstock: "Shutterstock",
+  freepik: "Freepik",
+  getty: "Getty Images",
+  custom: "Stock Marketplaces",
+};
 
-    if (!imageBase64) {
-      return new Response(
-        JSON.stringify({ error: "No media provided" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+const imageTypePrefixes: Record<string, string> = {
+  none: "",
+  photo: "Photo of ",
+  illustration: "Illustration of ",
+  vector: "Vector illustration of ",
+  "3d_render": "3D Render of ",
+  ai_generated: "AI Generated ",
+};
 
-    console.log(`Processing ${mediaType}: ${imageName}`);
+function buildPrompt(mediaType: string, settings: MetadataSettings): { systemPrompt: string; userPrompt: string } {
+  const platform = platformNames[settings.exportPlatform] || "Stock Marketplaces";
+  const titleMax = settings.titleLength || 60;
+  const descLength = settings.descriptionLength || 200;
+  const keywordCount = settings.keywordsCount || 49;
+  const imageTypePrefix = imageTypePrefixes[settings.imageType] || "";
+  
+  // Build negative words instruction
+  const negativeTitleInstruction = settings.negativeTitleWords 
+    ? `\n   - AVOID these words in title: ${settings.negativeTitleWords}` 
+    : "";
+  
+  const negativeKeywordsInstruction = settings.negativeKeywords
+    ? `\n   - EXCLUDE these keywords: ${settings.negativeKeywords}`
+    : "";
 
-    // Use Lovable AI Gateway
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    
-    if (!lovableApiKey) {
-      return new Response(
-        JSON.stringify({ error: "AI service not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+  // Build prefix/suffix instruction
+  const prefixInstruction = settings.prefix 
+    ? `\n   - START the title with: "${settings.prefix}"` 
+    : "";
+  
+  const suffixInstruction = settings.suffix 
+    ? `\n   - END the title with: "${settings.suffix}"` 
+    : "";
 
-    const systemPrompt = `You are a world-class stock content metadata specialist with deep expertise in Adobe Stock, Shutterstock, Freepik, Getty Images, iStock, Pond5, and other major stock marketplaces. You understand exactly what makes content discoverable and avoids rejection for "similar content" issues.
+  const titleLengthNote = settings.titleLengthMix 
+    ? `(${titleMax - 10} to ${titleMax} characters ideal)` 
+    : `(exactly ${titleMax} characters)`;
+
+  const descLengthNote = settings.descriptionLengthFixed 
+    ? `(exactly ${descLength} characters)` 
+    : `(${descLength - 50} to ${descLength} characters)`;
+
+  const systemPrompt = `You are a world-class stock content metadata specialist with deep expertise in ${platform}, Adobe Stock, Shutterstock, Freepik, Getty Images, iStock, Pond5, and other major stock marketplaces. You understand exactly what makes content discoverable and avoids rejection for "similar content" issues.
 
 Your metadata must be:
 - HIGHLY UNIQUE: Never use generic, overused keywords. Create distinctive, specific descriptions that differentiate this content from millions of similar uploads.
-- PLATFORM-OPTIMIZED: Follow the exact requirements of major stock platforms (60 char titles, 200+ char descriptions, 25-50 keywords).
+- PLATFORM-OPTIMIZED: Follow the exact requirements specified for this export (title length, description length, keyword count).
 - AI-MARKETPLACE READY: Generate prompts that work for Midjourney, DALL-E, Stable Diffusion, Adobe Firefly, and similar platforms.
 - REJECTION-PROOF: Avoid common rejection triggers like vague titles, duplicate keywords, or generic descriptions.`;
 
-    const userPrompt = `Analyze this ${mediaType === 'video' ? 'video frame/thumbnail' : 'image'} and generate HIGHLY UNIQUE, PLATFORM-OPTIMIZED metadata for stock marketplaces.
+  const userPrompt = `Analyze this ${mediaType === 'video' ? 'video frame/thumbnail' : 'image'} and generate HIGHLY UNIQUE, PLATFORM-OPTIMIZED metadata for ${platform}.
+
+EXPORT SETTINGS:
+- Target Platform: ${platform}
+- Title Length: ${titleMax} characters ${titleLengthNote}
+- Description Length: ${descLength} characters ${descLengthNote}
+- Keywords Count: exactly ${keywordCount} unique keywords
+${settings.imageType !== 'none' ? `- Image Type: ${settings.imageType} (add appropriate prefix)` : ''}
+${settings.prefix ? `- Title Prefix: "${settings.prefix}"` : ''}
+${settings.suffix ? `- Title Suffix: "${settings.suffix}"` : ''}
+${settings.negativeTitleWords ? `- Avoid in Title: ${settings.negativeTitleWords}` : ''}
+${settings.negativeKeywords ? `- Exclude Keywords: ${settings.negativeKeywords}` : ''}
 
 CRITICAL REQUIREMENTS:
-- This metadata will be used on Adobe Stock, Shutterstock, Freepik, Getty Images, and AI marketplaces
+- This metadata will be used on ${platform} and similar marketplaces
 - It MUST be unique enough to avoid "similar content" rejections
 - Keywords must be DIVERSE with NO REPETITION of root words
 
@@ -64,20 +111,20 @@ Generate the following:
    - ${mediaType === 'video' ? 'Include: motion description, camera movement, duration hints, pacing' : 'Include: composition, focal point, depth of field'}
    - Make it UNIQUE - avoid generic terms like "beautiful", "stunning", "amazing"
 
-2. **SEO Title** (max 60 characters):
-   - Lead with the MOST SPECIFIC, UNIQUE aspect
+2. **SEO Title** (max ${titleMax} characters):${prefixInstruction}${suffixInstruction}${negativeTitleInstruction}
+   - ${imageTypePrefix ? `Start with "${imageTypePrefix}" after any prefix` : 'Lead with the MOST SPECIFIC, UNIQUE aspect'}
    - Include primary keyword naturally
    - NO generic adjectives (beautiful, nice, good)
-   - Example: Instead of "Beautiful sunset" → "Golden Hour Silhouette Over Misty Mountains"
+   - Example: Instead of "Beautiful sunset" → "${settings.prefix ? settings.prefix + ' ' : ''}${imageTypePrefix}Golden Hour Silhouette Over Misty Mountains${settings.suffix ? ' ' + settings.suffix : ''}"
 
-3. **SEO Description** (200-250 words):
+3. **SEO Description** ${descLengthNote}:
    - First sentence: Unique, specific description of the main subject
    - Include: setting, mood, style, potential use cases
    - Naturally integrate 8-10 keywords WITHOUT stuffing
    - ${mediaType === 'video' ? 'Describe motion, transitions, and dynamic elements' : 'Describe visual elements, textures, and artistic qualities'}
    - End with commercial applications (advertising, websites, social media, etc.)
 
-4. **Keywords/Tags** (exactly 49 unique tags):
+4. **Keywords/Tags** (exactly ${keywordCount} unique tags):${negativeKeywordsInstruction}
    - NO DUPLICATE CONCEPTS (don't use "business" and "business concept")
    - Categories to cover:
      * Main subject (5-7 specific terms)
@@ -95,10 +142,59 @@ Generate the following:
 Respond ONLY with this exact JSON:
 {
   "prompt": "your unique AI generation prompt",
-  "title": "Your Unique SEO Title Under 60 Chars",
+  "title": "Your Unique SEO Title Under ${titleMax} Chars",
   "description": "Your detailed, keyword-rich description...",
   "tags": "specific-term-1, unique-keyword-2, style-term-3, ..."
 }`;
+
+  return { systemPrompt, userPrompt };
+}
+
+Deno.serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { imageBase64, imageName, mediaType = 'image', settings } = await req.json();
+
+    if (!imageBase64) {
+      return new Response(
+        JSON.stringify({ error: "No media provided" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Processing ${mediaType}: ${imageName}`);
+    console.log("Settings received:", JSON.stringify(settings));
+
+    // Use Lovable AI Gateway
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    
+    if (!lovableApiKey) {
+      return new Response(
+        JSON.stringify({ error: "AI service not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Use default settings if not provided
+    const metadataSettings: MetadataSettings = settings || {
+      exportPlatform: 'adobe_stock',
+      titleLength: 60,
+      titleLengthMix: true,
+      descriptionLength: 200,
+      descriptionLengthFixed: false,
+      keywordsCount: 49,
+      imageType: 'none',
+      prefix: '',
+      suffix: '',
+      negativeTitleWords: '',
+      negativeKeywords: '',
+    };
+
+    const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings);
 
     // Call Lovable AI Gateway with Gemini vision model
     console.log("Calling Lovable AI Gateway...");

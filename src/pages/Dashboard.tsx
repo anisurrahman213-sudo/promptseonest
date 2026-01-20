@@ -152,12 +152,13 @@ export default function Dashboard() {
           .from(bucketName)
           .getPublicUrl(filePath);
 
-        // Call edge function to analyze media
+        // Call edge function to analyze media with settings
         const { data, error } = await supabase.functions.invoke('analyze-image', {
           body: { 
             imageBase64: base64,
             imageName: file.name,
-            mediaType: mediaFile.type
+            mediaType: mediaFile.type,
+            settings: metadataSettings
           }
         });
 
