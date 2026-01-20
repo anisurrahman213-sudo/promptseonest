@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, Image as ImageIcon, Video, Loader2, Sparkles } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Video, Loader2, Sparkles, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Lightbox } from '@/components/ui/lightbox';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 
@@ -19,6 +20,8 @@ interface MediaUploaderProps {
 
 export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaUploaderProps) {
   const [files, setFiles] = useState<MediaFile[]>([]);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map(file => {
@@ -220,13 +223,17 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
                 {files.map((mediaFile, index) => (
                   <motion.div 
                     key={mediaFile.preview} 
-                    className="relative group aspect-square rounded-lg sm:rounded-xl overflow-hidden shadow-md"
+                    className="relative group aspect-square rounded-lg sm:rounded-xl overflow-hidden shadow-md cursor-pointer"
                     variants={mediaVariants}
                     exit="exit"
                     layout
                     whileHover={{ scale: 1.05, y: -4, zIndex: 10 }}
                     whileTap={{ scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    onClick={() => {
+                      setLightboxIndex(index);
+                      setLightboxOpen(true);
+                    }}
                   >
                     {mediaFile.type === 'video' ? (
                       <video
@@ -257,18 +264,35 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
                     )}>
                       {mediaFile.type === 'video' ? 'VIDEO' : 'IMG'}
                     </div>
+
+                    {/* Expand icon */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-200">
+                      <motion.div
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        initial={{ scale: 0 }}
+                        whileHover={{ scale: 1.1 }}
+                      >
+                        <Expand className="w-6 h-6 text-white drop-shadow-lg" />
+                      </motion.div>
+                    </div>
                     
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                    
+                    {/* Remove button */}
                     <motion.button
-                      onClick={() => removeFile(index)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(index);
+                      }}
                       disabled={isProcessing}
-                      className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 sm:p-1.5 rounded-full bg-black/60 text-white disabled:opacity-50 touch-manipulation active:bg-destructive"
+                      className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 sm:p-1.5 rounded-full bg-black/60 text-white disabled:opacity-50 touch-manipulation active:bg-destructive z-10"
                       whileHover={{ scale: 1.1, backgroundColor: "rgb(239 68 68)" }}
                       whileTap={{ scale: 0.9 }}
                     >
                       <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </motion.button>
-                    <div className="absolute bottom-0 left-0 right-0 p-1.5 sm:p-2.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    
+                    <div className="absolute bottom-0 left-0 right-0 p-1.5 sm:p-2.5 pointer-events-none">
                       <p className="text-[9px] sm:text-xs text-white font-medium truncate">{mediaFile.file.name}</p>
                     </div>
                   </motion.div>
@@ -311,6 +335,18 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Lightbox */}
+      <Lightbox
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        media={files.map(f => ({
+          src: f.preview,
+          name: f.file.name,
+          type: f.type,
+        }))}
+        initialIndex={lightboxIndex}
+      />
     </div>
   );
 }
