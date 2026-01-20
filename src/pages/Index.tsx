@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
-import { EventCalendar } from "@/components/EventCalendar";
 import { useAuth } from "@/hooks/useAuth";
 import { 
   Sparkles, 
@@ -12,7 +11,8 @@ import {
   Zap, 
   Shield,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Calendar
 } from "lucide-react";
 
 const Index = () => {
@@ -138,8 +138,30 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Event Calendar 2026 */}
-      <EventCalendar />
+      {/* Event Calendar CTA */}
+      <section className="py-16 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
+        <div className="container mx-auto px-4">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
+              <Calendar className="h-4 w-4" />
+              📅 Event Calendar 2026
+            </div>
+            <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+              Discover Important Dates & Get Inspired
+            </h2>
+            <p className="mb-6 text-muted-foreground">
+              Explore holidays, celebrations, and creative events throughout 2026. Get daily motivation and plan your content calendar!
+            </p>
+            <Link to={user ? "/calendar" : "/auth"}>
+              <Button size="lg" className="gap-2">
+                <Calendar className="h-5 w-5" />
+                {user ? "View Calendar" : "Sign Up to Access"}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* How It Works */}
       <section className="py-24">
