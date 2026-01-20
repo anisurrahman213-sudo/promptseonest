@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { useSiteSetting, useUploadHeroImage, useDeleteHeroImage, useUpdateSiteSetting } from '@/hooks/useSiteSettings';
-import { Loader2, Upload, Trash2, ImageIcon, Move } from 'lucide-react';
+import { Loader2, Upload, Trash2, ImageIcon, Move, Type, Palette } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +28,8 @@ export function HeroBackgroundManagement() {
   const { data: positionXSetting } = useSiteSetting('hero_background_position_x');
   const { data: positionYSetting } = useSiteSetting('hero_background_position_y');
   const { data: opacitySetting } = useSiteSetting('hero_overlay_opacity');
+  const { data: textColorSetting } = useSiteSetting('hero_text_color');
+  const { data: textShadowSetting } = useSiteSetting('hero_text_shadow');
   
   const uploadMutation = useUploadHeroImage();
   const deleteMutation = useDeleteHeroImage();
@@ -37,6 +39,8 @@ export function HeroBackgroundManagement() {
   const [positionX, setPositionX] = useState<number>(50);
   const [positionY, setPositionY] = useState<number>(50);
   const [opacity, setOpacity] = useState<number>(70);
+  const [textColor, setTextColor] = useState<string>('#ffffff');
+  const [textShadow, setTextShadow] = useState<number>(0);
 
   // Initialize state from settings when loaded
   const currentUrl = heroSetting?.setting_value;
@@ -44,6 +48,8 @@ export function HeroBackgroundManagement() {
   const currentPositionX = positionXSetting?.setting_value ? parseInt(positionXSetting.setting_value) : 50;
   const currentPositionY = positionYSetting?.setting_value ? parseInt(positionYSetting.setting_value) : 50;
   const currentOpacity = opacitySetting?.setting_value ? parseInt(opacitySetting.setting_value) : 70;
+  const currentTextColor = textColorSetting?.setting_value || '';
+  const currentTextShadow = textShadowSetting?.setting_value ? parseInt(textShadowSetting.setting_value) : 0;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -99,6 +105,23 @@ export function HeroBackgroundManagement() {
 
   const handleOpacitySave = () => {
     updateSetting.mutate({ key: 'hero_overlay_opacity', value: opacity.toString() });
+  };
+
+  const handleTextColorSave = () => {
+    updateSetting.mutate({ key: 'hero_text_color', value: textColor || null });
+  };
+
+  const handleTextColorReset = () => {
+    setTextColor('');
+    updateSetting.mutate({ key: 'hero_text_color', value: null });
+  };
+
+  const handleTextShadowChange = (value: number[]) => {
+    setTextShadow(value[0]);
+  };
+
+  const handleTextShadowSave = () => {
+    updateSetting.mutate({ key: 'hero_text_shadow', value: textShadow.toString() });
   };
 
   if (isLoading) {
@@ -230,6 +253,85 @@ export function HeroBackgroundManagement() {
               <p className="text-xs text-muted-foreground">
                 0% = No overlay (full image), 100% = Full overlay (image hidden)
               </p>
+            </div>
+
+            {/* Text Color Control */}
+            <div className="space-y-2 border-t border-border pt-4">
+              <Label className="flex items-center gap-2">
+                <Palette className="h-4 w-4" />
+                Hero Text Color
+              </Label>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    type="color"
+                    value={textColor || '#ffffff'}
+                    onChange={(e) => setTextColor(e.target.value)}
+                    className="h-10 w-16 cursor-pointer rounded border border-border"
+                  />
+                  <Input
+                    value={textColor}
+                    onChange={(e) => setTextColor(e.target.value)}
+                    placeholder="Default (theme color)"
+                    className="flex-1"
+                  />
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={handleTextColorReset}
+                >
+                  Reset
+                </Button>
+                <Button 
+                  size="sm" 
+                  onClick={handleTextColorSave}
+                  disabled={updateSetting.isPending}
+                >
+                  Save
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Leave empty to use default theme color
+              </p>
+            </div>
+
+            {/* Text Shadow Control */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Type className="h-4 w-4" />
+                Text Shadow: {textShadow}px
+              </Label>
+              <div className="flex items-center gap-4">
+                <Slider
+                  value={[textShadow]}
+                  onValueChange={handleTextShadowChange}
+                  min={0}
+                  max={20}
+                  step={1}
+                  className="flex-1"
+                />
+                <Button 
+                  size="sm" 
+                  onClick={handleTextShadowSave}
+                  disabled={updateSetting.isPending}
+                >
+                  Save
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                0 = No shadow, higher values = stronger shadow
+              </p>
+              {/* Preview */}
+              <div 
+                className="p-4 rounded-lg border border-border bg-muted/50 text-center"
+                style={{
+                  color: textColor || 'inherit',
+                  textShadow: textShadow > 0 ? `0 2px ${textShadow}px rgba(0,0,0,0.5)` : 'none'
+                }}
+              >
+                <span className="text-xl font-bold">Preview Text</span>
+              </div>
             </div>
 
             {/* Actions */}

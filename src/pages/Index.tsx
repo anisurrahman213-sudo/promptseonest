@@ -35,12 +35,21 @@ const Index = () => {
   const { data: heroPositionXSetting } = useSiteSetting('hero_background_position_x');
   const { data: heroPositionYSetting } = useSiteSetting('hero_background_position_y');
   const { data: heroOpacitySetting } = useSiteSetting('hero_overlay_opacity');
+  const { data: heroTextColorSetting } = useSiteSetting('hero_text_color');
+  const { data: heroTextShadowSetting } = useSiteSetting('hero_text_shadow');
 
   const heroBackgroundUrl = heroBackgroundSetting?.setting_value;
   const heroSize = heroSizeSetting?.setting_value ? parseInt(heroSizeSetting.setting_value) : 100;
   const heroPositionX = heroPositionXSetting?.setting_value ? parseInt(heroPositionXSetting.setting_value) : 50;
   const heroPositionY = heroPositionYSetting?.setting_value ? parseInt(heroPositionYSetting.setting_value) : 50;
   const heroOverlayOpacity = heroOpacitySetting?.setting_value ? parseInt(heroOpacitySetting.setting_value) : 70;
+  const heroTextColor = heroTextColorSetting?.setting_value || '';
+  const heroTextShadow = heroTextShadowSetting?.setting_value ? parseInt(heroTextShadowSetting.setting_value) : 0;
+
+  const heroTextStyle = {
+    color: heroTextColor || undefined,
+    textShadow: heroTextShadow > 0 ? `0 2px ${heroTextShadow}px rgba(0,0,0,0.5)` : undefined
+  };
 
   // Fallback features if database is empty
   const defaultFeatures = [
@@ -90,13 +99,22 @@ const Index = () => {
               <Sparkles className="h-4 w-4" />
               AI-Powered Image Analysis
             </div>
-            <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
+            <h1 
+              className="mb-6 text-5xl font-bold leading-tight tracking-tight md:text-6xl lg:text-7xl"
+              style={heroTextStyle}
+            >
               Generate Perfect
-              <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              <span className={heroTextColor ? '' : 'block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent'}>
                 Image Prompts & Metadata
               </span>
             </h1>
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground md:text-xl">
+            <p 
+              className="mx-auto mb-10 max-w-2xl text-lg md:text-xl"
+              style={{ 
+                color: heroTextColor ? `${heroTextColor}cc` : undefined,
+                textShadow: heroTextStyle.textShadow
+              }}
+            >
               Transform any image into SEO-optimized titles, descriptions, tags, and detailed AI prompts. 
               Perfect for stock photographers, content creators, and digital marketers.
             </p>
