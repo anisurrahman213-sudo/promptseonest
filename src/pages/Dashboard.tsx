@@ -7,6 +7,7 @@ import { StatsCards } from '@/components/dashboard/StatsCards';
 import { SearchFilter, SortOption } from '@/components/dashboard/SearchFilter';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgress';
+import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useGenerations } from '@/hooks/useGenerations';
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [processingFiles, setProcessingFiles] = useState<ProcessingFile[]>([]);
   const [currentProcessingIndex, setCurrentProcessingIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('upload');
+  const [metadataSettings, setMetadataSettings] = useState<MetadataSettings>(defaultMetadataSettings);
   
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -402,6 +404,12 @@ export default function Dashboard() {
 
             <AnimatePresence mode="wait">
               <TabsContent value="upload" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+                {/* Advanced Metadata Controls */}
+                <AdvancedMetadataControls 
+                  settings={metadataSettings}
+                  onSettingsChange={setMetadataSettings}
+                />
+
                 <motion.div
                   key="upload-tab"
                   initial={{ opacity: 0, x: -20 }}
