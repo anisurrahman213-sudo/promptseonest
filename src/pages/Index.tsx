@@ -116,15 +116,28 @@ const Index = () => {
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => {
               const IconComponent = iconMap[feature.icon_name] || Sparkles;
+              const isVideo = feature.image_url && ['.mp4', '.webm', '.mov'].some(ext => feature.image_url?.toLowerCase().includes(ext));
+              
               return (
                 <Card key={feature.title} className="group border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg overflow-hidden">
                   {feature.image_url && (
                     <div className="aspect-video overflow-hidden">
-                      <img 
-                        src={feature.image_url} 
-                        alt={feature.title}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                      />
+                      {isVideo ? (
+                        <video 
+                          src={feature.image_url}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                        />
+                      ) : (
+                        <img 
+                          src={feature.image_url} 
+                          alt={feature.title}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      )}
                     </div>
                   )}
                   <CardContent className="p-6">
