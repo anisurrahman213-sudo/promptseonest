@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { 
   useAdminFeatureCards, 
   useUpdateFeatureCard, 
@@ -21,8 +22,11 @@ import {
   Upload,
   Trash2,
   Save,
-  Loader2
+  Loader2,
+  Video,
+  Info
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Sparkles,
@@ -31,6 +35,17 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Download,
   Zap,
   Shield,
+};
+
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ACCEPTED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES];
+
+const isVideoFile = (url: string | null): boolean => {
+  if (!url) return false;
+  const videoExtensions = ['.mp4', '.webm', '.mov'];
+  return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
 
 export function FeatureCardManagement() {
@@ -56,7 +71,19 @@ export function FeatureCardManagement() {
     setEditingCard(null);
   };
 
-  const handleImageUpload = (cardId: string, file: File) => {
+  const handleMediaUpload = (cardId: string, file: File) => {
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('File size must be less than 2MB');
+      return;
+    }
+
+    // Validate file type
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast.error('Only JPG, PNG, WEBP, GIF, MP4, WEBM, MOV files are allowed');
+      return;
+    }
+
     uploadImage.mutate({ cardId, file });
   };
 
@@ -94,29 +121,48 @@ export function FeatureCardManagement() {
             
             return (
               <Card key={card.id} className="relative overflow-hidden">
-                {/* Image Section */}
+                {/* Media Section */}
                 <div className="relative aspect-video bg-muted">
                   {card.image_url ? (
                     <>
-                      <img 
-                        src={card.image_url} 
-                        alt={card.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 h-8 w-8"
-                        onClick={() => handleImageDelete(card.id)}
-                        disabled={deleteImage.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {isVideoFile(card.image_url) ? (
+                        <video 
+                          src={card.image_url}
+                          className="w-full h-full object-cover"
+                          muted
+                          loop
+                          autoPlay
+                          playsInline
+                        />
+                      ) : (
+                        <img 
+                          src={card.image_url} 
+                          alt={card.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        {isVideoFile(card.image_url) && (
+                          <Badge variant="secondary" className="h-6">
+                            <Video className="h-3 w-3 mr-1" />
+                            Video
+                          </Badge>
+                        )}
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleImageDelete(card.id)}
+                          disabled={deleteImage.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
                       <IconComponent className="h-10 w-10" />
-                      <span className="text-sm">No image</span>
+                      <span className="text-sm">No media</span>
                     </div>
                   )}
                   
@@ -125,28 +171,33 @@ export function FeatureCardManagement() {
                     type="file"
                     ref={(el) => { fileInputRefs.current[card.id] = el; }}
                     className="hidden"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) handleImageUpload(card.id, file);
+                      if (file) handleMediaUpload(card.id, file);
                     }}
                   />
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="absolute bottom-2 right-2"
-                    onClick={() => fileInputRefs.current[card.id]?.click()}
-                    disabled={uploadImage.isPending}
-                  >
-                    {uploadImage.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4 mr-1" />
-                        Upload
-                      </>
-                    )}
-                  </Button>
+                  <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
+                    <div className="flex items-center gap-1 text-xs text-white/80 bg-black/50 px-2 py-1 rounded">
+                      <Info className="h-3 w-3" />
+                      <span>1280×720 (16:9), Max 2MB</span>
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => fileInputRefs.current[card.id]?.click()}
+                      disabled={uploadImage.isPending}
+                    >
+                      {uploadImage.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-1" />
+                          Upload
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
 
                 <CardContent className="p-4 space-y-4">
