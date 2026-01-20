@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { MediaUploader, MediaFile } from '@/components/MediaUploader';
@@ -11,20 +11,34 @@ import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgres
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { ExportDialog } from '@/components/dashboard/ExportDialog';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
+import { Pagination } from '@/components/dashboard/Pagination';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
-import { useGenerations } from '@/hooks/useGenerations';
+import { usePaginatedGenerations } from '@/hooks/usePaginatedGenerations';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Sparkles, History, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const PAGE_SIZE = 12;
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const { credits, refreshCredits } = useCredits();
-  const { generations, addGeneration, deleteGeneration, refreshGenerations } = useGenerations();
+  const { 
+    generations, 
+    totalCount,
+    currentPage,
+    totalPages,
+    goToPage,
+    addGeneration, 
+    deleteGeneration, 
+    refreshGenerations,
+    loading: generationsLoading 
+  } = usePaginatedGenerations({ pageSize: PAGE_SIZE });
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingFiles, setProcessingFiles] = useState<ProcessingFile[]>([]);
   const [currentProcessingIndex, setCurrentProcessingIndex] = useState(0);
@@ -35,7 +49,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
 
-  // Calculate today's generations
+  // Calculate today's generations (from current page data - approximation)
   const todayGenerations = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -343,7 +357,7 @@ export default function Dashboard() {
 
           {/* Stats Cards */}
           <StatsCards 
-            totalGenerations={generations.length}
+            totalGenerations={totalCount}
             credits={credits}
             todayGenerations={todayGenerations}
           />
@@ -381,7 +395,7 @@ export default function Dashboard() {
                   className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-md sm:rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md font-medium text-xs sm:text-sm transition-all touch-manipulation"
                 >
                   <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span>History ({generations.length})</span>
+                  <span>History ({totalCount})</span>
                 </TabsTrigger>
               </TabsList>
             </motion.div>
@@ -476,7 +490,7 @@ export default function Dashboard() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ type: "spring", stiffness: 300, damping: 25 }}
                 >
-                  {generations.length > 0 && (
+                  {totalCount > 0 && (
                     <motion.div 
                       className="flex flex-col sm:flex-row gap-3 sm:gap-4"
                       initial={{ opacity: 0, y: -10 }}
@@ -495,7 +509,13 @@ export default function Dashboard() {
                     </motion.div>
                   )}
                   
-                  {generations.length === 0 ? (
+                  {generationsLoading ? (
+                    <div className="space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <Skeleton key={i} className="h-32 w-full rounded-xl" />
+                      ))}
+                    </div>
+                  ) : totalCount === 0 ? (
                     <EmptyState onUploadClick={() => setActiveTab('upload')} />
                   ) : filteredGenerations.length === 0 ? (
                     <motion.div 
@@ -517,22 +537,33 @@ export default function Dashboard() {
                       </motion.div>
                     </motion.div>
                   ) : (
-                    <motion.div 
-                      className="space-y-4"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ staggerChildren: 0.05 }}
-                    >
-                      <AnimatePresence>
-                        {filteredGenerations.map((generation) => (
-                          <GenerationCard
-                            key={generation.id}
-                            generation={generation}
-                            onDelete={handleDelete}
-                          />
-                        ))}
-                      </AnimatePresence>
-                    </motion.div>
+                    <>
+                      <motion.div 
+                        className="space-y-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ staggerChildren: 0.05 }}
+                      >
+                        <AnimatePresence>
+                          {filteredGenerations.map((generation) => (
+                            <GenerationCard
+                              key={generation.id}
+                              generation={generation}
+                              onDelete={handleDelete}
+                            />
+                          ))}
+                        </AnimatePresence>
+                      </motion.div>
+                      
+                      {/* Pagination */}
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={goToPage}
+                        totalCount={totalCount}
+                        pageSize={PAGE_SIZE}
+                      />
+                    </>
                   )}
                 </motion.div>
               </TabsContent>
