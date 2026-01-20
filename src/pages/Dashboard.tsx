@@ -4,6 +4,7 @@ import { Header } from '@/components/layout/Header';
 import { MediaUploader, MediaFile } from '@/components/MediaUploader';
 import { GenerationCard } from '@/components/GenerationCard';
 import { StatsCards } from '@/components/dashboard/StatsCards';
+import { UpgradeBanner } from '@/components/dashboard/UpgradeBanner';
 import { SearchFilter, SortOption } from '@/components/dashboard/SearchFilter';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgress';
@@ -335,6 +336,9 @@ export default function Dashboard() {
               Upload images or videos to generate unique, platform-optimized metadata for Adobe Stock, Shutterstock, Freepik & AI marketplaces
             </motion.p>
           </motion.div>
+
+          {/* Upgrade Banner */}
+          <UpgradeBanner credits={credits} />
 
           {/* Stats Cards */}
           <StatsCards 
