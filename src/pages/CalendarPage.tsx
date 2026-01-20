@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Sparkles, Star, Heart, Rocket, Trophy, Gift, Sun, Moon, Flame, Target, TrendingUp, DollarSign, BarChart3, Globe, Building2, Briefcase, Plus, X, Trash2, Filter } from 'lucide-react';
+import { Calendar, Sparkles, Star, Heart, Rocket, Trophy, Gift, Sun, Moon, Flame, Target, TrendingUp, DollarSign, BarChart3, Globe, Building2, Briefcase, Plus, X, Trash2, Filter, Download } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
@@ -238,6 +238,112 @@ export default function CalendarPage() {
     }
   };
 
+  // Generate ICS file content for a single event
+  const generateICSContent = (event: CalendarEvent): string => {
+    const year = 2026;
+    const month = String(event.month + 1).padStart(2, '0');
+    const day = String(event.date).padStart(2, '0');
+    const dateStr = `${year}${month}${day}`;
+    
+    // Create end date (next day for all-day event)
+    const endDate = new Date(year, event.month, event.date + 1);
+    const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+    const endDay = String(endDate.getDate()).padStart(2, '0');
+    const endYear = endDate.getFullYear();
+    const endDateStr = `${endYear}${endMonth}${endDay}`;
+    
+    const uid = `${dateStr}-${event.title.replace(/[^a-zA-Z0-9]/g, '')}-stockcalendar@app`;
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    
+    return `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Stock Market Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${timestamp}
+DTSTART;VALUE=DATE:${dateStr}
+DTEND;VALUE=DATE:${endDateStr}
+SUMMARY:${event.title}
+DESCRIPTION:${event.description}\\n\\n${event.motivation}
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR`;
+  };
+
+  // Export single event to ICS
+  const exportEventToICS = (event: CalendarEvent) => {
+    const icsContent = generateICSContent(event);
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${event.title.replace(/[^a-zA-Z0-9]/g, '_')}_2026.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success('Event exported to calendar!');
+  };
+
+  // Export all filtered events for current month
+  const exportMonthToICS = () => {
+    if (monthEvents.length === 0) {
+      toast.error('No events to export this month');
+      return;
+    }
+
+    const year = 2026;
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    
+    let eventsICS = '';
+    monthEvents.forEach(event => {
+      const month = String(event.month + 1).padStart(2, '0');
+      const day = String(event.date).padStart(2, '0');
+      const dateStr = `${year}${month}${day}`;
+      
+      const endDate = new Date(year, event.month, event.date + 1);
+      const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+      const endDay = String(endDate.getDate()).padStart(2, '0');
+      const endYear = endDate.getFullYear();
+      const endDateStr = `${endYear}${endMonth}${endDay}`;
+      
+      const uid = `${dateStr}-${event.title.replace(/[^a-zA-Z0-9]/g, '')}-stockcalendar@app`;
+      
+      eventsICS += `BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${timestamp}
+DTSTART;VALUE=DATE:${dateStr}
+DTEND;VALUE=DATE:${endDateStr}
+SUMMARY:${event.title}
+DESCRIPTION:${event.description}\\n\\n${event.motivation}
+STATUS:CONFIRMED
+END:VEVENT
+`;
+    });
+
+    const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Stock Market Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+${eventsICS}END:VCALENDAR`;
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Stock_Events_${months[currentMonth].name}_2026.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`${monthEvents.length} events exported!`);
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -394,18 +500,29 @@ export default function CalendarPage() {
               </ToggleGroup>
             </div>
 
-            {/* Add Event Button */}
-            <Button
-              onClick={() => {
-                setNewEventMonth(currentMonth.toString());
-                setIsAddDialogOpen(true);
-              }}
-              size="sm"
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Add Custom Event
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => {
+                  setNewEventMonth(currentMonth.toString());
+                  setIsAddDialogOpen(true);
+                }}
+                size="sm"
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Event</span>
+              </Button>
+              <Button
+                onClick={exportMonthToICS}
+                size="sm"
+                variant="outline"
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Export Month</span>
+              </Button>
+            </div>
           </motion.div>
 
           {/* Main Content - Side by Side */}
@@ -622,23 +739,33 @@ export default function CalendarPage() {
                   </div>
                 </motion.div>
 
-                {selectedEvent.isCustom && selectedEvent.id && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
+                {/* Action Buttons */}
+                <motion.div
+                  className="flex gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-2"
+                    onClick={() => exportEventToICS(selectedEvent)}
                   >
+                    <Download className="h-4 w-4" />
+                    Add to Calendar
+                  </Button>
+                  {selectedEvent.isCustom && selectedEvent.id && (
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="w-full gap-2"
+                      className="gap-2"
                       onClick={() => handleDeleteEvent(selectedEvent.id!)}
                     >
                       <Trash2 className="h-4 w-4" />
-                      Delete Custom Event
                     </Button>
-                  </motion.div>
-                )}
+                  )}
+                </motion.div>
               </div>
             </>
           )}
