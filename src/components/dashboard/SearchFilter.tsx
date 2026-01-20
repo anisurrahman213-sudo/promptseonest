@@ -25,28 +25,32 @@ export function SearchFilter({
   onSortChange 
 }: SearchFilterProps) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 sm:gap-3">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by name, title, or tags..."
+          placeholder="Search..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 bg-muted/50 border-0 focus-visible:ring-primary/50"
+          className="pl-9 sm:pl-10 h-10 sm:h-10 text-sm bg-muted/50 border-0 focus-visible:ring-primary/50"
         />
       </div>
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="shrink-0 h-10 w-10 touch-manipulation active:scale-95 transition-transform"
+          >
             <SlidersHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => onSortChange(v as SortOption)}>
-            <DropdownMenuRadioItem value="newest">Newest First</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="oldest">Oldest First</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="name">By Name</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="newest" className="py-3">Newest First</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="oldest" className="py-3">Oldest First</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="name" className="py-3">By Name</DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>

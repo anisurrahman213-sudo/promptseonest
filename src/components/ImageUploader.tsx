@@ -84,14 +84,14 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
   const dropzoneProps = getRootProps();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <motion.div
         className={cn(
-          "relative border-2 border-dashed rounded-2xl p-10 transition-all duration-300 cursor-pointer group",
+          "relative border-2 border-dashed rounded-xl sm:rounded-2xl p-6 sm:p-10 transition-all duration-300 cursor-pointer group touch-manipulation",
           "bg-gradient-to-br from-muted/30 to-muted/10",
           isDragActive 
             ? "border-primary bg-primary/10 shadow-glow scale-[1.01]" 
-            : "border-border/60 hover:border-primary/50 hover:bg-muted/50 hover:shadow-lg",
+            : "border-border/60 hover:border-primary/50 hover:bg-muted/50 hover:shadow-lg active:scale-[0.99]",
           isProcessing && "opacity-50 cursor-not-allowed"
         )}
         initial={{ opacity: 0, y: 20 }}
@@ -112,7 +112,7 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
         ref={dropzoneProps.ref}
       >
         <input {...getInputProps()} />
-        <div className="flex flex-col items-center justify-center gap-5 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 sm:gap-5 text-center">
           <motion.div 
             className="relative"
             animate={isDragActive ? { scale: 1.1, rotate: [0, -5, 5, -5, 0] } : { scale: 1 }}
@@ -124,22 +124,23 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
               transition={{ duration: 0.3 }}
             />
             <motion.div 
-              className="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20"
+              className="relative flex items-center justify-center w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20"
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
-              <Upload className="w-8 h-8 text-primary" />
+              <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
             </motion.div>
           </motion.div>
-          <div className="space-y-2">
+          <div className="space-y-1 sm:space-y-2">
             <motion.p 
-              className="font-display font-semibold text-xl"
+              className="font-display font-semibold text-base sm:text-xl"
               animate={{ scale: isDragActive ? 1.05 : 1 }}
             >
-              {isDragActive ? 'Drop images here' : 'Drag & drop images here'}
+              {isDragActive ? 'Drop images here' : 'Tap to upload images'}
             </motion.p>
-            <p className="text-sm text-muted-foreground">
-              or <span className="text-primary font-medium">click to browse</span> • JPG, PNG up to {maxFiles} files
+            <p className="text-xs sm:text-sm text-muted-foreground px-4">
+              <span className="hidden sm:inline">or drag & drop • </span>
+              JPG, PNG up to {maxFiles} files
             </p>
           </div>
         </div>
@@ -148,7 +149,7 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
       <AnimatePresence mode="wait">
         {files.length > 0 && (
           <motion.div 
-            className="space-y-5"
+            className="space-y-4 sm:space-y-5"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -160,10 +161,10 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
               >
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-                  <ImageIcon className="w-4 h-4 text-primary" />
+                <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/10">
+                  <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                 </div>
-                <span className="font-medium">
+                <span className="font-medium text-sm sm:text-base">
                   {files.length} image{files.length > 1 ? 's' : ''} selected
                 </span>
               </motion.div>
@@ -176,7 +177,7 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
                     setFiles([]);
                   }}
                   disabled={isProcessing}
-                  className="text-muted-foreground hover:text-destructive"
+                  className="text-muted-foreground hover:text-destructive text-xs sm:text-sm h-8 sm:h-9 touch-manipulation"
                 >
                   Clear all
                 </Button>
@@ -184,7 +185,7 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
             </div>
 
             <motion.div 
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"
+              className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3"
               variants={containerVariants}
               initial="hidden"
               animate="visible"
@@ -193,11 +194,12 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
                 {files.map((file, index) => (
                   <motion.div 
                     key={file.preview} 
-                    className="relative group aspect-square rounded-xl overflow-hidden shadow-md"
+                    className="relative group aspect-square rounded-lg sm:rounded-xl overflow-hidden shadow-md"
                     variants={imageVariants}
                     exit="exit"
                     layout
                     whileHover={{ scale: 1.05, y: -4, zIndex: 10 }}
+                    whileTap={{ scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 400, damping: 20 }}
                   >
                     <img
@@ -205,31 +207,19 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
                       alt={file.file.name}
                       className="w-full h-full object-cover"
                     />
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
-                      initial={{ opacity: 0 }}
-                      whileHover={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
-                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300" />
                     <motion.button
                       onClick={() => removeFile(index)}
                       disabled={isProcessing}
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white disabled:opacity-50"
-                      initial={{ opacity: 0, scale: 0 }}
+                      className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 sm:p-1.5 rounded-full bg-black/60 text-white disabled:opacity-50 touch-manipulation active:bg-destructive"
                       whileHover={{ scale: 1.1, backgroundColor: "rgb(239 68 68)" }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                      whileTap={{ scale: 0.9 }}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </motion.button>
-                    <motion.div 
-                      className="absolute bottom-0 left-0 right-0 p-2.5"
-                      initial={{ opacity: 0, y: 10 }}
-                      whileHover={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <p className="text-xs text-white font-medium truncate">{file.file.name}</p>
-                    </motion.div>
+                    <div className="absolute bottom-0 left-0 right-0 p-1.5 sm:p-2.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <p className="text-[9px] sm:text-xs text-white font-medium truncate">{file.file.name}</p>
+                    </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -242,7 +232,7 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
               <Button
                 onClick={handleProcess}
                 disabled={isProcessing || files.length === 0}
-                className="w-full bg-gradient-primary hover:opacity-90 h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                className="w-full bg-gradient-primary hover:opacity-90 h-12 sm:h-14 text-sm sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation active:scale-[0.98]"
               >
                 {isProcessing ? (
                   <>
@@ -250,7 +240,7 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
                       animate={{ rotate: 360 }}
                       transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                     >
-                      <Loader2 className="mr-2 h-5 w-5" />
+                      <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                     </motion.div>
                     Processing...
                   </>
@@ -260,9 +250,9 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
                       animate={{ rotate: [0, 15, -15, 0] }}
                       transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
                     >
-                      <Sparkles className="mr-2 h-5 w-5" />
+                      <Sparkles className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                     </motion.div>
-                    Generate Metadata ({files.length} credit{files.length > 1 ? 's' : ''})
+                    Generate ({files.length} credit{files.length > 1 ? 's' : ''})
                   </>
                 )}
               </Button>
