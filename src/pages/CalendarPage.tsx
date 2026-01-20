@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Sparkles, Star, Heart, Rocket, Trophy, Gift, Sun, Moon, Flame, Target, TrendingUp, DollarSign, BarChart3, Globe, Building2, Briefcase, Plus, X, Trash2 } from 'lucide-react';
+import { Calendar, Sparkles, Star, Heart, Rocket, Trophy, Gift, Sun, Moon, Flame, Target, TrendingUp, DollarSign, BarChart3, Globe, Building2, Briefcase, Plus, X, Trash2, Filter } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
@@ -139,6 +140,7 @@ export default function CalendarPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'holiday', 'custom']);
   
   // Form state
   const [newEventDate, setNewEventDate] = useState('1');
@@ -254,9 +256,17 @@ export default function CalendarPage() {
   // Combine stock market events and custom events
   const allEvents = [...stockMarketEvents, ...customEvents];
 
+  // Filter events based on active filters
+  const filteredEvents = allEvents.filter(event => {
+    if (event.isCustom && activeFilters.includes('custom')) return true;
+    if (event.type === 'stock' && !event.isCustom && activeFilters.includes('stock')) return true;
+    if (['holiday', 'celebration', 'creative', 'motivation'].includes(event.type) && activeFilters.includes('holiday')) return true;
+    return false;
+  });
+
   const daysInMonth = getDaysInMonth(currentMonth, year);
   const firstDay = getFirstDayOfMonth(currentMonth, year);
-  const monthEvents = allEvents.filter(e => e.month === currentMonth);
+  const monthEvents = filteredEvents.filter(e => e.month === currentMonth);
 
   const handleDateClick = (day: number) => {
     const event = monthEvents.find(e => e.date === day);
@@ -339,18 +349,58 @@ export default function CalendarPage() {
             </p>
           </motion.div>
 
-          {/* Add Event Button */}
+          {/* Filter & Add Event Controls */}
           <motion.div 
-            className="flex justify-center mb-6"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
+            {/* Category Filters */}
+            <div className="flex items-center gap-3">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <ToggleGroup 
+                type="multiple" 
+                value={activeFilters}
+                onValueChange={(value) => {
+                  if (value.length > 0) setActiveFilters(value);
+                }}
+                className="bg-muted/30 rounded-lg p-1"
+              >
+                <ToggleGroupItem 
+                  value="stock" 
+                  aria-label="Toggle Stock Events"
+                  className="data-[state=on]:bg-emerald-500 data-[state=on]:text-white px-3 py-1.5 text-xs sm:text-sm gap-1.5"
+                >
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Stock</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="holiday" 
+                  aria-label="Toggle Holiday Events"
+                  className="data-[state=on]:bg-purple-500 data-[state=on]:text-white px-3 py-1.5 text-xs sm:text-sm gap-1.5"
+                >
+                  <Star className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Holiday</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="custom" 
+                  aria-label="Toggle Custom Events"
+                  className="data-[state=on]:bg-amber-500 data-[state=on]:text-white px-3 py-1.5 text-xs sm:text-sm gap-1.5"
+                >
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Custom</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            {/* Add Event Button */}
             <Button
               onClick={() => {
                 setNewEventMonth(currentMonth.toString());
                 setIsAddDialogOpen(true);
               }}
+              size="sm"
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -494,7 +544,7 @@ export default function CalendarPage() {
                 </h3>
                 <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2">
                   {months.map((month, idx) => {
-                    const hasEvents = allEvents.some(e => e.month === idx);
+                    const hasEvents = filteredEvents.some(e => e.month === idx);
                     const isActive = currentMonth === idx;
                     
                     return (
