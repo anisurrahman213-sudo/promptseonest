@@ -15,6 +15,17 @@ interface PaymentRequest {
   admin_notes: string | null;
   created_at: string;
   updated_at: string;
+  user_email?: string;
+  user_phone?: string;
+  user_name?: string;
+}
+
+interface UserInfo {
+  user_id: string;
+  email: string;
+  phone_number: string | null;
+  full_name: string | null;
+  credits: number;
 }
 
 export function usePaymentRequests() {
@@ -40,13 +51,51 @@ export function useAdminPaymentRequests() {
   return useQuery({
     queryKey: ['admin-payment-requests'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get payment requests
+      const { data: payments, error: paymentsError } = await supabase
         .from('payment_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
+      if (paymentsError) throw paymentsError;
+
+      // Get user info from admin_user_view
+      const { data: users, error: usersError } = await supabase
+        .from('admin_user_view')
+        .select('user_id, email, phone_number, full_name');
+
+      if (usersError) {
+        console.error('Error fetching user info:', usersError);
+        return payments as PaymentRequest[];
+      }
+
+      // Merge user info with payments
+      const paymentsWithUserInfo = payments?.map(payment => {
+        const userInfo = users?.find(u => u.user_id === payment.user_id);
+        return {
+          ...payment,
+          user_email: userInfo?.email || null,
+          user_phone: userInfo?.phone_number || null,
+          user_name: userInfo?.full_name || null,
+        };
+      });
+
+      return paymentsWithUserInfo as PaymentRequest[];
+    },
+  });
+}
+
+export function useAdminUsers() {
+  return useQuery({
+    queryKey: ['admin-users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('admin_user_view')
+        .select('*')
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
-      return data as PaymentRequest[];
+      return data as UserInfo[];
     },
   });
 }
@@ -59,12 +108,18 @@ export function useApprovePayment() {
       paymentId, 
       userId, 
       credits, 
-      adminNotes 
+      adminNotes,
+      userEmail,
+      userName,
+      planName,
     }: { 
       paymentId: string; 
       userId: string; 
       credits: number; 
       adminNotes?: string;
+      userEmail?: string;
+      userName?: string;
+      planName?: string;
     }) => {
       // Update payment status
       const { error: updateError } = await supabase
@@ -85,11 +140,29 @@ export function useApprovePayment() {
 
       if (creditsError) throw creditsError;
 
+      // Send email notification
+      if (userEmail) {
+        try {
+          await supabase.functions.invoke('send-email', {
+            body: {
+              to: userEmail,
+              type: 'payment_approved',
+              customerName: userName || 'Valued Customer',
+              planName: planName || 'Premium',
+              credits: credits,
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send email:', emailError);
+          // Don't throw - payment was successful, email is just notification
+        }
+      }
+
       return true;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-payment-requests'] });
-      toast.success('Payment approved and credits added!');
+      toast.success('Payment approved, credits added & email sent!');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to approve payment');
@@ -103,10 +176,16 @@ export function useRejectPayment() {
   return useMutation({
     mutationFn: async ({ 
       paymentId, 
-      adminNotes 
+      adminNotes,
+      userEmail,
+      userName,
+      planName,
     }: { 
       paymentId: string; 
       adminNotes?: string;
+      userEmail?: string;
+      userName?: string;
+      planName?: string;
     }) => {
       const { error } = await supabase
         .from('payment_requests')
@@ -117,14 +196,58 @@ export function useRejectPayment() {
         .eq('id', paymentId);
 
       if (error) throw error;
+
+      // Send email notification
+      if (userEmail) {
+        try {
+          await supabase.functions.invoke('send-email', {
+            body: {
+              to: userEmail,
+              type: 'payment_rejected',
+              customerName: userName || 'Valued Customer',
+              planName: planName || 'Premium',
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send email:', emailError);
+        }
+      }
+
       return true;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-payment-requests'] });
-      toast.success('Payment rejected');
+      toast.success('Payment rejected & email sent');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to reject payment');
+    },
+  });
+}
+
+export function useSendCustomEmail() {
+  return useMutation({
+    mutationFn: async ({ 
+      to,
+      subject,
+      html,
+    }: { 
+      to: string;
+      subject: string;
+      html: string;
+    }) => {
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: { to, subject, html }
+      });
+
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: () => {
+      toast.success('Email sent successfully!');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to send email');
     },
   });
 }
