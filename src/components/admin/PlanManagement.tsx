@@ -9,6 +9,107 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAdminPricingPlans, useCreatePlan, useUpdatePlan, useDeletePlan, PricingPlan } from '@/hooks/usePricingPlans';
 import { Plus, Pencil, Trash2, Crown, GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+interface SortablePlanCardProps {
+  plan: PricingPlan;
+  onEdit: (plan: PricingPlan) => void;
+  onDelete: (plan: PricingPlan) => void;
+}
+
+function SortablePlanCard({ plan, onEdit, onDelete }: SortablePlanCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: plan.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card 
+      ref={setNodeRef} 
+      style={style} 
+      className={`${!plan.is_active ? 'opacity-50' : ''} ${isDragging ? 'shadow-lg ring-2 ring-primary' : ''}`}
+    >
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded touch-none"
+            >
+              <GripVertical className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <CardTitle className="text-lg flex items-center gap-2">
+              {plan.is_unlimited && <Crown className="h-4 w-4 text-primary" />}
+              {plan.name}
+            </CardTitle>
+            {plan.is_popular && <Badge className="bg-gradient-primary">Popular</Badge>}
+            {!plan.is_active && <Badge variant="secondary">Inactive</Badge>}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => onEdit(plan)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-destructive"
+              onClick={() => onDelete(plan)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <span className="text-muted-foreground">Price:</span>
+            <p className="font-semibold">৳{plan.price_bdt} (${plan.price_usd}){plan.period}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Credits:</span>
+            <p className="font-semibold">{plan.credits}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Credits Amount:</span>
+            <p className="font-semibold">{plan.credits_amount === -1 ? 'Unlimited' : plan.credits_amount}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Features:</span>
+            <p className="font-semibold">{plan.features.length} items</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export function PlanManagement() {
   const { data: plans, isLoading } = useAdminPricingPlans();
@@ -36,6 +137,17 @@ export function PlanManagement() {
     is_active: true,
     sort_order: 0,
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const resetForm = () => {
     setFormData({
@@ -116,6 +228,25 @@ export function PlanManagement() {
     }
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && plans) {
+      const oldIndex = plans.findIndex((p) => p.id === active.id);
+      const newIndex = plans.findIndex((p) => p.id === over.id);
+
+      const reorderedPlans = arrayMove(plans, oldIndex, newIndex);
+
+      // Update sort_order for all affected plans
+      for (let i = 0; i < reorderedPlans.length; i++) {
+        const plan = reorderedPlans[i];
+        if (plan.sort_order !== i + 1) {
+          await updatePlan.mutateAsync({ id: plan.id, sort_order: i + 1 });
+        }
+      }
+    }
+  };
+
   if (isLoading) {
     return <div className="animate-pulse">Loading plans...</div>;
   }
@@ -123,68 +254,40 @@ export function PlanManagement() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Pricing Plans</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Pricing Plans</h2>
+          <p className="text-sm text-muted-foreground">Drag to reorder plans</p>
+        </div>
         <Button onClick={openCreateDialog}>
           <Plus className="h-4 w-4 mr-2" />
           Add Plan
         </Button>
       </div>
 
-      <div className="grid gap-4">
-        {plans?.map((plan) => (
-          <Card key={plan.id} className={`${!plan.is_active ? 'opacity-50' : ''}`}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    {plan.is_unlimited && <Crown className="h-4 w-4 text-primary" />}
-                    {plan.name}
-                  </CardTitle>
-                  {plan.is_popular && <Badge className="bg-gradient-primary">Popular</Badge>}
-                  {!plan.is_active && <Badge variant="secondary">Inactive</Badge>}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => openEditDialog(plan)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-destructive"
-                    onClick={() => {
-                      setPlanToDelete(plan);
-                      setDeleteDialogOpen(true);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Price:</span>
-                  <p className="font-semibold">৳{plan.price_bdt} (${plan.price_usd}){plan.period}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Credits:</span>
-                  <p className="font-semibold">{plan.credits}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Credits Amount:</span>
-                  <p className="font-semibold">{plan.credits_amount === -1 ? 'Unlimited' : plan.credits_amount}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Features:</span>
-                  <p className="font-semibold">{plan.features.length} items</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={plans?.map(p => p.id) || []}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="grid gap-4">
+            {plans?.map((plan) => (
+              <SortablePlanCard
+                key={plan.id}
+                plan={plan}
+                onEdit={openEditDialog}
+                onDelete={(p) => {
+                  setPlanToDelete(p);
+                  setDeleteDialogOpen(true);
+                }}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
