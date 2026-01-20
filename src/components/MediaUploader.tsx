@@ -17,7 +17,7 @@ interface MediaUploaderProps {
   maxFiles?: number;
 }
 
-export function MediaUploader({ onUpload, isProcessing, maxFiles = 10 }: MediaUploaderProps) {
+export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaUploaderProps) {
   const [files, setFiles] = useState<MediaFile[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -42,10 +42,16 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 10 }: MediaUp
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/png': ['.png'],
       'image/webp': ['.webp'],
+      'image/gif': ['.gif'],
+      'image/svg+xml': ['.svg'],
+      'image/tiff': ['.tiff', '.tif'],
+      'application/postscript': ['.eps', '.ai'],
+      'image/x-eps': ['.eps'],
       'video/mp4': ['.mp4'],
       'video/quicktime': ['.mov'],
       'video/webm': ['.webm'],
       'video/x-msvideo': ['.avi'],
+      'video/x-matroska': ['.mkv'],
     },
     maxFiles,
     disabled: isProcessing,
@@ -149,22 +155,11 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 10 }: MediaUp
               className="font-display font-semibold text-base sm:text-xl"
               animate={{ scale: isDragActive ? 1.05 : 1 }}
             >
-              {isDragActive ? 'Drop files here' : 'Tap to upload images or videos'}
+              {isDragActive ? 'Drop files here' : 'Drag & drop files here, or click to select'}
             </motion.p>
             <p className="text-xs sm:text-sm text-muted-foreground px-4">
-              <span className="hidden sm:inline">or drag & drop • </span>
-              JPG, PNG, WEBP, MP4, MOV, WEBM up to {maxFiles} files
+              Supports common image, video, SVG, and EPS formats. Max {maxFiles} files.
             </p>
-            <div className="flex items-center justify-center gap-4 pt-1">
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <ImageIcon className="w-3.5 h-3.5 text-primary" />
-                Images
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Video className="w-3.5 h-3.5 text-secondary" />
-                Videos
-              </span>
-            </div>
           </div>
         </div>
       </motion.div>
