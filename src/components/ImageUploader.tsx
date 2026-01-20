@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Upload, X, Image as ImageIcon, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 interface ImageFile {
   file: File;
@@ -58,10 +59,33 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
     }
   };
 
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const imageVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.8, y: 20 },
+    visible: { 
+      opacity: 1, 
+      scale: 1, 
+      y: 0,
+    },
+    exit: { 
+      opacity: 0, 
+      scale: 0.8, 
+      y: -20,
+    }
+  };
+
+  const dropzoneProps = getRootProps();
+
   return (
     <div className="space-y-6">
-      <div
-        {...getRootProps()}
+      <motion.div
         className={cn(
           "relative border-2 border-dashed rounded-2xl p-10 transition-all duration-300 cursor-pointer group",
           "bg-gradient-to-br from-muted/30 to-muted/10",
@@ -70,97 +94,182 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
             : "border-border/60 hover:border-primary/50 hover:bg-muted/50 hover:shadow-lg",
           isProcessing && "opacity-50 cursor-not-allowed"
         )}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        whileHover={{ scale: isProcessing ? 1 : 1.01 }}
+        whileTap={{ scale: isProcessing ? 1 : 0.99 }}
+        onClick={dropzoneProps.onClick}
+        onKeyDown={dropzoneProps.onKeyDown}
+        onFocus={dropzoneProps.onFocus}
+        onBlur={dropzoneProps.onBlur}
+        onDragEnter={dropzoneProps.onDragEnter}
+        onDragOver={dropzoneProps.onDragOver}
+        onDragLeave={dropzoneProps.onDragLeave}
+        onDrop={dropzoneProps.onDrop}
+        tabIndex={dropzoneProps.tabIndex}
+        role={dropzoneProps.role}
+        ref={dropzoneProps.ref}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center justify-center gap-5 text-center">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-primary blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-300" />
-            <div className="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20 group-hover:scale-110 transition-transform duration-300">
+          <motion.div 
+            className="relative"
+            animate={isDragActive ? { scale: 1.1, rotate: [0, -5, 5, -5, 0] } : { scale: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <motion.div 
+              className="absolute inset-0 bg-gradient-primary blur-xl opacity-20"
+              animate={{ opacity: isDragActive ? 0.5 : 0.2 }}
+              transition={{ duration: 0.3 }}
+            />
+            <motion.div 
+              className="relative flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
               <Upload className="w-8 h-8 text-primary" />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           <div className="space-y-2">
-            <p className="font-display font-semibold text-xl">
+            <motion.p 
+              className="font-display font-semibold text-xl"
+              animate={{ scale: isDragActive ? 1.05 : 1 }}
+            >
               {isDragActive ? 'Drop images here' : 'Drag & drop images here'}
-            </p>
+            </motion.p>
             <p className="text-sm text-muted-foreground">
               or <span className="text-primary font-medium">click to browse</span> • JPG, PNG up to {maxFiles} files
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {files.length > 0 && (
-        <div className="space-y-5 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-                <ImageIcon className="w-4 h-4 text-primary" />
-              </div>
-              <span className="font-medium">
-                {files.length} image{files.length > 1 ? 's' : ''} selected
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                files.forEach(f => URL.revokeObjectURL(f.preview));
-                setFiles([]);
-              }}
-              disabled={isProcessing}
-              className="text-muted-foreground hover:text-destructive"
-            >
-              Clear all
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {files.map((file, index) => (
-              <div 
-                key={index} 
-                className="relative group aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <img
-                  src={file.preview}
-                  alt={file.file.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <button
-                  onClick={() => removeFile(index)}
-                  disabled={isProcessing}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-destructive disabled:opacity-50"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-                <div className="absolute bottom-0 left-0 right-0 p-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-xs text-white font-medium truncate">{file.file.name}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Button
-            onClick={handleProcess}
-            disabled={isProcessing || files.length === 0}
-            className="w-full bg-gradient-primary hover:opacity-90 h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+      <AnimatePresence mode="wait">
+        {files.length > 0 && (
+          <motion.div 
+            className="space-y-5"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
-            {isProcessing ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-5 w-5" />
-                Generate Metadata ({files.length} credit{files.length > 1 ? 's' : ''})
-              </>
-            )}
-          </Button>
-        </div>
-      )}
+            <div className="flex items-center justify-between">
+              <motion.div 
+                className="flex items-center gap-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+              >
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                  <ImageIcon className="w-4 h-4 text-primary" />
+                </div>
+                <span className="font-medium">
+                  {files.length} image{files.length > 1 ? 's' : ''} selected
+                </span>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    files.forEach(f => URL.revokeObjectURL(f.preview));
+                    setFiles([]);
+                  }}
+                  disabled={isProcessing}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  Clear all
+                </Button>
+              </motion.div>
+            </div>
+
+            <motion.div 
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <AnimatePresence>
+                {files.map((file, index) => (
+                  <motion.div 
+                    key={file.preview} 
+                    className="relative group aspect-square rounded-xl overflow-hidden shadow-md"
+                    variants={imageVariants}
+                    exit="exit"
+                    layout
+                    whileHover={{ scale: 1.05, y: -4, zIndex: 10 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  >
+                    <img
+                      src={file.preview}
+                      alt={file.file.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                    />
+                    <motion.button
+                      onClick={() => removeFile(index)}
+                      disabled={isProcessing}
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white disabled:opacity-50"
+                      initial={{ opacity: 0, scale: 0 }}
+                      whileHover={{ scale: 1.1, backgroundColor: "rgb(239 68 68)" }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </motion.button>
+                    <motion.div 
+                      className="absolute bottom-0 left-0 right-0 p-2.5"
+                      initial={{ opacity: 0, y: 10 }}
+                      whileHover={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <p className="text-xs text-white font-medium truncate">{file.file.name}</p>
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button
+                onClick={handleProcess}
+                disabled={isProcessing || files.length === 0}
+                className="w-full bg-gradient-primary hover:opacity-90 h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                {isProcessing ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    >
+                      <Loader2 className="mr-2 h-5 w-5" />
+                    </motion.div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <motion.div
+                      animate={{ rotate: [0, 15, -15, 0] }}
+                      transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                    >
+                      <Sparkles className="mr-2 h-5 w-5" />
+                    </motion.div>
+                    Generate Metadata ({files.length} credit{files.length > 1 ? 's' : ''})
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
