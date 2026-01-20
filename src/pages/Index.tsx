@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
 import { useAuth } from "@/hooks/useAuth";
+import { useFeatureCards } from "@/hooks/useFeatureCards";
 import { 
   Sparkles, 
   Image, 
@@ -12,44 +13,34 @@ import {
   Shield,
   ArrowRight,
   CheckCircle2,
-  Calendar
+  Calendar,
+  LucideIcon
 } from "lucide-react";
+
+const iconMap: Record<string, LucideIcon> = {
+  Sparkles,
+  Tags,
+  Image,
+  Download,
+  Zap,
+  Shield,
+};
 
 const Index = () => {
   const { user } = useAuth();
+  const { data: featureCards, isLoading: featuresLoading } = useFeatureCards();
 
-  const features = [
-    {
-      icon: Sparkles,
-      title: "AI-Powered Prompts",
-      description: "Generate professional, detailed image prompts using advanced AI vision technology"
-    },
-    {
-      icon: Tags,
-      title: "SEO Metadata",
-      description: "Get optimized titles, descriptions, and 40-50 relevant tags for maximum visibility"
-    },
-    {
-      icon: Image,
-      title: "Bulk Processing",
-      description: "Upload and process multiple images at once with our efficient queue system"
-    },
-    {
-      icon: Download,
-      title: "Easy Export",
-      description: "Download all your results as CSV or copy individual fields with one click"
-    },
-    {
-      icon: Zap,
-      title: "Lightning Fast",
-      description: "Get results in seconds with our optimized AI processing pipeline"
-    },
-    {
-      icon: Shield,
-      title: "Secure & Private",
-      description: "Your images are processed securely and never stored permanently"
-    }
+  // Fallback features if database is empty
+  const defaultFeatures = [
+    { icon_name: "Sparkles", title: "AI-Powered Prompts", description: "Generate professional, detailed image prompts using advanced AI vision technology", image_url: null },
+    { icon_name: "Tags", title: "SEO Metadata", description: "Get optimized titles, descriptions, and 40-50 relevant tags for maximum visibility", image_url: null },
+    { icon_name: "Image", title: "Bulk Processing", description: "Upload and process multiple images at once with our efficient queue system", image_url: null },
+    { icon_name: "Download", title: "Easy Export", description: "Download all your results as CSV or copy individual fields with one click", image_url: null },
+    { icon_name: "Zap", title: "Lightning Fast", description: "Get results in seconds with our optimized AI processing pipeline", image_url: null },
+    { icon_name: "Shield", title: "Secure & Private", description: "Your images are processed securely and never stored permanently", image_url: null },
   ];
+
+  const features = featureCards && featureCards.length > 0 ? featureCards : defaultFeatures;
 
   const howItWorks = [
     { step: 1, title: "Upload", description: "Drag and drop your images or click to browse" },
@@ -123,17 +114,31 @@ const Index = () => {
             </p>
           </div>
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <Card key={feature.title} className="group border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg">
-                <CardContent className="p-6">
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                    <feature.icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="mb-2 text-xl font-semibold text-foreground">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {features.map((feature) => {
+              const IconComponent = iconMap[feature.icon_name] || Sparkles;
+              return (
+                <Card key={feature.title} className="group border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg overflow-hidden">
+                  {feature.image_url && (
+                    <div className="aspect-video overflow-hidden">
+                      <img 
+                        src={feature.image_url} 
+                        alt={feature.title}
+                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    </div>
+                  )}
+                  <CardContent className="p-6">
+                    {!feature.image_url && (
+                      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                        <IconComponent className="h-6 w-6" />
+                      </div>
+                    )}
+                    <h3 className="mb-2 text-xl font-semibold text-foreground">{feature.title}</h3>
+                    <p className="text-muted-foreground">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>

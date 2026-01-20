@@ -26,7 +26,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Users, CreditCard, ArrowLeft } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon } from 'lucide-react';
+import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -116,85 +118,105 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalUsers}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Credits</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalCredits.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Tabs for different admin sections */}
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="users" className="gap-2">
+              <Users className="h-4 w-4" />
+              Users & Credits
+            </TabsTrigger>
+            <TabsTrigger value="features" className="gap-2">
+              <ImageIcon className="h-4 w-4" />
+              Feature Cards
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Users Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Users</CardTitle>
-            <CardDescription>Manage credits for all registered users</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {usersLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : !users || users.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No users found
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>User ID</TableHead>
-                      <TableHead className="text-center">Credits</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((u) => (
-                      <TableRow key={u.user_id}>
-                        <TableCell className="font-medium">
-                          {u.email || 'N/A'}
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground font-mono">
-                          {u.user_id?.slice(0, 8)}...
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant="secondary" className="font-mono">
-                            {u.credits || 0}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            onClick={() => openAddCreditsDialog(u.user_id, u.email || 'Unknown')}
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Credits
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          <TabsContent value="users" className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalUsers}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Total Credits</CardTitle>
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalCredits.toLocaleString()}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Users Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle>All Users</CardTitle>
+                <CardDescription>Manage credits for all registered users</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {usersLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : !users || users.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No users found
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Email</TableHead>
+                          <TableHead>User ID</TableHead>
+                          <TableHead className="text-center">Credits</TableHead>
+                          <TableHead className="text-right">Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((u) => (
+                          <TableRow key={u.user_id}>
+                            <TableCell className="font-medium">
+                              {u.email || 'N/A'}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground font-mono">
+                              {u.user_id?.slice(0, 8)}...
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="secondary" className="font-mono">
+                                {u.credits || 0}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                size="sm"
+                                onClick={() => openAddCreditsDialog(u.user_id, u.email || 'Unknown')}
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                Add Credits
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="features">
+            <FeatureCardManagement />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Add Credits Dialog */}
