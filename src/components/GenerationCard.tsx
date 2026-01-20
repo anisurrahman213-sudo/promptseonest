@@ -45,31 +45,37 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
   );
 
   return (
-    <Card className="overflow-hidden animate-fade-in">
-      <CardHeader className="p-4 pb-0">
+    <Card className="overflow-hidden animate-fade-in border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+      <CardHeader className="p-5 pb-0">
         <div className="flex gap-4">
-          <div className="w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-muted">
+          <div className="relative w-28 h-28 shrink-0 rounded-xl overflow-hidden bg-muted shadow-md">
             <img
               src={generation.image_url}
               alt={generation.image_name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 py-1">
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <h3 className="font-display font-semibold truncate">
+              <div className="space-y-1">
+                <h3 className="font-display font-bold text-lg truncate">
                   {generation.image_name}
                 </h3>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(generation.created_at).toLocaleDateString()}
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <span className="inline-block w-2 h-2 rounded-full bg-accent" />
+                  {new Date(generation.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
                 </p>
               </div>
               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                   onClick={handleDelete}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -77,7 +83,7 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-9 w-9"
                   onClick={() => setExpanded(!expanded)}
                 >
                   {expanded ? (
@@ -88,57 +94,81 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                 </Button>
               </div>
             </div>
+            
+            {/* Quick preview of title when collapsed */}
+            {!expanded && (
+              <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                {generation.title}
+              </p>
+            )}
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className={cn("p-4 space-y-4", !expanded && "hidden")}>
+      <CardContent className={cn("p-5 space-y-4 transition-all duration-300", !expanded && "hidden")}>
         {/* Prompt */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Badge variant="secondary" className="text-xs">Prompt</Badge>
+            <Badge className="bg-primary/10 text-primary border-0 text-xs font-medium">
+              Prompt
+            </Badge>
             <CopyButton text={generation.prompt} field="Prompt" />
           </div>
-          <p className="text-sm bg-muted p-3 rounded-lg">{generation.prompt}</p>
+          <p className="text-sm bg-muted/50 p-4 rounded-xl leading-relaxed">{generation.prompt}</p>
         </div>
 
         {/* Title */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Badge variant="secondary" className="text-xs">Title</Badge>
+            <Badge className="bg-secondary/10 text-secondary border-0 text-xs font-medium">
+              Title
+            </Badge>
             <CopyButton text={generation.title} field="Title" />
           </div>
-          <p className="text-sm bg-muted p-3 rounded-lg">{generation.title}</p>
+          <p className="text-sm bg-muted/50 p-4 rounded-xl font-medium">{generation.title}</p>
         </div>
 
         {/* Description */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Badge variant="secondary" className="text-xs">Description</Badge>
+            <Badge className="bg-accent/10 text-accent border-0 text-xs font-medium">
+              Description
+            </Badge>
             <CopyButton text={generation.description} field="Description" />
           </div>
-          <p className="text-sm bg-muted p-3 rounded-lg">{generation.description}</p>
+          <p className="text-sm bg-muted/50 p-4 rounded-xl leading-relaxed">{generation.description}</p>
         </div>
 
         {/* Tags */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Badge variant="secondary" className="text-xs">Tags ({generation.tags.split(',').length})</Badge>
+            <Badge className="bg-warning/10 text-warning border-0 text-xs font-medium">
+              Tags ({generation.tags.split(',').length})
+            </Badge>
             <CopyButton text={generation.tags} field="Tags" />
           </div>
-          <div className="flex flex-wrap gap-1.5 bg-muted p-3 rounded-lg">
-            {generation.tags.split(',').map((tag, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
+          <div className="flex flex-wrap gap-2 bg-muted/50 p-4 rounded-xl">
+            {generation.tags.split(',').slice(0, 15).map((tag, index) => (
+              <Badge 
+                key={index} 
+                variant="outline" 
+                className="text-xs bg-background/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-default"
+              >
                 {tag.trim()}
               </Badge>
             ))}
+            {generation.tags.split(',').length > 15 && (
+              <Badge variant="outline" className="text-xs bg-muted">
+                +{generation.tags.split(',').length - 15} more
+              </Badge>
+            )}
           </div>
         </div>
 
         {/* Copy All */}
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full h-12 font-medium hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
           onClick={() => {
             const allData = `Prompt: ${generation.prompt}\n\nTitle: ${generation.title}\n\nDescription: ${generation.description}\n\nTags: ${generation.tags}`;
             copyToClipboard(allData, 'All data');
