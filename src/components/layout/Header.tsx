@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useTheme } from '@/hooks/useTheme';
-import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X } from 'lucide-react';
+import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -55,8 +55,16 @@ export function Header() {
                 </span>
               </div>
 
+              <Link to="/payment-history">
+                <Button variant="ghost" size="sm">
+                  <History className="h-4 w-4 mr-1" />
+                  History
+                </Button>
+              </Link>
+
               <Link to="/pricing">
-                <Button variant="outline" size="sm">
+                <Button size="sm" className="bg-gradient-primary hover:opacity-90 text-white">
+                  <Crown className="h-4 w-4 mr-1" />
                   Upgrade
                 </Button>
               </Link>
@@ -139,11 +147,22 @@ export function Header() {
               {user ? (
                 <>
                   <Link 
+                    to="/payment-history" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block"
+                  >
+                    <Button variant="ghost" className="w-full justify-center h-11">
+                      <History className="mr-2 h-4 w-4" />
+                      Payment History
+                    </Button>
+                  </Link>
+                  <Link 
                     to="/pricing" 
                     onClick={() => setMobileMenuOpen(false)}
                     className="block"
                   >
-                    <Button variant="outline" className="w-full justify-center h-11">
+                    <Button className="w-full justify-center h-11 bg-gradient-primary hover:opacity-90 text-white">
+                      <Crown className="mr-2 h-4 w-4" />
                       Upgrade Plan
                     </Button>
                   </Link>
