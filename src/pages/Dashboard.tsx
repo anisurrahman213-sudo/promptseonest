@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
-import { ImageUploader } from '@/components/ImageUploader';
+import { MediaUploader, MediaFile } from '@/components/MediaUploader';
 import { GenerationCard } from '@/components/GenerationCard';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { SearchFilter, SortOption } from '@/components/dashboard/SearchFilter';
@@ -83,36 +83,46 @@ export default function Dashboard() {
     return <Navigate to="/auth" replace />;
   }
 
-  const handleUpload = async (files: File[]) => {
-    if (credits !== null && credits < files.length) {
-      toast.error(`Not enough credits. You need ${files.length} credits but have ${credits}.`);
+  const handleUpload = async (mediaFiles: MediaFile[]) => {
+    if (credits !== null && credits < mediaFiles.length) {
+      toast.error(`Not enough credits. You need ${mediaFiles.length} credits but have ${credits}.`);
       return;
     }
 
     setIsProcessing(true);
     let successCount = 0;
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      setProcessingStatus(`Processing ${i + 1} of ${files.length}: ${file.name}`);
+    for (let i = 0; i < mediaFiles.length; i++) {
+      const mediaFile = mediaFiles[i];
+      const file = mediaFile.file;
+      setProcessingStatus(`Processing ${i + 1} of ${mediaFiles.length}: ${file.name}`);
 
       try {
-        // Convert file to base64
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            const base64Data = result.split(',')[1];
-            resolve(base64Data);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+        let base64: string;
+        
+        if (mediaFile.type === 'video') {
+          // For videos, extract a frame as thumbnail
+          base64 = await extractVideoFrame(file);
+        } else {
+          // For images, convert directly to base64
+          base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const result = reader.result as string;
+              const base64Data = result.split(',')[1];
+              resolve(base64Data);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
 
-        // Upload image to storage
+        // Upload media to storage
+        const bucketName = mediaFile.type === 'video' ? 'videos' : 'images';
         const filePath = `${user.id}/${Date.now()}-${file.name}`;
+        
         const { error: uploadError } = await supabase.storage
-          .from('images')
+          .from(bucketName)
           .upload(filePath, file);
 
         if (uploadError) {
@@ -123,14 +133,15 @@ export default function Dashboard() {
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
-          .from('images')
+          .from(bucketName)
           .getPublicUrl(filePath);
 
-        // Call edge function to analyze image
+        // Call edge function to analyze media
         const { data, error } = await supabase.functions.invoke('analyze-image', {
           body: { 
             imageBase64: base64,
-            imageName: file.name
+            imageName: file.name,
+            mediaType: mediaFile.type
           }
         });
 
@@ -191,10 +202,51 @@ export default function Dashboard() {
     setProcessingStatus('');
     
     if (successCount > 0) {
-      toast.success(`Successfully processed ${successCount} image${successCount > 1 ? 's' : ''}`);
+      toast.success(`Successfully processed ${successCount} file${successCount > 1 ? 's' : ''}`);
       // Switch to history tab after successful generation
       setActiveTab('history');
     }
+  };
+
+  // Helper function to extract a frame from video
+  const extractVideoFrame = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.muted = true;
+      video.playsInline = true;
+      
+      video.onloadeddata = () => {
+        // Seek to 1 second or 10% of the video, whichever is smaller
+        video.currentTime = Math.min(1, video.duration * 0.1);
+      };
+      
+      video.onseeked = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+        
+        ctx.drawImage(video, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        const base64 = dataUrl.split(',')[1];
+        
+        URL.revokeObjectURL(video.src);
+        resolve(base64);
+      };
+      
+      video.onerror = () => {
+        URL.revokeObjectURL(video.src);
+        reject(new Error('Failed to load video'));
+      };
+      
+      video.src = URL.createObjectURL(file);
+    });
   };
 
   const handleDelete = async (id: string) => {
@@ -259,7 +311,7 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
               >
-                Generate Image Metadata
+                Generate Stock Metadata
               </motion.span>
             </h1>
             <motion.p 
@@ -268,7 +320,7 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              Upload images to generate AI-powered prompts, SEO titles, descriptions, and tags
+              Upload images or videos to generate unique, platform-optimized metadata for Adobe Stock, Shutterstock, Freepik & AI marketplaces
             </motion.p>
           </motion.div>
 
@@ -338,7 +390,7 @@ export default function Dashboard() {
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ type: "spring", stiffness: 300, damping: 25 }}
                 >
-                  <ImageUploader 
+                  <MediaUploader 
                     onUpload={handleUpload} 
                     isProcessing={isProcessing}
                     maxFiles={credits !== null ? Math.min(credits, 10) : 10}
