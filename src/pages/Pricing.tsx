@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
-import { Check, Sparkles } from 'lucide-react';
+import { PaymentDialog } from '@/components/PaymentDialog';
+import { useAuth } from '@/hooks/useAuth';
+import { Check, Sparkles, CreditCard } from 'lucide-react';
 
 const plans = [
   {
@@ -20,6 +23,7 @@ const plans = [
     ],
     cta: 'Get Started Free',
     popular: false,
+    isFree: true,
   },
   {
     name: 'Lite',
@@ -34,9 +38,9 @@ const plans = [
       'Bulk upload (up to 10 images)',
       'Download history',
     ],
-    cta: 'Coming Soon',
+    cta: 'Buy Now',
     popular: false,
-    disabled: true,
+    isFree: false,
   },
   {
     name: 'Pro',
@@ -52,13 +56,26 @@ const plans = [
       'CSV import & export',
       'API access (coming soon)',
     ],
-    cta: 'Coming Soon',
+    cta: 'Buy Now',
     popular: true,
-    disabled: true,
+    isFree: false,
   },
 ];
 
 export default function Pricing() {
+  const { user } = useAuth();
+  const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+
+  const handleBuyPlan = (plan: typeof plans[0]) => {
+    if (!user) {
+      window.location.href = '/auth?tab=signup';
+      return;
+    }
+    setSelectedPlan(plan);
+    setPaymentDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -112,20 +129,25 @@ export default function Pricing() {
                   ))}
                 </ul>
                 
-                {plan.disabled ? (
-                  <Button variant="outline" className="w-full" disabled>
-                    {plan.cta}
-                  </Button>
-                ) : (
+                {plan.isFree ? (
                   <Link to="/auth?tab=signup">
                     <Button 
-                      className={`w-full ${plan.popular ? 'bg-gradient-primary hover:opacity-90' : ''}`}
-                      variant={plan.popular ? 'default' : 'outline'}
+                      className="w-full"
+                      variant="outline"
                     >
                       <Sparkles className="mr-2 h-4 w-4" />
                       {plan.cta}
                     </Button>
                   </Link>
+                ) : (
+                  <Button 
+                    className={`w-full ${plan.popular ? 'bg-gradient-primary hover:opacity-90' : ''}`}
+                    variant={plan.popular ? 'default' : 'outline'}
+                    onClick={() => handleBuyPlan(plan)}
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    {plan.cta}
+                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -141,6 +163,18 @@ export default function Pricing() {
           </p>
         </div>
       </main>
+
+      {selectedPlan && (
+        <PaymentDialog
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          plan={{
+            name: selectedPlan.name,
+            price: selectedPlan.price,
+            credits: selectedPlan.credits,
+          }}
+        />
+      )}
     </div>
   );
 }

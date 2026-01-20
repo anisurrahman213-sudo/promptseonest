@@ -83,6 +83,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          created_at: string
+          id: string
+          payment_method: string
+          plan_name: string
+          screenshot_url: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          payment_method?: string
+          plan_name: string
+          screenshot_url?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          payment_method?: string
+          plan_name?: string
+          screenshot_url?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string
