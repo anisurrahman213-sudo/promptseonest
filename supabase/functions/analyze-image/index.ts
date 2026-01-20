@@ -6,6 +6,37 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory rate limiter
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 30; // requests per window
+const RATE_WINDOW = 60 * 1000; // 1 minute in milliseconds
+
+function checkRateLimit(identifier: string): { allowed: boolean; remaining: number; resetIn: number } {
+  const now = Date.now();
+  const record = rateLimitMap.get(identifier);
+
+  // Clean up old entries periodically
+  if (rateLimitMap.size > 1000) {
+    for (const [key, value] of rateLimitMap.entries()) {
+      if (now > value.resetTime) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }
+
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(identifier, { count: 1, resetTime: now + RATE_WINDOW });
+    return { allowed: true, remaining: RATE_LIMIT - 1, resetIn: RATE_WINDOW };
+  }
+
+  if (record.count >= RATE_LIMIT) {
+    return { allowed: false, remaining: 0, resetIn: record.resetTime - now };
+  }
+
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT - record.count, resetIn: record.resetTime - now };
+}
+
 interface AnalysisResult {
   prompt: string;
   title: string;
@@ -157,6 +188,35 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Get user identifier for rate limiting (from auth header or IP)
+    const authHeader = req.headers.get("authorization") || "";
+    const userIdentifier = authHeader.replace("Bearer ", "").slice(0, 20) || 
+                          req.headers.get("x-forwarded-for") || 
+                          "anonymous";
+
+    // Check rate limit
+    const rateLimit = checkRateLimit(userIdentifier);
+    
+    if (!rateLimit.allowed) {
+      console.log(`Rate limit exceeded for: ${userIdentifier}`);
+      return new Response(
+        JSON.stringify({ 
+          error: "Rate limit exceeded. Please wait before making more requests.",
+          retryAfter: Math.ceil(rateLimit.resetIn / 1000)
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000)),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(Math.ceil(rateLimit.resetIn / 1000))
+          } 
+        }
+      );
+    }
+
     const { imageBase64, imageName, mediaType = 'image', settings } = await req.json();
 
     if (!imageBase64) {
@@ -165,6 +225,8 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log(`Rate limit OK - Remaining: ${rateLimit.remaining}`);
 
     console.log(`Processing ${mediaType}: ${imageName}`);
     console.log("Settings received:", JSON.stringify(settings));

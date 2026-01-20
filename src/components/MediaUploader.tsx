@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Lightbox } from '@/components/ui/lightbox';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { compressImage } from '@/lib/imageCompression';
+import { toast } from 'sonner';
 
 export interface MediaFile {
   file: File;
@@ -22,21 +24,50 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isCompressing, setIsCompressing] = useState(false);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map(file => {
-      const isVideo = file.type.startsWith('video/');
-      return {
-        file,
-        preview: URL.createObjectURL(file),
-        type: isVideo ? 'video' as const : 'image' as const,
-      };
-    });
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    setIsCompressing(true);
     
-    setFiles(prev => {
-      const combined = [...prev, ...newFiles].slice(0, maxFiles);
-      return combined;
-    });
+    try {
+      // Compress images in parallel for faster processing
+      const processedFiles = await Promise.all(
+        acceptedFiles.map(async (file) => {
+          const isVideo = file.type.startsWith('video/');
+          
+          // Compress images before adding
+          let processedFile = file;
+          if (!isVideo && file.type.startsWith('image/')) {
+            processedFile = await compressImage(file, {
+              maxWidth: 2048,
+              maxHeight: 2048,
+              quality: 0.85,
+            });
+          }
+          
+          return {
+            file: processedFile,
+            preview: URL.createObjectURL(processedFile),
+            type: isVideo ? 'video' as const : 'image' as const,
+          };
+        })
+      );
+      
+      setFiles(prev => {
+        const combined = [...prev, ...processedFiles].slice(0, maxFiles);
+        return combined;
+      });
+      
+      const compressedCount = processedFiles.filter(f => f.type === 'image').length;
+      if (compressedCount > 0) {
+        toast.success(`${compressedCount} image(s) optimized for faster upload`);
+      }
+    } catch (error) {
+      console.error('Error processing files:', error);
+      toast.error('Error processing some files');
+    } finally {
+      setIsCompressing(false);
+    }
   }, [maxFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -57,7 +88,7 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
       'video/x-matroska': ['.mkv'],
     },
     maxFiles,
-    disabled: isProcessing,
+    disabled: isProcessing || isCompressing,
   });
 
   const removeFile = (index: number) => {
@@ -114,13 +145,13 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
           isDragActive 
             ? "border-primary bg-primary/10 shadow-glow scale-[1.01]" 
             : "border-border/60 hover:border-primary/50 hover:bg-muted/50 hover:shadow-lg active:scale-[0.99]",
-          isProcessing && "opacity-50 cursor-not-allowed"
+          (isProcessing || isCompressing) && "opacity-50 cursor-not-allowed"
         )}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        whileHover={{ scale: isProcessing ? 1 : 1.01 }}
-        whileTap={{ scale: isProcessing ? 1 : 0.99 }}
+        whileHover={{ scale: (isProcessing || isCompressing) ? 1 : 1.01 }}
+        whileTap={{ scale: (isProcessing || isCompressing) ? 1 : 0.99 }}
         onClick={dropzoneProps.onClick}
         onKeyDown={dropzoneProps.onKeyDown}
         onFocus={dropzoneProps.onFocus}
@@ -158,7 +189,7 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
               className="font-display font-semibold text-base sm:text-xl"
               animate={{ scale: isDragActive ? 1.05 : 1 }}
             >
-              {isDragActive ? 'Drop files here' : 'Drag & drop files here, or click to select'}
+              {isCompressing ? 'Optimizing images...' : isDragActive ? 'Drop files here' : 'Drag & drop files here, or click to select'}
             </motion.p>
             <p className="text-xs sm:text-sm text-muted-foreground px-4">
               Supports common image, video, SVG, and EPS formats. Max {maxFiles} files.
@@ -306,7 +337,7 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
             >
               <Button
                 onClick={handleProcess}
-                disabled={isProcessing || files.length === 0}
+                disabled={isProcessing || isCompressing || files.length === 0}
                 className="w-full bg-gradient-primary hover:opacity-90 h-12 sm:h-14 text-sm sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 touch-manipulation active:scale-[0.98]"
               >
                 {isProcessing ? (
