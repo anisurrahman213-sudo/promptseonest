@@ -13,6 +13,7 @@ import CalendarPage from "./pages/CalendarPage";
 import PaymentHistory from "./pages/PaymentHistory";
 import AdminPayments from "./pages/AdminPayments";
 import AdminDashboard from "./pages/AdminDashboard";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/payment-history" element={<PaymentHistory />} />
               <Route path="/admin/payments" element={<AdminPayments />} />
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
