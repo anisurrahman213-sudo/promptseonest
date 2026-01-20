@@ -38,7 +38,7 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
   const copyNumber = async () => {
     await navigator.clipboard.writeText(PAYMENT_NUMBERS[paymentMethod]);
     setCopied(true);
-    toast.success('নম্বর কপি হয়েছে!');
+    toast.success('Number copied!');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -49,7 +49,7 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
     }
 
     if (!transactionId.trim()) {
-      toast.error('Transaction ID দিন');
+      toast.error('Please enter Transaction ID');
       return;
     }
 
@@ -68,7 +68,7 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
       if (error) throw error;
 
       setSubmitted(true);
-      toast.success('পেমেন্ট রিকোয়েস্ট সাবমিট হয়েছে!');
+      toast.success('Payment request submitted!');
     } catch (error: any) {
       toast.error(error.message || 'Something went wrong');
     } finally {
@@ -90,12 +90,12 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
             <div className="h-16 w-16 rounded-full bg-success/20 flex items-center justify-center mb-4">
               <CheckCircle className="h-8 w-8 text-success" />
             </div>
-            <DialogTitle className="text-xl mb-2">রিকোয়েস্ট সাবমিট হয়েছে!</DialogTitle>
+            <DialogTitle className="text-xl mb-2">Request Submitted!</DialogTitle>
             <DialogDescription className="text-base">
-              আপনার পেমেন্ট ভেরিফাই করা হচ্ছে। সাধারণত ১-২৪ ঘণ্টার মধ্যে ক্রেডিট যোগ হবে।
+              Your payment is being verified. Credits will be added within 1-24 hours.
             </DialogDescription>
             <Button onClick={handleClose} className="mt-6">
-              ঠিক আছে
+              Got it
             </Button>
           </div>
         </DialogContent>
@@ -109,7 +109,7 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Smartphone className="h-5 w-5" />
-            {plan.name} প্ল্যান কিনুন
+            Buy {plan.name} Plan
           </DialogTitle>
           <DialogDescription>
             {plan.credits} - ৳{amountBDT} (${amount})
@@ -119,7 +119,7 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
         <div className="space-y-6 py-4">
           {/* Payment Method Selection */}
           <div className="space-y-3">
-            <Label>পেমেন্ট মেথড বেছে নিন</Label>
+            <Label>Select Payment Method</Label>
             <RadioGroup
               value={paymentMethod}
               onValueChange={(v) => setPaymentMethod(v as 'bkash' | 'nagad')}
@@ -152,11 +152,11 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
 
           {/* Payment Instructions */}
           <div className="rounded-lg bg-muted/50 p-4 space-y-3">
-            <h4 className="font-medium">পেমেন্ট করার নিয়ম:</h4>
+            <h4 className="font-medium">Payment Instructions:</h4>
             <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-              <li>নিচের নম্বরে ৳{amountBDT} সেন্ড মানি করুন</li>
-              <li>Transaction ID কপি করুন</li>
-              <li>নিচে Transaction ID দিন</li>
+              <li>Send ৳{amountBDT} to the number below</li>
+              <li>Copy the Transaction ID</li>
+              <li>Enter the Transaction ID below</li>
             </ol>
 
             <div className="flex items-center gap-2 mt-4">
@@ -183,7 +183,7 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
             <Label htmlFor="transaction-id">Transaction ID</Label>
             <Input
               id="transaction-id"
-              placeholder="যেমন: TXN123456789"
+              placeholder="e.g., TXN123456789"
               value={transactionId}
               onChange={(e) => setTransactionId(e.target.value)}
             />
@@ -197,10 +197,10 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                সাবমিট হচ্ছে...
+                Submitting...
               </>
             ) : (
-              'পেমেন্ট কনফার্ম করুন'
+              'Confirm Payment'
             )}
           </Button>
         </div>
