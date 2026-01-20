@@ -45,6 +45,19 @@ export default function Dashboard() {
       setProcessingStatus(`Processing ${i + 1} of ${files.length}: ${file.name}`);
 
       try {
+        // Convert file to base64
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+            const base64Data = result.split(',')[1];
+            resolve(base64Data);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
         // Upload image to storage
         const filePath = `${user.id}/${Date.now()}-${file.name}`;
         const { error: uploadError } = await supabase.storage
@@ -65,7 +78,7 @@ export default function Dashboard() {
         // Call edge function to analyze image
         const { data, error } = await supabase.functions.invoke('analyze-image', {
           body: { 
-            imageUrl: publicUrl,
+            imageBase64: base64,
             imageName: file.name
           }
         });
@@ -81,8 +94,41 @@ export default function Dashboard() {
           continue;
         }
 
+        // Deduct credit
+        const { data: creditResult } = await supabase.rpc('deduct_credit', {
+          p_user_id: user.id
+        });
+
+        if (!creditResult) {
+          toast.error('Failed to deduct credit');
+          continue;
+        }
+
+        // Save generation to database
+        const generationData = {
+          user_id: user.id,
+          image_name: data.data.imageName,
+          image_url: publicUrl,
+          prompt: data.data.prompt,
+          title: data.data.title,
+          description: data.data.description,
+          tags: data.data.tags
+        };
+
+        const { data: savedGen, error: saveError } = await supabase
+          .from('generations')
+          .insert(generationData)
+          .select()
+          .single();
+
+        if (saveError) {
+          console.error('Save error:', saveError);
+          toast.error(`Failed to save generation for ${file.name}`);
+          continue;
+        }
+
         // Add to local state
-        addGeneration(data.generation);
+        addGeneration(savedGen);
         successCount++;
         refreshCredits();
       } catch (error) {

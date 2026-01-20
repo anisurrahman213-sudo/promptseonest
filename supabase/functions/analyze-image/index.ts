@@ -62,8 +62,9 @@ Respond in this exact JSON format:
 Only respond with the JSON, no additional text.`;
 
     // Call Lovable AI Gateway with Gemini vision model
+    console.log("Calling Lovable AI Gateway...");
     const response = await fetch(
-      "https://api.lovable.dev/v1/chat/completions",
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",
         headers: {
@@ -101,12 +102,28 @@ Only respond with the JSON, no additional text.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Lovable AI API error:", errorText);
+      console.error("Lovable AI API error:", response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI credits exhausted. Please add more credits." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
       return new Response(
-        JSON.stringify({ error: "AI processing failed" }),
+        JSON.stringify({ error: "AI processing failed", details: errorText }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("AI response received successfully");
 
     const aiResponse = await response.json();
     const textContent = aiResponse.choices?.[0]?.message?.content;
