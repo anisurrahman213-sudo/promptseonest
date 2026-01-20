@@ -125,6 +125,63 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_plans: {
+        Row: {
+          created_at: string
+          credits: string
+          credits_amount: number
+          description: string
+          features: string[]
+          id: string
+          is_active: boolean
+          is_free: boolean
+          is_popular: boolean
+          is_unlimited: boolean
+          name: string
+          period: string | null
+          price_bdt: number
+          price_usd: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits: string
+          credits_amount?: number
+          description: string
+          features?: string[]
+          id?: string
+          is_active?: boolean
+          is_free?: boolean
+          is_popular?: boolean
+          is_unlimited?: boolean
+          name: string
+          period?: string | null
+          price_bdt?: number
+          price_usd?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits?: string
+          credits_amount?: number
+          description?: string
+          features?: string[]
+          id?: string
+          is_active?: boolean
+          is_free?: boolean
+          is_popular?: boolean
+          is_unlimited?: boolean
+          name?: string
+          period?: string | null
+          price_bdt?: number
+          price_usd?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string
