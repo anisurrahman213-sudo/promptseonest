@@ -212,3 +212,37 @@ export function useDeleteFeatureCard() {
     },
   });
 }
+
+export function useReorderFeatureCards() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (cards: { id: string; display_order: number }[]) => {
+      // Update each card's display_order
+      const promises = cards.map(({ id, display_order }) =>
+        supabase
+          .from('feature_cards')
+          .update({ display_order })
+          .eq('id', id)
+      );
+
+      const results = await Promise.all(promises);
+      const errors = results.filter(r => r.error);
+      
+      if (errors.length > 0) {
+        throw new Error('Failed to reorder some cards');
+      }
+
+      return cards;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feature-cards'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-feature-cards'] });
+      toast.success('Order updated!');
+    },
+    onError: (error) => {
+      toast.error('Failed to reorder cards');
+      console.error(error);
+    },
+  });
+}
