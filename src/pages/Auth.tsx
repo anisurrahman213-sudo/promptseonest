@@ -30,12 +30,25 @@ export default function Auth() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
-  // Redirect if already logged in (but not on reset tab)
+  // Handle Google OAuth callback and redirect if logged in
   useEffect(() => {
-    if (user && activeTab !== 'reset') {
-      navigate('/dashboard');
-    }
-  }, [user, activeTab, navigate]);
+    const handleAuthCallback = async () => {
+      // Check if this is a Google OAuth callback
+      const provider = searchParams.get('provider');
+      if (provider === 'google' && user) {
+        toast.success('Google login successful!');
+        navigate('/dashboard');
+        return;
+      }
+      
+      // Regular redirect for logged in users (but not on reset tab)
+      if (user && activeTab !== 'reset') {
+        navigate('/dashboard');
+      }
+    };
+    
+    handleAuthCallback();
+  }, [user, activeTab, navigate, searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
