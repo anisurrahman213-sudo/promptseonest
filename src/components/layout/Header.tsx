@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
-import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck } from 'lucide-react';
+import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -56,6 +56,13 @@ export function Header() {
                   {credits !== null ? credits : '...'} credits
                 </span>
               </div>
+
+              <Link to="/profile">
+                <Button variant="ghost" size="sm">
+                  <User className="h-4 w-4 mr-1" />
+                  Profile
+                </Button>
+              </Link>
 
               <Link to="/payment-history">
                 <Button variant="ghost" size="sm">
@@ -157,6 +164,16 @@ export function Header() {
             <div className="container px-4 py-4 space-y-3">
               {user ? (
                 <>
+                  <Link 
+                    to="/profile" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block"
+                  >
+                    <Button variant="ghost" className="w-full justify-center h-11">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Button>
+                  </Link>
                   <Link 
                     to="/payment-history" 
                     onClick={() => setMobileMenuOpen(false)}
