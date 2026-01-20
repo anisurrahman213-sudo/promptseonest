@@ -6,6 +6,7 @@ import { GenerationCard } from '@/components/GenerationCard';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { SearchFilter, SortOption } from '@/components/dashboard/SearchFilter';
 import { EmptyState } from '@/components/dashboard/EmptyState';
+import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useGenerations } from '@/hooks/useGenerations';
@@ -21,7 +22,8 @@ export default function Dashboard() {
   const { credits, refreshCredits } = useCredits();
   const { generations, addGeneration, deleteGeneration, refreshGenerations } = useGenerations();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStatus, setProcessingStatus] = useState('');
+  const [processingFiles, setProcessingFiles] = useState<ProcessingFile[]>([]);
+  const [currentProcessingIndex, setCurrentProcessingIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('upload');
   
   // Search and filter state
@@ -89,22 +91,32 @@ export default function Dashboard() {
       return;
     }
 
+    // Initialize processing files state
+    const initialFiles: ProcessingFile[] = mediaFiles.map(mf => ({
+      name: mf.file.name,
+      status: 'pending'
+    }));
+    setProcessingFiles(initialFiles);
+    setCurrentProcessingIndex(0);
     setIsProcessing(true);
     let successCount = 0;
 
     for (let i = 0; i < mediaFiles.length; i++) {
       const mediaFile = mediaFiles[i];
       const file = mediaFile.file;
-      setProcessingStatus(`Processing ${i + 1} of ${mediaFiles.length}: ${file.name}`);
+      
+      // Update current file to processing
+      setCurrentProcessingIndex(i);
+      setProcessingFiles(prev => prev.map((pf, idx) => 
+        idx === i ? { ...pf, status: 'processing' } : pf
+      ));
 
       try {
         let base64: string;
         
         if (mediaFile.type === 'video') {
-          // For videos, extract a frame as thumbnail
           base64 = await extractVideoFrame(file);
         } else {
-          // For images, convert directly to base64
           base64 = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => {
@@ -127,7 +139,9 @@ export default function Dashboard() {
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
-          toast.error(`Failed to upload ${file.name}`);
+          setProcessingFiles(prev => prev.map((pf, idx) => 
+            idx === i ? { ...pf, status: 'error', errorMessage: 'Upload failed' } : pf
+          ));
           continue;
         }
 
@@ -147,12 +161,16 @@ export default function Dashboard() {
 
         if (error) {
           console.error('Analysis error:', error);
-          toast.error(`Failed to analyze ${file.name}`);
+          setProcessingFiles(prev => prev.map((pf, idx) => 
+            idx === i ? { ...pf, status: 'error', errorMessage: 'Analysis failed' } : pf
+          ));
           continue;
         }
 
         if (data.error) {
-          toast.error(data.error);
+          setProcessingFiles(prev => prev.map((pf, idx) => 
+            idx === i ? { ...pf, status: 'error', errorMessage: data.error } : pf
+          ));
           continue;
         }
 
@@ -162,7 +180,9 @@ export default function Dashboard() {
         });
 
         if (!creditResult) {
-          toast.error('Failed to deduct credit');
+          setProcessingFiles(prev => prev.map((pf, idx) => 
+            idx === i ? { ...pf, status: 'error', errorMessage: 'Credit deduction failed' } : pf
+          ));
           continue;
         }
 
@@ -185,26 +205,40 @@ export default function Dashboard() {
 
         if (saveError) {
           console.error('Save error:', saveError);
-          toast.error(`Failed to save generation for ${file.name}`);
+          setProcessingFiles(prev => prev.map((pf, idx) => 
+            idx === i ? { ...pf, status: 'error', errorMessage: 'Save failed' } : pf
+          ));
           continue;
         }
 
+        // Mark as success
+        setProcessingFiles(prev => prev.map((pf, idx) => 
+          idx === i ? { ...pf, status: 'success' } : pf
+        ));
+        
         addGeneration(savedGen);
         successCount++;
         refreshCredits();
       } catch (error) {
         console.error('Processing error:', error);
-        toast.error(`Error processing ${file.name}`);
+        setProcessingFiles(prev => prev.map((pf, idx) => 
+          idx === i ? { ...pf, status: 'error', errorMessage: 'Processing error' } : pf
+        ));
       }
     }
 
     setIsProcessing(false);
-    setProcessingStatus('');
     
     if (successCount > 0) {
       toast.success(`Successfully processed ${successCount} file${successCount > 1 ? 's' : ''}`);
-      // Switch to history tab after successful generation
-      setActiveTab('history');
+      // Clear processing files after a delay and switch to history
+      setTimeout(() => {
+        setProcessingFiles([]);
+        setActiveTab('history');
+      }, 2000);
+    } else {
+      // Clear on complete failure after showing results
+      setTimeout(() => setProcessingFiles([]), 3000);
     }
   };
 
@@ -331,29 +365,14 @@ export default function Dashboard() {
             todayGenerations={todayGenerations}
           />
 
-          {/* Processing Status */}
+          {/* Bulk Progress */}
           <AnimatePresence>
-            {isProcessing && (
-              <motion.div 
-                className="flex items-center justify-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 shadow-glow"
-                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              >
-                <motion.div 
-                  className="relative shrink-0"
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                >
-                  <div className="absolute inset-0 bg-primary/30 blur-lg rounded-full" />
-                  <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary relative" />
-                </motion.div>
-                <div className="text-left min-w-0">
-                  <p className="font-medium text-sm sm:text-base truncate">{processingStatus}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">Please wait while we analyze your image...</p>
-                </div>
-              </motion.div>
+            {(isProcessing || processingFiles.length > 0) && (
+              <BulkProgress
+                files={processingFiles}
+                currentIndex={currentProcessingIndex}
+                isProcessing={isProcessing}
+              />
             )}
           </AnimatePresence>
 
