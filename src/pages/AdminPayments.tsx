@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
-import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users } from 'lucide-react';
+import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle } from 'lucide-react';
 
 const CREDITS_BY_PLAN: Record<string, number> = {
   'Lite': 100,
@@ -191,6 +191,17 @@ export default function AdminPayments() {
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
               <span>{payment.user_phone || 'N/A'}</span>
+              {payment.user_phone && (
+                <a 
+                  href={`https://wa.me/${payment.user_phone.replace(/[^0-9]/g, '')}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-green-600 hover:text-green-700">
+                    <MessageCircle className="h-3 w-3" />
+                  </Button>
+                </a>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
@@ -368,16 +379,28 @@ export default function AdminPayments() {
                             </div>
                             <div className="flex gap-2">
                               {u.phone_number && (
-                                <a href={`tel:${u.phone_number}`}>
-                                  <Button variant="outline" size="icon">
-                                    <Phone className="h-4 w-4" />
-                                  </Button>
-                                </a>
+                                <>
+                                  <a href={`tel:${u.phone_number}`}>
+                                    <Button variant="outline" size="icon" title="Call">
+                                      <Phone className="h-4 w-4" />
+                                    </Button>
+                                  </a>
+                                  <a 
+                                    href={`https://wa.me/${u.phone_number.replace(/[^0-9]/g, '')}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Button variant="outline" size="icon" className="text-green-600 hover:text-green-700" title="WhatsApp">
+                                      <MessageCircle className="h-4 w-4" />
+                                    </Button>
+                                  </a>
+                                </>
                               )}
                               <Button 
                                 variant="outline" 
                                 size="icon"
                                 onClick={() => openEmailDialog(u.email)}
+                                title="Email"
                               >
                                 <Mail className="h-4 w-4" />
                               </Button>

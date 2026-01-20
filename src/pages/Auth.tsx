@@ -10,6 +10,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { Sparkles, Moon, Sun, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -17,6 +18,8 @@ export default function Auth() {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -53,7 +56,7 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!email || !password || !fullName || !phoneNumber) {
       toast.error('Please fill in all fields');
       return;
     }
@@ -64,19 +67,36 @@ export default function Auth() {
     }
     
     setLoading(true);
-    const { error } = await signUp(email, password);
-    setLoading(false);
+    const { error, userId } = await signUp(email, password);
     
     if (error) {
+      setLoading(false);
       if (error.message.includes('already registered')) {
         toast.error('This email is already registered');
       } else {
         toast.error(error.message);
       }
-    } else {
-      toast.success('Account created! You now have 10 free credits.');
-      navigate('/dashboard');
+      return;
     }
+
+    // Update user profile with name and phone
+    if (userId) {
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .update({ 
+          full_name: fullName.trim(), 
+          phone_number: phoneNumber.trim() 
+        })
+        .eq('user_id', userId);
+      
+      if (profileError) {
+        console.error('Error updating profile:', profileError);
+      }
+    }
+    
+    setLoading(false);
+    toast.success('Account created! You now have 10 free credits.');
+    navigate('/dashboard');
   };
 
   return (
@@ -163,6 +183,28 @@ export default function Auth() {
 
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Full Name</Label>
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="Your name"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-phone">Phone Number</Label>
+                      <Input
+                        id="signup-phone"
+                        type="tel"
+                        placeholder="+880 1XXX-XXXXXX"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        disabled={loading}
+                      />
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email</Label>
                       <Input
