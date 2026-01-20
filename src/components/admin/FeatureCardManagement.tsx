@@ -37,7 +37,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Shield,
 };
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const ACCEPTED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES];
@@ -74,7 +74,7 @@ export function FeatureCardManagement() {
   const handleMediaUpload = (cardId: string, file: File) => {
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('File size must be less than 2MB');
+      toast.error('File size must be less than 10MB');
       return;
     }
 
@@ -180,7 +180,7 @@ export function FeatureCardManagement() {
                   <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
                     <div className="flex items-center gap-1 text-xs text-white/80 bg-black/50 px-2 py-1 rounded">
                       <Info className="h-3 w-3" />
-                      <span>1280×720 (16:9), Max 2MB</span>
+                      <span>1280×720 (16:9), Max 10MB</span>
                     </div>
                     <Button
                       variant="secondary"
