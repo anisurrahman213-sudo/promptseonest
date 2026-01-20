@@ -14,6 +14,7 @@ import { Loader2, Sparkles, History, Download, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -234,20 +235,42 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      className="min-h-screen bg-background"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <Header />
       
       <main className="container py-8 pb-20">
         <div className="max-w-5xl mx-auto space-y-8">
           {/* Welcome Section */}
-          <div className="text-center space-y-3 animate-fade-in">
+          <motion.div 
+            className="text-center space-y-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             <h1 className="font-display text-4xl font-bold">
-              <span className="text-gradient">Generate Image Metadata</span>
+              <motion.span 
+                className="text-gradient inline-block"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
+              >
+                Generate Image Metadata
+              </motion.span>
             </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <motion.p 
+              className="text-muted-foreground text-lg max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               Upload images to generate AI-powered prompts, SEO titles, descriptions, and tags
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           {/* Stats Cards */}
           <StatsCards 
@@ -257,134 +280,212 @@ export default function Dashboard() {
           />
 
           {/* Processing Status */}
-          {isProcessing && (
-            <div className="flex items-center justify-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 shadow-glow animate-fade-in">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/30 blur-lg rounded-full" />
-                <Loader2 className="h-6 w-6 animate-spin text-primary relative" />
-              </div>
-              <div className="text-left">
-                <p className="font-medium">{processingStatus}</p>
-                <p className="text-xs text-muted-foreground">Please wait while we analyze your image...</p>
-              </div>
-            </div>
-          )}
+          <AnimatePresence>
+            {isProcessing && (
+              <motion.div 
+                className="flex items-center justify-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 shadow-glow"
+                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              >
+                <motion.div 
+                  className="relative"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                >
+                  <div className="absolute inset-0 bg-primary/30 blur-lg rounded-full" />
+                  <Loader2 className="h-6 w-6 text-primary relative" />
+                </motion.div>
+                <div className="text-left">
+                  <p className="font-medium">{processingStatus}</p>
+                  <p className="text-xs text-muted-foreground">Please wait while we analyze your image...</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-14 p-1.5 bg-muted/50 rounded-xl">
-              <TabsTrigger 
-                value="upload" 
-                className="flex items-center gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md font-medium transition-all"
-              >
-                <Sparkles className="h-4 w-4" />
-                Generate New
-              </TabsTrigger>
-              <TabsTrigger 
-                value="history" 
-                className="flex items-center gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md font-medium transition-all"
-              >
-                <History className="h-4 w-4" />
-                History ({generations.length})
-              </TabsTrigger>
-            </TabsList>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+            >
+              <TabsList className="grid w-full grid-cols-2 h-14 p-1.5 bg-muted/50 rounded-xl">
+                <TabsTrigger 
+                  value="upload" 
+                  className="flex items-center gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md font-medium transition-all"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Generate New
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="history" 
+                  className="flex items-center gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md font-medium transition-all"
+                >
+                  <History className="h-4 w-4" />
+                  History ({generations.length})
+                </TabsTrigger>
+              </TabsList>
+            </motion.div>
 
-            <TabsContent value="upload" className="space-y-6 mt-6">
-              <ImageUploader 
-                onUpload={handleUpload} 
-                isProcessing={isProcessing}
-                maxFiles={credits !== null ? Math.min(credits, 10) : 10}
-              />
-              
-              {credits !== null && credits < 3 && credits > 0 && (
-                <div className="flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-warning/10 to-orange-500/10 border border-warning/20 animate-fade-in">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-warning/20">
-                      <Zap className="h-5 w-5 text-warning" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-warning">Low credits!</p>
-                      <p className="text-sm text-muted-foreground">
-                        You have {credits} credit{credits !== 1 ? 's' : ''} remaining
-                      </p>
-                    </div>
-                  </div>
-                  <Button asChild className="bg-gradient-to-r from-warning to-orange-500 hover:opacity-90">
-                    <a href="/pricing">Upgrade Now</a>
-                  </Button>
-                </div>
-              )}
-
-              {credits === 0 && (
-                <div className="flex flex-col items-center justify-center p-8 rounded-2xl bg-gradient-to-r from-destructive/10 to-red-500/10 border border-destructive/20 text-center animate-fade-in">
-                  <Zap className="h-12 w-12 text-destructive mb-4" />
-                  <h3 className="font-display font-bold text-xl mb-2">No Credits Left</h3>
-                  <p className="text-muted-foreground mb-4">
-                    You've used all your credits. Upgrade to continue generating metadata.
-                  </p>
-                  <Button asChild className="bg-gradient-primary hover:opacity-90">
-                    <a href="/pricing">View Pricing Plans</a>
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="history" className="space-y-5 mt-6">
-              {generations.length > 0 && (
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <SearchFilter
-                      searchQuery={searchQuery}
-                      onSearchChange={setSearchQuery}
-                      sortBy={sortBy}
-                      onSortChange={setSortBy}
-                    />
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={exportToCSV}
-                    className="shrink-0 h-10"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Export CSV
-                  </Button>
-                </div>
-              )}
-              
-              {generations.length === 0 ? (
-                <EmptyState onUploadClick={() => setActiveTab('upload')} />
-              ) : filteredGenerations.length === 0 ? (
-                <div className="text-center py-12 animate-fade-in">
-                  <p className="text-muted-foreground">
-                    No results found for "{searchQuery}"
-                  </p>
-                  <Button
-                    variant="link"
-                    onClick={() => setSearchQuery('')}
-                    className="mt-2"
-                  >
-                    Clear search
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredGenerations.map((generation, index) => (
-                    <div 
-                      key={generation.id}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 50}ms` }}
+            <AnimatePresence mode="wait">
+              <TabsContent value="upload" className="space-y-6 mt-6">
+                <motion.div
+                  key="upload-tab"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                >
+                  <ImageUploader 
+                    onUpload={handleUpload} 
+                    isProcessing={isProcessing}
+                    maxFiles={credits !== null ? Math.min(credits, 10) : 10}
+                  />
+                </motion.div>
+                
+                <AnimatePresence>
+                  {credits !== null && credits < 3 && credits > 0 && (
+                    <motion.div 
+                      className="flex items-center justify-between p-5 rounded-2xl bg-gradient-to-r from-warning/10 to-orange-500/10 border border-warning/20"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
                     >
-                      <GenerationCard
-                        generation={generation}
-                        onDelete={handleDelete}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                      <div className="flex items-center gap-3">
+                        <motion.div 
+                          className="flex items-center justify-center w-10 h-10 rounded-xl bg-warning/20"
+                          animate={{ scale: [1, 1.1, 1] }}
+                          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        >
+                          <Zap className="h-5 w-5 text-warning" />
+                        </motion.div>
+                        <div>
+                          <p className="font-medium text-warning">Low credits!</p>
+                          <p className="text-sm text-muted-foreground">
+                            You have {credits} credit{credits !== 1 ? 's' : ''} remaining
+                          </p>
+                        </div>
+                      </div>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button asChild className="bg-gradient-to-r from-warning to-orange-500 hover:opacity-90">
+                          <a href="/pricing">Upgrade Now</a>
+                        </Button>
+                      </motion.div>
+                    </motion.div>
+                  )}
+
+                  {credits === 0 && (
+                    <motion.div 
+                      className="flex flex-col items-center justify-center p-8 rounded-2xl bg-gradient-to-r from-destructive/10 to-red-500/10 border border-destructive/20 text-center"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    >
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                      >
+                        <Zap className="h-12 w-12 text-destructive mb-4" />
+                      </motion.div>
+                      <h3 className="font-display font-bold text-xl mb-2">No Credits Left</h3>
+                      <p className="text-muted-foreground mb-4">
+                        You've used all your credits. Upgrade to continue generating metadata.
+                      </p>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button asChild className="bg-gradient-primary hover:opacity-90">
+                          <a href="/pricing">View Pricing Plans</a>
+                        </Button>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </TabsContent>
+
+              <TabsContent value="history" className="space-y-5 mt-6">
+                <motion.div
+                  key="history-tab"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                >
+                  {generations.length > 0 && (
+                    <motion.div 
+                      className="flex flex-col sm:flex-row gap-4"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      <div className="flex-1">
+                        <SearchFilter
+                          searchQuery={searchQuery}
+                          onSearchChange={setSearchQuery}
+                          sortBy={sortBy}
+                          onSortChange={setSortBy}
+                        />
+                      </div>
+                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Button 
+                          variant="outline" 
+                          onClick={exportToCSV}
+                          className="shrink-0 h-10"
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Export CSV
+                        </Button>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                  
+                  {generations.length === 0 ? (
+                    <EmptyState onUploadClick={() => setActiveTab('upload')} />
+                  ) : filteredGenerations.length === 0 ? (
+                    <motion.div 
+                      className="text-center py-12"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <p className="text-muted-foreground">
+                        No results found for "{searchQuery}"
+                      </p>
+                      <motion.div whileHover={{ scale: 1.05 }}>
+                        <Button
+                          variant="link"
+                          onClick={() => setSearchQuery('')}
+                          className="mt-2"
+                        >
+                          Clear search
+                        </Button>
+                      </motion.div>
+                    </motion.div>
+                  ) : (
+                    <motion.div 
+                      className="space-y-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ staggerChildren: 0.05 }}
+                    >
+                      <AnimatePresence>
+                        {filteredGenerations.map((generation) => (
+                          <GenerationCard
+                            key={generation.id}
+                            generation={generation}
+                            onDelete={handleDelete}
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </motion.div>
+                  )}
+                </motion.div>
+              </TabsContent>
+            </AnimatePresence>
           </Tabs>
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 }

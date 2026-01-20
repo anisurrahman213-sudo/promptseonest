@@ -1,6 +1,7 @@
-import { Image, Sparkles, TrendingUp, Zap } from 'lucide-react';
+import { Image, Zap, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface StatsCardsProps {
   totalGenerations: number;
@@ -14,21 +15,18 @@ export function StatsCards({ totalGenerations, credits, todayGenerations }: Stat
       label: 'Total Generations',
       value: totalGenerations,
       icon: Image,
-      gradient: 'from-primary to-secondary',
       bgColor: 'bg-primary/10',
     },
     {
       label: 'Credits Available',
       value: credits ?? 0,
       icon: Zap,
-      gradient: 'from-warning to-orange-500',
       bgColor: 'bg-warning/10',
     },
     {
       label: 'Generated Today',
       value: todayGenerations,
       icon: TrendingUp,
-      gradient: 'from-accent to-teal-400',
       bgColor: 'bg-accent/10',
     },
   ];
@@ -36,32 +34,45 @@ export function StatsCards({ totalGenerations, credits, todayGenerations }: Stat
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {stats.map((stat, index) => (
-        <Card 
-          key={stat.label} 
-          className={cn(
-            "overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
-            "animate-fade-in"
-          )}
-          style={{ animationDelay: `${index * 100}ms` }}
+        <motion.div 
+          key={stat.label}
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: index * 0.1, duration: 0.3 }}
         >
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  {stat.label}
-                </p>
-                <p className="text-3xl font-bold font-display">
-                  {stat.value}
-                </p>
-              </div>
-              <div className={cn("p-3 rounded-xl", stat.bgColor)}>
-                <stat.icon className={cn("h-6 w-6 bg-gradient-to-br bg-clip-text", stat.gradient)} 
-                  style={{ color: 'hsl(var(--primary))' }}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <Card className="overflow-hidden border-0 shadow-lg">
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+            >
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {stat.label}
+                    </p>
+                    <motion.p 
+                      className="text-3xl font-bold font-display"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.2 + index * 0.1, duration: 0.3 }}
+                    >
+                      {stat.value}
+                    </motion.p>
+                  </div>
+                  <motion.div 
+                    className={cn("p-3 rounded-xl", stat.bgColor)}
+                    whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <stat.icon className="h-6 w-6 text-primary" />
+                  </motion.div>
+                </div>
+              </CardContent>
+            </motion.div>
+          </Card>
+        </motion.div>
       ))}
     </div>
   );
