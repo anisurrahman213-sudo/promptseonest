@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      custom_events: {
+        Row: {
+          created_at: string
+          date: number
+          description: string | null
+          event_type: string
+          id: string
+          month: number
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: number
+          description?: string | null
+          event_type?: string
+          id?: string
+          month: number
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: number
+          description?: string | null
+          event_type?: string
+          id?: string
+          month?: number
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generations: {
         Row: {
           created_at: string
