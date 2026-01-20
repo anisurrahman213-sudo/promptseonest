@@ -6,24 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { bn } from 'date-fns/locale';
 import { Receipt, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 const statusConfig = {
   pending: {
-    label: 'অপেক্ষমান',
+    label: 'Pending',
     variant: 'secondary' as const,
     icon: Clock,
     color: 'text-yellow-500',
   },
   approved: {
-    label: 'অনুমোদিত',
+    label: 'Approved',
     variant: 'default' as const,
     icon: CheckCircle,
     color: 'text-success',
   },
   rejected: {
-    label: 'বাতিল',
+    label: 'Rejected',
     variant: 'destructive' as const,
     icon: XCircle,
     color: 'text-destructive',
@@ -62,8 +61,8 @@ export default function PaymentHistory() {
         <div className="flex items-center gap-3 mb-8">
           <Receipt className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="font-display text-3xl font-bold">পেমেন্ট হিস্ট্রি</h1>
-            <p className="text-muted-foreground">আপনার সকল পেমেন্ট রিকোয়েস্ট</p>
+            <h1 className="font-display text-3xl font-bold">Payment History</h1>
+            <p className="text-muted-foreground">All your payment requests</p>
           </div>
         </div>
 
@@ -77,9 +76,9 @@ export default function PaymentHistory() {
           <Card>
             <CardContent className="py-12 text-center">
               <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">কোনো পেমেন্ট নেই</h3>
+              <h3 className="text-lg font-medium mb-2">No payments yet</h3>
               <p className="text-muted-foreground">
-                আপনি এখনো কোনো পেমেন্ট করেননি
+                You haven't made any payments yet
               </p>
             </CardContent>
           </Card>
@@ -96,7 +95,7 @@ export default function PaymentHistory() {
                       <div>
                         <CardTitle className="text-lg">{payment.plan_name}</CardTitle>
                         <CardDescription>
-                          {format(new Date(payment.created_at), 'dd MMMM yyyy, hh:mm a', { locale: bn })}
+                          {format(new Date(payment.created_at), 'dd MMM yyyy, hh:mm a')}
                         </CardDescription>
                       </div>
                       <Badge variant={status.variant} className="flex items-center gap-1">
@@ -108,11 +107,11 @@ export default function PaymentHistory() {
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <span className="text-muted-foreground">পরিমাণ</span>
+                        <span className="text-muted-foreground">Amount</span>
                         <p className="font-medium">${payment.amount}</p>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">মেথড</span>
+                        <span className="text-muted-foreground">Method</span>
                         <p className="font-medium capitalize">{payment.payment_method}</p>
                       </div>
                       <div>
@@ -121,7 +120,7 @@ export default function PaymentHistory() {
                       </div>
                       {payment.admin_notes && (
                         <div className="col-span-2 md:col-span-4">
-                          <span className="text-muted-foreground">নোট</span>
+                          <span className="text-muted-foreground">Note</span>
                           <p className="font-medium">{payment.admin_notes}</p>
                         </div>
                       )}
