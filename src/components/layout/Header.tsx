@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useTheme } from '@/hooks/useTheme';
-import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History } from 'lucide-react';
+import { useIsAdmin } from '@/hooks/usePaymentRequests';
+import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,7 @@ export function Header() {
   const { user, signOut } = useAuth();
   const { credits } = useCredits();
   const { theme, toggleTheme } = useTheme();
+  const { data: isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -61,6 +63,15 @@ export function Header() {
                   History
                 </Button>
               </Link>
+
+              {isAdmin && (
+                <Link to="/admin/payments">
+                  <Button variant="ghost" size="sm" className="text-primary">
+                    <ShieldCheck className="h-4 w-4 mr-1" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
 
               <Link to="/pricing">
                 <Button size="sm" className="bg-gradient-primary hover:opacity-90 text-white">
@@ -156,6 +167,18 @@ export function Header() {
                       Payment History
                     </Button>
                   </Link>
+                  {isAdmin && (
+                    <Link 
+                      to="/admin/payments" 
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block"
+                    >
+                      <Button variant="ghost" className="w-full justify-center h-11 text-primary">
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        Admin Panel
+                      </Button>
+                    </Link>
+                  )}
                   <Link 
                     to="/pricing" 
                     onClick={() => setMobileMenuOpen(false)}
