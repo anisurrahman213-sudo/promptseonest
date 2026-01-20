@@ -34,11 +34,13 @@ const Index = () => {
   const { data: heroSizeSetting } = useSiteSetting('hero_background_size');
   const { data: heroPositionXSetting } = useSiteSetting('hero_background_position_x');
   const { data: heroPositionYSetting } = useSiteSetting('hero_background_position_y');
+  const { data: heroOpacitySetting } = useSiteSetting('hero_overlay_opacity');
 
   const heroBackgroundUrl = heroBackgroundSetting?.setting_value;
   const heroSize = heroSizeSetting?.setting_value ? parseInt(heroSizeSetting.setting_value) : 100;
   const heroPositionX = heroPositionXSetting?.setting_value ? parseInt(heroPositionXSetting.setting_value) : 50;
   const heroPositionY = heroPositionYSetting?.setting_value ? parseInt(heroPositionYSetting.setting_value) : 50;
+  const heroOverlayOpacity = heroOpacitySetting?.setting_value ? parseInt(heroOpacitySetting.setting_value) : 70;
 
   // Fallback features if database is empty
   const defaultFeatures = [
@@ -74,7 +76,10 @@ const Index = () => {
               backgroundRepeat: 'no-repeat',
             }}
           >
-            <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+            <div 
+              className="absolute inset-0 backdrop-blur-sm" 
+              style={{ backgroundColor: `hsl(var(--background) / ${heroOverlayOpacity / 100})` }}
+            />
           </div>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
