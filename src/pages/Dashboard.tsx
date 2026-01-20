@@ -8,11 +8,12 @@ import { SearchFilter, SortOption } from '@/components/dashboard/SearchFilter';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
+import { ExportDialog } from '@/components/dashboard/ExportDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useGenerations } from '@/hooks/useGenerations';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Sparkles, History, Download, Zap } from 'lucide-react';
+import { Loader2, Sparkles, History, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
@@ -295,33 +296,7 @@ export default function Dashboard() {
     }
   };
 
-  const exportToCSV = () => {
-    if (filteredGenerations.length === 0) {
-      toast.error('No generations to export');
-      return;
-    }
-
-    const headers = ['Image Name', 'Prompt', 'Title', 'Description', 'Tags', 'Created At'];
-    const rows = filteredGenerations.map(g => [
-      `"${g.image_name.replace(/"/g, '""')}"`,
-      `"${g.prompt.replace(/"/g, '""')}"`,
-      `"${g.title.replace(/"/g, '""')}"`,
-      `"${g.description.replace(/"/g, '""')}"`,
-      `"${g.tags.replace(/"/g, '""')}"`,
-      `"${new Date(g.created_at).toISOString()}"`,
-    ]);
-
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `promptnest-export-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    toast.success('CSV exported successfully');
-  };
+  // exportToCSV removed - now using ExportDialog component
 
   return (
     <motion.div 
@@ -508,16 +483,7 @@ export default function Dashboard() {
                           onSortChange={setSortBy}
                         />
                       </div>
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button 
-                          variant="outline" 
-                          onClick={exportToCSV}
-                          className="w-full sm:w-auto shrink-0 h-10 touch-manipulation text-sm"
-                        >
-                          <Download className="mr-2 h-4 w-4" />
-                          Export CSV
-                        </Button>
-                      </motion.div>
+                      <ExportDialog generations={filteredGenerations} />
                     </motion.div>
                   )}
                   
