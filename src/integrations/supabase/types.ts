@@ -129,21 +129,27 @@ export type Database = {
         Row: {
           created_at: string
           credits: number
+          full_name: string | null
           id: string
+          phone_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           credits?: number
+          full_name?: string | null
           id?: string
+          phone_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           credits?: number
+          full_name?: string | null
           id?: string
+          phone_number?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -172,7 +178,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_user_view: {
+        Row: {
+          created_at: string | null
+          credits: number | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          phone_number: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_credits: {
