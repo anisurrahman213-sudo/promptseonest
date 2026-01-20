@@ -20,14 +20,16 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { imageBase64, imageName } = await req.json();
+    const { imageBase64, imageName, mediaType = 'image' } = await req.json();
 
     if (!imageBase64) {
       return new Response(
-        JSON.stringify({ error: "No image provided" }),
+        JSON.stringify({ error: "No media provided" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log(`Processing ${mediaType}: ${imageName}`);
 
     // Use Lovable AI Gateway
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
@@ -39,27 +41,64 @@ Deno.serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are an expert at analyzing images and generating SEO-optimized metadata for stock photography and digital content. You provide detailed, accurate, and professional metadata.`;
+    const systemPrompt = `You are a world-class stock content metadata specialist with deep expertise in Adobe Stock, Shutterstock, Freepik, Getty Images, iStock, Pond5, and other major stock marketplaces. You understand exactly what makes content discoverable and avoids rejection for "similar content" issues.
 
-    const userPrompt = `Analyze this image and generate the following metadata for stock photo/image SEO purposes:
+Your metadata must be:
+- HIGHLY UNIQUE: Never use generic, overused keywords. Create distinctive, specific descriptions that differentiate this content from millions of similar uploads.
+- PLATFORM-OPTIMIZED: Follow the exact requirements of major stock platforms (60 char titles, 200+ char descriptions, 25-50 keywords).
+- AI-MARKETPLACE READY: Generate prompts that work for Midjourney, DALL-E, Stable Diffusion, Adobe Firefly, and similar platforms.
+- REJECTION-PROOF: Avoid common rejection triggers like vague titles, duplicate keywords, or generic descriptions.`;
 
-1. **AI Image Prompt**: Write a detailed, professional prompt that could be used to recreate this image using AI image generators. Include style, lighting, composition, colors, mood, and all visual elements. Make it 100-150 words.
+    const userPrompt = `Analyze this ${mediaType === 'video' ? 'video frame/thumbnail' : 'image'} and generate HIGHLY UNIQUE, PLATFORM-OPTIMIZED metadata for stock marketplaces.
 
-2. **SEO Title**: Create a concise, keyword-rich title under 60 characters that describes the main subject and would rank well in search.
+CRITICAL REQUIREMENTS:
+- This metadata will be used on Adobe Stock, Shutterstock, Freepik, Getty Images, and AI marketplaces
+- It MUST be unique enough to avoid "similar content" rejections
+- Keywords must be DIVERSE with NO REPETITION of root words
 
-3. **SEO Description**: Write a compelling description of 150-200 words that describes the image in detail, includes relevant keywords naturally, and would help the image rank in search engines.
+Generate the following:
 
-4. **Tags**: Generate 40-50 relevant, comma-separated tags/keywords that describe the image. Include variations, related concepts, styles, colors, moods, and potential use cases.
+1. **AI ${mediaType === 'video' ? 'Video' : 'Image'} Prompt** (100-150 words):
+   - Write a DETAILED, PROFESSIONAL prompt for AI generators (Midjourney, DALL-E, Stable Diffusion, Runway, Pika)
+   - Include: exact style (photorealistic/illustration/3D), lighting type, camera angle, lens, color palette, mood, atmosphere
+   - ${mediaType === 'video' ? 'Include: motion description, camera movement, duration hints, pacing' : 'Include: composition, focal point, depth of field'}
+   - Make it UNIQUE - avoid generic terms like "beautiful", "stunning", "amazing"
 
-Respond in this exact JSON format:
+2. **SEO Title** (max 60 characters):
+   - Lead with the MOST SPECIFIC, UNIQUE aspect
+   - Include primary keyword naturally
+   - NO generic adjectives (beautiful, nice, good)
+   - Example: Instead of "Beautiful sunset" → "Golden Hour Silhouette Over Misty Mountains"
+
+3. **SEO Description** (200-250 words):
+   - First sentence: Unique, specific description of the main subject
+   - Include: setting, mood, style, potential use cases
+   - Naturally integrate 8-10 keywords WITHOUT stuffing
+   - ${mediaType === 'video' ? 'Describe motion, transitions, and dynamic elements' : 'Describe visual elements, textures, and artistic qualities'}
+   - End with commercial applications (advertising, websites, social media, etc.)
+
+4. **Keywords/Tags** (exactly 49 unique tags):
+   - NO DUPLICATE CONCEPTS (don't use "business" and "business concept")
+   - Categories to cover:
+     * Main subject (5-7 specific terms)
+     * Style/aesthetic (5-7 terms)
+     * Mood/emotion (5-7 terms)
+     * Colors present (3-5 terms)
+     * Technical aspects (3-5 terms)
+     * Use cases (5-7 terms)
+     * Related concepts (5-7 terms)
+     * Seasonal/temporal (2-3 if applicable)
+     * ${mediaType === 'video' ? 'Motion/action terms (5-7 terms)' : 'Composition terms (3-5 terms)'}
+   - Arrange from MOST to LEAST specific
+   - Use single words AND 2-3 word phrases
+
+Respond ONLY with this exact JSON:
 {
-  "prompt": "your detailed AI prompt here",
-  "title": "your SEO title here",
-  "description": "your SEO description here",
-  "tags": "tag1, tag2, tag3, ..."
-}
-
-Only respond with the JSON, no additional text.`;
+  "prompt": "your unique AI generation prompt",
+  "title": "Your Unique SEO Title Under 60 Chars",
+  "description": "Your detailed, keyword-rich description...",
+  "tags": "specific-term-1, unique-keyword-2, style-term-3, ..."
+}`;
 
     // Call Lovable AI Gateway with Gemini vision model
     console.log("Calling Lovable AI Gateway...");
@@ -157,7 +196,8 @@ Only respond with the JSON, no additional text.`;
           title: analysisResult.title,
           description: analysisResult.description,
           tags: analysisResult.tags,
-          imageName: imageName || "uploaded-image",
+          imageName: imageName || `uploaded-${mediaType}`,
+          mediaType: mediaType,
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
