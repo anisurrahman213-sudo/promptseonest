@@ -142,3 +142,73 @@ export function useDeleteFeatureImage() {
     },
   });
 }
+
+export function useCreateFeatureCard() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ title, description, icon_name = 'Sparkles' }: { 
+      title: string; 
+      description: string; 
+      icon_name?: string 
+    }) => {
+      // Get max display_order
+      const { data: existing } = await supabase
+        .from('feature_cards')
+        .select('display_order')
+        .order('display_order', { ascending: false })
+        .limit(1);
+
+      const nextOrder = existing && existing.length > 0 ? existing[0].display_order + 1 : 0;
+
+      const { data, error } = await supabase
+        .from('feature_cards')
+        .insert({
+          title,
+          description,
+          icon_name,
+          display_order: nextOrder,
+          is_active: true,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feature-cards'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-feature-cards'] });
+      toast.success('Feature card created!');
+    },
+    onError: (error) => {
+      toast.error('Failed to create feature card');
+      console.error(error);
+    },
+  });
+}
+
+export function useDeleteFeatureCard() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (cardId: string) => {
+      const { error } = await supabase
+        .from('feature_cards')
+        .delete()
+        .eq('id', cardId);
+
+      if (error) throw error;
+      return cardId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feature-cards'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-feature-cards'] });
+      toast.success('Feature card deleted!');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete feature card');
+      console.error(error);
+    },
+  });
+}

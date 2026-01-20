@@ -6,11 +6,24 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { 
   useAdminFeatureCards, 
   useUpdateFeatureCard, 
   useUploadFeatureImage,
-  useDeleteFeatureImage 
+  useDeleteFeatureImage,
+  useCreateFeatureCard,
+  useDeleteFeatureCard
 } from '@/hooks/useFeatureCards';
 import { 
   Sparkles, 
@@ -24,7 +37,8 @@ import {
   Save,
   Loader2,
   Video,
-  Info
+  Info,
+  Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -53,12 +67,16 @@ export function FeatureCardManagement() {
   const updateCard = useUpdateFeatureCard();
   const uploadImage = useUploadFeatureImage();
   const deleteImage = useDeleteFeatureImage();
+  const createCard = useCreateFeatureCard();
+  const deleteCard = useDeleteFeatureCard();
   
   const [editingCard, setEditingCard] = useState<string | null>(null);
   const [editData, setEditData] = useState<{ title: string; description: string }>({ 
     title: '', 
     description: '' 
   });
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newCardData, setNewCardData] = useState({ title: '', description: '' });
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const handleEdit = (card: { id: string; title: string; description: string }) => {
@@ -95,6 +113,23 @@ export function FeatureCardManagement() {
     updateCard.mutate({ id: cardId, updates: { is_active: isActive } });
   };
 
+  const handleCreateCard = () => {
+    if (!newCardData.title.trim() || !newCardData.description.trim()) {
+      toast.error('Title and description are required');
+      return;
+    }
+    createCard.mutate(newCardData, {
+      onSuccess: () => {
+        setIsAddingNew(false);
+        setNewCardData({ title: '', description: '' });
+      }
+    });
+  };
+
+  const handleDeleteCard = (cardId: string) => {
+    deleteCard.mutate(cardId);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -107,13 +142,67 @@ export function FeatureCardManagement() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2">
           <ImageIcon className="h-5 w-5" />
           Feature Cards Management
         </CardTitle>
+        <Button onClick={() => setIsAddingNew(true)} disabled={isAddingNew}>
+          <Plus className="h-4 w-4 mr-1" />
+          Add New Card
+        </Button>
       </CardHeader>
       <CardContent>
+        {/* Add New Card Form */}
+        {isAddingNew && (
+          <Card className="mb-6 border-dashed border-2 border-primary/50">
+            <CardContent className="p-4 space-y-4">
+              <h4 className="font-semibold text-primary">Create New Feature Card</h4>
+              <div>
+                <Label htmlFor="new-title">Title</Label>
+                <Input
+                  id="new-title"
+                  placeholder="Enter title..."
+                  value={newCardData.title}
+                  onChange={(e) => setNewCardData(prev => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="new-desc">Description</Label>
+                <Textarea
+                  id="new-desc"
+                  placeholder="Enter description..."
+                  value={newCardData.description}
+                  onChange={(e) => setNewCardData(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleCreateCard}
+                  disabled={createCard.isPending}
+                >
+                  {createCard.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-1" />
+                  )}
+                  Create Card
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setIsAddingNew(false);
+                    setNewCardData({ title: '', description: '' });
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {cards?.map((card) => {
             const IconComponent = iconMap[card.icon_name] || Sparkles;
@@ -255,16 +344,42 @@ export function FeatureCardManagement() {
                     </>
                   )}
 
-                  {/* Active Toggle */}
+                  {/* Active Toggle & Delete */}
                   <div className="flex items-center justify-between pt-2 border-t">
-                    <Label htmlFor={`active-${card.id}`} className="text-sm">
-                      Active
-                    </Label>
-                    <Switch
-                      id={`active-${card.id}`}
-                      checked={card.is_active}
-                      onCheckedChange={(checked) => handleToggleActive(card.id, checked)}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor={`active-${card.id}`} className="text-sm">
+                        Active
+                      </Label>
+                      <Switch
+                        id={`active-${card.id}`}
+                        checked={card.is_active}
+                        onCheckedChange={(checked) => handleToggleActive(card.id, checked)}
+                      />
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Feature Card?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete "{card.title}". This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteCard(card.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardContent>
               </Card>
