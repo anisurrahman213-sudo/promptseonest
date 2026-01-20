@@ -35,7 +35,7 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 shrink-0"
+        className="h-9 w-9 sm:h-8 sm:w-8 shrink-0 touch-manipulation active:scale-90"
         onClick={() => copyToClipboard(text, field)}
       >
         <AnimatePresence mode="wait">
@@ -100,11 +100,12 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
           whileHover={{ scale: 1.005 }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
         >
-          <CardHeader className="p-5 pb-0">
-            <div className="flex gap-4">
+          <CardHeader className="p-3 sm:p-5 pb-0">
+            <div className="flex gap-3 sm:gap-4">
               <motion.div 
-                className="relative w-28 h-28 shrink-0 rounded-xl overflow-hidden bg-muted shadow-md"
+                className="relative w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-lg sm:rounded-xl overflow-hidden bg-muted shadow-md"
                 whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 400, damping: 20 }}
               >
                 <img
@@ -119,15 +120,15 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                   transition={{ duration: 0.2 }}
                 />
               </motion.div>
-              <div className="flex-1 min-w-0 py-1">
+              <div className="flex-1 min-w-0 py-0.5 sm:py-1">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <h3 className="font-display font-bold text-lg truncate">
+                  <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+                    <h3 className="font-display font-bold text-sm sm:text-lg truncate pr-2">
                       {generation.image_name}
                     </h3>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 sm:gap-1.5">
                       <motion.span 
-                        className="inline-block w-2 h-2 rounded-full bg-accent"
+                        className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-accent"
                         animate={{ scale: [1, 1.2, 1] }}
                         transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
                       />
@@ -138,15 +139,15 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                       })}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                     <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors touch-manipulation"
                         onClick={handleDelete}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
                     </motion.div>
                     <motion.div 
@@ -158,10 +159,10 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9"
+                        className="h-8 w-8 sm:h-9 sm:w-9 touch-manipulation"
                         onClick={() => setExpanded(!expanded)}
                       >
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
                     </motion.div>
                   </div>
@@ -171,7 +172,7 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                 <AnimatePresence>
                   {!expanded && (
                     <motion.p 
-                      className="text-sm text-muted-foreground mt-2 line-clamp-2"
+                      className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2 line-clamp-2"
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
@@ -193,68 +194,69 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                 animate="visible"
                 exit="hidden"
               >
-                <CardContent className="p-5 space-y-4">
+                <CardContent className="p-3 sm:p-5 space-y-3 sm:space-y-4">
                   {/* Prompt */}
                   <motion.div variants={itemVariants} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Badge className="bg-primary/10 text-primary border-0 text-xs font-medium">
+                      <Badge className="bg-primary/10 text-primary border-0 text-[10px] sm:text-xs font-medium">
                         Prompt
                       </Badge>
                       <CopyButton text={generation.prompt} field="Prompt" />
                     </div>
-                    <p className="text-sm bg-muted/50 p-4 rounded-xl leading-relaxed">{generation.prompt}</p>
+                    <p className="text-xs sm:text-sm bg-muted/50 p-3 sm:p-4 rounded-lg sm:rounded-xl leading-relaxed">{generation.prompt}</p>
                   </motion.div>
 
                   {/* Title */}
                   <motion.div variants={itemVariants} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Badge className="bg-secondary/10 text-secondary border-0 text-xs font-medium">
+                      <Badge className="bg-secondary/10 text-secondary border-0 text-[10px] sm:text-xs font-medium">
                         Title
                       </Badge>
                       <CopyButton text={generation.title} field="Title" />
                     </div>
-                    <p className="text-sm bg-muted/50 p-4 rounded-xl font-medium">{generation.title}</p>
+                    <p className="text-xs sm:text-sm bg-muted/50 p-3 sm:p-4 rounded-lg sm:rounded-xl font-medium">{generation.title}</p>
                   </motion.div>
 
                   {/* Description */}
                   <motion.div variants={itemVariants} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Badge className="bg-accent/10 text-accent border-0 text-xs font-medium">
+                      <Badge className="bg-accent/10 text-accent border-0 text-[10px] sm:text-xs font-medium">
                         Description
                       </Badge>
                       <CopyButton text={generation.description} field="Description" />
                     </div>
-                    <p className="text-sm bg-muted/50 p-4 rounded-xl leading-relaxed">{generation.description}</p>
+                    <p className="text-xs sm:text-sm bg-muted/50 p-3 sm:p-4 rounded-lg sm:rounded-xl leading-relaxed">{generation.description}</p>
                   </motion.div>
 
                   {/* Tags */}
                   <motion.div variants={itemVariants} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Badge className="bg-warning/10 text-warning border-0 text-xs font-medium">
+                      <Badge className="bg-warning/10 text-warning border-0 text-[10px] sm:text-xs font-medium">
                         Tags ({generation.tags.split(',').length})
                       </Badge>
                       <CopyButton text={generation.tags} field="Tags" />
                     </div>
-                    <div className="flex flex-wrap gap-2 bg-muted/50 p-4 rounded-xl">
-                      {generation.tags.split(',').slice(0, 15).map((tag, index) => (
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 bg-muted/50 p-3 sm:p-4 rounded-lg sm:rounded-xl">
+                      {generation.tags.split(',').slice(0, 10).map((tag, index) => (
                         <motion.div
                           key={index}
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: index * 0.02 }}
                           whileHover={{ scale: 1.1, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
                         >
                           <Badge 
                             variant="outline" 
-                            className="text-xs bg-background/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-default"
+                            className="text-[10px] sm:text-xs bg-background/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-default py-1 px-2"
                           >
                             {tag.trim()}
                           </Badge>
                         </motion.div>
                       ))}
-                      {generation.tags.split(',').length > 15 && (
-                        <Badge variant="outline" className="text-xs bg-muted">
-                          +{generation.tags.split(',').length - 15} more
+                      {generation.tags.split(',').length > 10 && (
+                        <Badge variant="outline" className="text-[10px] sm:text-xs bg-muted py-1 px-2">
+                          +{generation.tags.split(',').length - 10} more
                         </Badge>
                       )}
                     </div>
@@ -268,7 +270,7 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                     >
                       <Button
                         variant="outline"
-                        className="w-full h-12 font-medium hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
+                        className="w-full h-11 sm:h-12 font-medium text-sm hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all touch-manipulation active:scale-[0.98]"
                         onClick={() => {
                           const allData = `Prompt: ${generation.prompt}\n\nTitle: ${generation.title}\n\nDescription: ${generation.description}\n\nTags: ${generation.tags}`;
                           copyToClipboard(allData, 'All data');
