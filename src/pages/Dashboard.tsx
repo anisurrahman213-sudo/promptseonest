@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { MediaUploader, MediaFile } from '@/components/MediaUploader';
-import { GenerationCard } from '@/components/GenerationCard';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { UpgradeBanner } from '@/components/dashboard/UpgradeBanner';
 import { SearchFilter, SortOption } from '@/components/dashboard/SearchFilter';
@@ -11,7 +10,8 @@ import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgres
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { ExportDialog } from '@/components/dashboard/ExportDialog';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { InfiniteScrollTrigger } from '@/components/dashboard/InfiniteScrollTrigger';
+import { PullToRefresh } from '@/components/dashboard/PullToRefresh';
+import { VirtualGenerationList } from '@/components/dashboard/VirtualGenerationList';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
@@ -535,31 +535,15 @@ export default function Dashboard() {
                       </motion.div>
                     </motion.div>
                   ) : (
-                    <>
-                      <motion.div 
-                        className="space-y-4"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ staggerChildren: 0.05 }}
-                      >
-                        <AnimatePresence>
-                          {filteredGenerations.map((generation) => (
-                            <GenerationCard
-                              key={generation.id}
-                              generation={generation}
-                              onDelete={handleDelete}
-                            />
-                          ))}
-                        </AnimatePresence>
-                      </motion.div>
-                      
-                      {/* Infinite Scroll Trigger */}
-                      <InfiniteScrollTrigger
-                        onLoadMore={loadMore}
+                    <PullToRefresh onRefresh={refreshGenerations}>
+                      <VirtualGenerationList
+                        generations={filteredGenerations}
+                        onDelete={handleDelete}
                         hasMore={hasMore}
-                        isLoading={loadingMore}
+                        loadMore={loadMore}
+                        loadingMore={loadingMore}
                       />
-                    </>
+                    </PullToRefresh>
                   )}
                 </motion.div>
               </TabsContent>
