@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
 import { supabase } from '@/integrations/supabase/client';
+import { extractVideoFramesGrid } from '@/lib/videoFrameExtractor';
 import { Loader2, Sparkles, History, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -132,7 +133,13 @@ export default function Dashboard() {
         let base64: string;
         
         if (mediaFile.type === 'video') {
-          base64 = await extractVideoFrame(file);
+          // Extract multiple frames as a grid for better AI analysis
+          base64 = await extractVideoFramesGrid(file, {
+            frameCount: 6,
+            gridCols: 3,
+            frameWidth: 640,
+            quality: 0.85
+          });
         } else {
           base64 = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
@@ -260,46 +267,7 @@ export default function Dashboard() {
     }
   };
 
-  // Helper function to extract a frame from video
-  const extractVideoFrame = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const video = document.createElement('video');
-      video.preload = 'metadata';
-      video.muted = true;
-      video.playsInline = true;
-      
-      video.onloadeddata = () => {
-        // Seek to 1 second or 10% of the video, whichever is smaller
-        video.currentTime = Math.min(1, video.duration * 0.1);
-      };
-      
-      video.onseeked = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          reject(new Error('Could not get canvas context'));
-          return;
-        }
-        
-        ctx.drawImage(video, 0, 0);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        const base64 = dataUrl.split(',')[1];
-        
-        URL.revokeObjectURL(video.src);
-        resolve(base64);
-      };
-      
-      video.onerror = () => {
-        URL.revokeObjectURL(video.src);
-        reject(new Error('Failed to load video'));
-      };
-      
-      video.src = URL.createObjectURL(file);
-    });
-  };
+  // Video frame extraction now handled by videoFrameExtractor.ts
 
   const handleDelete = async (id: string) => {
     const success = await deleteGeneration(id);
