@@ -120,12 +120,18 @@ const Index = () => {
             </p>
             <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 sm:flex-row">
               {user ? (
-                <Link to="/dashboard">
-                  <Button size="lg" className="gap-2 px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg w-full sm:w-auto">
-                    Go to Dashboard
-                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </Button>
-                </Link>
+                <div className="flex flex-col items-center gap-2">
+                  <Link to="/dashboard">
+                    <Button size="lg" className="gap-2 px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg w-full sm:w-auto">
+                      Go to Dashboard
+                      <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </Button>
+                  </Link>
+                  <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3 text-primary" />
+                    Generate SEO-optimized titles
+                  </span>
+                </div>
               ) : (
                 <>
                   <Link to="/auth" className="w-full sm:w-auto">
