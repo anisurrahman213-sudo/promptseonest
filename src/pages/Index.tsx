@@ -310,14 +310,14 @@ const Index = () => {
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-foreground">ImagePrompt AI</span>
+              <span className="font-semibold text-foreground">Prompt SEO Nest</span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
               <Link to="/auth" className="hover:text-foreground">Login</Link>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 ImagePrompt AI. All rights reserved.
+              © 2026 Prompt SEO Nest. All rights reserved.
             </p>
           </div>
         </div>
