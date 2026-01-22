@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.send-email]
 verify_jwt = false
+
+[functions.cleanup-old-generations]
+verify_jwt = false
+
+[functions.notify-inactive-users]
+verify_jwt = false
