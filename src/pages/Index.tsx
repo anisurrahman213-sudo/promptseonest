@@ -96,11 +96,19 @@ const Index = () => {
         )}
         <div className="container relative z-10 mx-auto px-4 sm:px-6">
           <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-4 sm:mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="mb-4 sm:mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary"
+            >
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               AI-Powered Image Analysis
-            </div>
-            <h1 
+            </motion.div>
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
               className="mb-4 sm:mb-6 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight"
               style={heroTextStyle}
             >
@@ -108,8 +116,11 @@ const Index = () => {
               <span className={heroTextColor ? '' : 'block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent'}>
                 Image Prompts & Metadata
               </span>
-            </h1>
-            <p 
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
               className="mx-auto mb-6 sm:mb-10 max-w-2xl text-sm sm:text-lg md:text-xl px-2"
               style={{ 
                 color: heroTextColor ? `${heroTextColor}cc` : undefined,
@@ -118,8 +129,13 @@ const Index = () => {
             >
               Transform any image into SEO-optimized titles, descriptions, tags, and detailed AI prompts. 
               Perfect for stock photographers, content creators, and digital marketers.
-            </p>
-            <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 sm:flex-row">
+            </motion.p>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+              className="flex flex-col items-center justify-center gap-3 sm:gap-4 sm:flex-row"
+            >
               {user ? (
                 <div className="flex flex-col items-center gap-2">
                   <Link to="/dashboard">
@@ -131,7 +147,7 @@ const Index = () => {
                   <motion.span 
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
+                    transition={{ delay: 0.5, duration: 0.5, ease: "easeOut" }}
                     className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5"
                   >
                     <motion.span
@@ -158,10 +174,15 @@ const Index = () => {
                   </Link>
                 </>
               )}
-            </div>
-            <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-muted-foreground">
+            </motion.div>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.5, ease: "easeOut" }}
+              className="mt-4 sm:mt-6 text-xs sm:text-sm text-muted-foreground"
+            >
               ✨ Get 10 free credits to start • No credit card required
-            </p>
+            </motion.p>
           </div>
         </div>
       </section>
