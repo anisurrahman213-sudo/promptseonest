@@ -29,15 +29,15 @@ export default function Pricing() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container py-16">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <Skeleton className="h-6 w-32 mx-auto mb-4" />
-            <Skeleton className="h-10 w-64 mx-auto mb-4" />
-            <Skeleton className="h-6 w-96 mx-auto" />
+        <main className="container py-8 sm:py-16 px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+            <Skeleton className="h-5 sm:h-6 w-24 sm:w-32 mx-auto mb-3 sm:mb-4" />
+            <Skeleton className="h-8 sm:h-10 w-48 sm:w-64 mx-auto mb-3 sm:mb-4" />
+            <Skeleton className="h-5 sm:h-6 w-72 sm:w-96 mx-auto" />
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-96 w-full rounded-lg" />
+              <Skeleton key={i} className="h-72 sm:h-96 w-full rounded-lg" />
             ))}
           </div>
         </main>
@@ -49,20 +49,20 @@ export default function Pricing() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container py-16">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <Badge variant="secondary" className="mb-4">
+      <main className="container py-8 sm:py-16 px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+          <Badge variant="secondary" className="mb-3 sm:mb-4 text-xs sm:text-sm">
             Simple Pricing
           </Badge>
-          <h1 className="font-display text-4xl font-bold mb-4">
+          <h1 className="font-display text-2xl sm:text-4xl font-bold mb-3 sm:mb-4">
             Choose your plan
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-sm sm:text-lg px-2">
             Start free and scale as you grow. Each credit = 1 image analyzed.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {plans?.map((plan) => (
             <Card 
               key={plan.id}
@@ -70,37 +70,37 @@ export default function Pricing() {
             >
               {plan.is_popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-gradient-primary flex items-center gap-1">
+                  <Badge className="bg-gradient-primary flex items-center gap-1 text-xs sm:text-sm">
                     <Crown className="h-3 w-3" />
                     Best Value
                   </Badge>
                 </div>
               )}
               
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="font-display text-xl flex items-center justify-center gap-2">
-                  {plan.is_unlimited && <Crown className="h-5 w-5 text-primary" />}
+              <CardHeader className="text-center pb-3 sm:pb-4 px-4 sm:px-6 pt-5 sm:pt-6">
+                <CardTitle className="font-display text-lg sm:text-xl flex items-center justify-center gap-1.5 sm:gap-2">
+                  {plan.is_unlimited && <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
                   {plan.name}
                 </CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-                <div className="pt-4">
-                  <span className="font-display text-3xl font-bold">৳{plan.price_bdt.toLocaleString()}</span>
+                <CardDescription className="text-xs sm:text-sm">{plan.description}</CardDescription>
+                <div className="pt-3 sm:pt-4">
+                  <span className="font-display text-2xl sm:text-3xl font-bold">৳{plan.price_bdt.toLocaleString()}</span>
                   {plan.period && (
-                    <span className="text-muted-foreground text-sm">{plan.period}</span>
+                    <span className="text-muted-foreground text-xs sm:text-sm">{plan.period}</span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">(${plan.price_usd} USD)</p>
-                <Badge variant={plan.is_unlimited ? 'default' : 'outline'} className={`mt-2 ${plan.is_unlimited ? 'bg-gradient-primary' : ''}`}>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">(${plan.price_usd} USD)</p>
+                <Badge variant={plan.is_unlimited ? 'default' : 'outline'} className={`mt-2 text-xs ${plan.is_unlimited ? 'bg-gradient-primary' : ''}`}>
                   {plan.credits}
                 </Badge>
               </CardHeader>
               
-              <CardContent className="space-y-6">
-                <ul className="space-y-2">
+              <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-5 sm:pb-6">
+                <ul className="space-y-1.5 sm:space-y-2">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <Check className={`h-4 w-4 shrink-0 mt-0.5 ${plan.is_unlimited ? 'text-primary' : 'text-success'}`} />
-                      <span className="text-sm">{feature}</span>
+                      <Check className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 mt-0.5 ${plan.is_unlimited ? 'text-primary' : 'text-success'}`} />
+                      <span className="text-xs sm:text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -108,20 +108,20 @@ export default function Pricing() {
                 {plan.is_free ? (
                   <Link to="/auth?tab=signup">
                     <Button 
-                      className="w-full"
+                      className="w-full h-10 sm:h-11 text-sm"
                       variant="outline"
                     >
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <Sparkles className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Get Started Free
                     </Button>
                   </Link>
                 ) : (
                   <Button 
-                    className={`w-full ${plan.is_unlimited ? 'bg-gradient-primary hover:opacity-90 text-white' : ''}`}
+                    className={`w-full h-10 sm:h-11 text-sm ${plan.is_unlimited ? 'bg-gradient-primary hover:opacity-90 text-white' : ''}`}
                     variant={plan.is_popular ? 'default' : 'outline'}
                     onClick={() => handleBuyPlan(plan)}
                   >
-                    {plan.is_unlimited ? <Crown className="mr-2 h-4 w-4" /> : <CreditCard className="mr-2 h-4 w-4" />}
+                    {plan.is_unlimited ? <Crown className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <CreditCard className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                     {plan.is_unlimited ? 'Get Lifetime Access' : 'Buy Now'}
                   </Button>
                 )}
@@ -130,8 +130,8 @@ export default function Pricing() {
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <p className="text-muted-foreground">
+        <div className="text-center mt-8 sm:mt-12">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Need more credits or custom plans?{' '}
             <a href="mailto:support@promptnest.ai" className="text-primary hover:underline">
               Contact us
