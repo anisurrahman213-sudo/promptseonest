@@ -116,7 +116,16 @@ Your metadata must be:
 - AI-MARKETPLACE READY: Generate prompts that work for Midjourney, DALL-E, Stable Diffusion, Adobe Firefly, and similar platforms.
 - REJECTION-PROOF: Avoid common rejection triggers like vague titles, duplicate keywords, or generic descriptions.`;
 
-  const userPrompt = `Analyze this ${mediaType === 'video' ? 'video frame/thumbnail' : 'image'} and generate HIGHLY UNIQUE, PLATFORM-OPTIMIZED metadata for ${platform}.
+  const videoAnalysisNote = mediaType === 'video' 
+    ? `\n\nIMPORTANT: This is a MULTI-FRAME GRID showing 6 different moments from the video at different timestamps. Analyze ALL frames together to understand:
+- The complete narrative/story arc
+- Scene transitions and changes
+- Movement patterns and action flow
+- Visual consistency and style throughout
+- Key moments and highlights`
+    : '';
+
+  const userPrompt = `Analyze this ${mediaType === 'video' ? 'VIDEO (shown as a grid of 6 frames from different timestamps)' : 'image'} and generate HIGHLY UNIQUE, PLATFORM-OPTIMIZED metadata for ${platform}.${videoAnalysisNote}
 
 EXPORT SETTINGS:
 - Target Platform: ${platform}
@@ -133,13 +142,14 @@ CRITICAL REQUIREMENTS:
 - This metadata will be used on ${platform} and similar marketplaces
 - It MUST be unique enough to avoid "similar content" rejections
 - Keywords must be DIVERSE with NO REPETITION of root words
+${mediaType === 'video' ? '- Describe the COMPLETE video content based on all 6 frames, not just individual frames' : ''}
 
 Generate the following:
 
 1. **AI ${mediaType === 'video' ? 'Video' : 'Image'} Prompt** (100-150 words):
    - Write a DETAILED, PROFESSIONAL prompt for AI generators (Midjourney, DALL-E, Stable Diffusion, Runway, Pika)
    - Include: exact style (photorealistic/illustration/3D), lighting type, camera angle, lens, color palette, mood, atmosphere
-   - ${mediaType === 'video' ? 'Include: motion description, camera movement, duration hints, pacing' : 'Include: composition, focal point, depth of field'}
+   - ${mediaType === 'video' ? 'Include: motion description based on frame sequence, camera movement, scene transitions, pacing, and action flow' : 'Include: composition, focal point, depth of field'}
    - Make it UNIQUE - avoid generic terms like "beautiful", "stunning", "amazing"
 
 2. **SEO Title** (max ${titleMax} characters):${prefixInstruction}${suffixInstruction}${negativeTitleInstruction}
