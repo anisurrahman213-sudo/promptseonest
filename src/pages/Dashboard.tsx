@@ -10,6 +10,7 @@ import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgres
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { ExportDialog } from '@/components/dashboard/ExportDialog';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
+import { AutoDeleteWarning } from '@/components/dashboard/AutoDeleteWarning';
 import { PullToRefresh } from '@/components/dashboard/PullToRefresh';
 import { VirtualGenerationList } from '@/components/dashboard/VirtualGenerationList';
 import { useAuth } from '@/hooks/useAuth';
@@ -317,6 +318,9 @@ export default function Dashboard() {
               Upload images or videos to generate unique, platform-optimized metadata for Adobe Stock, Shutterstock, Freepik & AI marketplaces
             </motion.p>
           </motion.div>
+
+          {/* Auto-Delete Warning - Important for users */}
+          <AutoDeleteWarning generations={generations} />
 
           {/* Upgrade Banner */}
           <UpgradeBanner credits={credits} />
