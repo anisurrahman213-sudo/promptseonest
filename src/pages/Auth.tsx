@@ -101,24 +101,39 @@ export default function Auth() {
       setLoading(false);
       if (error.message.includes('already registered')) {
         toast.error('This email is already registered');
+      } else if (error.message.includes('User already registered')) {
+        toast.error('This email is already registered. Please login instead.');
       } else {
         toast.error(error.message);
       }
       return;
     }
 
-    // Update user profile with name and phone
+    // Update user profile with name and phone - with retry for race condition
     if (userId) {
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .update({ 
-          full_name: fullName.trim(), 
-          phone_number: phoneNumber.trim() 
-        })
-        .eq('user_id', userId);
+      let retries = 3;
+      let profileUpdated = false;
       
-      if (profileError) {
-        console.error('Error updating profile:', profileError);
+      while (retries > 0 && !profileUpdated) {
+        // Small delay to allow the trigger to create the profile
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .update({ 
+            full_name: fullName.trim(), 
+            phone_number: phoneNumber.trim() 
+          })
+          .eq('user_id', userId);
+        
+        if (!profileError) {
+          profileUpdated = true;
+        } else {
+          retries--;
+          if (retries === 0) {
+            console.error('Error updating profile after retries:', profileError);
+          }
+        }
       }
     }
     
