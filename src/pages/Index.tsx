@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { useFeatureCards } from "@/hooks/useFeatureCards";
 import { useSiteSetting } from "@/hooks/useSiteSettings";
+import { motion } from "framer-motion";
 import { 
   Sparkles, 
   Image, 
@@ -127,10 +128,20 @@ const Index = () => {
                       <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </Link>
-                  <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5">
-                    <Sparkles className="h-3 w-3 text-primary" />
+                  <motion.span 
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
+                    className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5"
+                  >
+                    <motion.span
+                      animate={{ rotate: [0, 15, -15, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    >
+                      <Sparkles className="h-3 w-3 text-primary" />
+                    </motion.span>
                     Generate SEO-optimized titles
-                  </span>
+                  </motion.span>
                 </div>
               ) : (
                 <>
