@@ -1,5 +1,6 @@
-import { ImagePlus, Sparkles } from 'lucide-react';
+import { ImagePlus, Sparkles, Upload, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 interface EmptyStateProps {
   onUploadClick?: () => void;
@@ -7,33 +8,96 @@ interface EmptyStateProps {
 
 export function EmptyState({ onUploadClick }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in">
-      <div className="relative mb-6">
-        <div className="absolute inset-0 bg-gradient-primary blur-2xl opacity-20 rounded-full" />
-        <div className="relative flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20">
-          <ImagePlus className="h-10 w-10 text-primary" />
-        </div>
-        <div className="absolute -top-1 -right-1 flex items-center justify-center w-8 h-8 rounded-full bg-gradient-primary shadow-lg">
-          <Sparkles className="h-4 w-4 text-primary-foreground" />
-        </div>
+    <motion.div 
+      className="flex flex-col items-center justify-center py-12 sm:py-16 px-4 text-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Animated Icon */}
+      <div className="relative mb-6 sm:mb-8">
+        <motion.div 
+          className="absolute inset-0 bg-gradient-primary blur-3xl opacity-20 rounded-full scale-150"
+          animate={{ 
+            scale: [1.5, 1.8, 1.5],
+            opacity: [0.2, 0.3, 0.2]
+          }}
+          transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+        />
+        <motion.div 
+          className="relative flex items-center justify-center w-20 h-20 sm:w-28 sm:h-28 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary/20 via-secondary/10 to-accent/20 border border-primary/20 shadow-lg"
+          animate={{ 
+            y: [0, -8, 0],
+            rotate: [0, 2, 0, -2, 0]
+          }}
+          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+        >
+          <ImagePlus className="h-8 w-8 sm:h-12 sm:w-12 text-primary" />
+        </motion.div>
+        <motion.div 
+          className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-primary shadow-lg"
+          animate={{ 
+            scale: [1, 1.15, 1],
+            rotate: [0, 10, 0]
+          }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+        >
+          <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
+        </motion.div>
       </div>
       
-      <h3 className="font-display font-bold text-xl mb-2">
+      <motion.h3 
+        className="font-display font-bold text-xl sm:text-2xl mb-2 sm:mb-3"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         No generations yet
-      </h3>
-      <p className="text-muted-foreground max-w-sm mb-6">
-        Upload your first image to generate AI-powered prompts, titles, descriptions, and tags.
-      </p>
+      </motion.h3>
+      <motion.p 
+        className="text-sm sm:text-base text-muted-foreground max-w-sm mb-6 sm:mb-8 px-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        Upload your first image to generate AI-powered prompts, titles, descriptions, and SEO-optimized tags.
+      </motion.p>
       
       {onUploadClick && (
-        <Button 
-          onClick={onUploadClick}
-          className="bg-gradient-primary hover:opacity-90"
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
-          <ImagePlus className="mr-2 h-4 w-4" />
-          Upload Your First Image
-        </Button>
+          <Button 
+            onClick={onUploadClick}
+            size="lg"
+            className="bg-gradient-primary hover:opacity-90 gap-2 px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg font-medium shadow-lg touch-manipulation"
+          >
+            <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
+            Upload Your First Image
+            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+          </Button>
+        </motion.div>
       )}
-    </div>
+
+      {/* Decorative elements */}
+      <div className="mt-8 sm:mt-12 flex items-center gap-3 sm:gap-4 text-muted-foreground/60 text-xs sm:text-sm">
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+          <span>AI Prompts</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-secondary/40" />
+          <span>SEO Titles</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+          <span>50+ Tags</span>
+        </div>
+      </div>
+    </motion.div>
   );
 }

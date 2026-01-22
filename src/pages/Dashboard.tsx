@@ -476,9 +476,9 @@ export default function Dashboard() {
                   )}
                   
                   {generationsLoading ? (
-                    <div className="space-y-4">
-                      {[...Array(3)].map((_, i) => (
-                        <Skeleton key={i} className="h-32 w-full rounded-xl" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                      {[...Array(6)].map((_, i) => (
+                        <Skeleton key={i} className="aspect-[4/5] w-full rounded-xl" />
                       ))}
                     </div>
                   ) : totalCount === 0 ? (

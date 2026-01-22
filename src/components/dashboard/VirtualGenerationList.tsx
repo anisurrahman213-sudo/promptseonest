@@ -1,5 +1,4 @@
-import { useRef, useCallback, memo } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { memo } from 'react';
 import { GenerationCard } from '@/components/GenerationCard';
 import { InfiniteScrollTrigger } from './InfiniteScrollTrigger';
 import { Generation } from '@/hooks/useInfiniteGenerations';
@@ -23,76 +22,43 @@ export function VirtualGenerationList({
   loadMore,
   loadingMore,
 }: VirtualGenerationListProps) {
-  const parentRef = useRef<HTMLDivElement>(null);
-
-  // Estimate row height - cards are roughly 160px with margins
-  const estimateSize = useCallback(() => 180, []);
-
-  const virtualizer = useVirtualizer({
-    count: generations.length + (hasMore ? 1 : 0), // +1 for loading trigger
-    getScrollElement: () => parentRef.current,
-    estimateSize,
-    overscan: 5, // Render 5 extra items above/below viewport
-  });
-
-  const items = virtualizer.getVirtualItems();
-
   return (
-    <div
-      ref={parentRef}
-      className="h-[600px] overflow-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent"
-      style={{
-        contain: 'strict',
-      }}
-    >
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }}
-      >
+    <div className="space-y-4">
+      {/* Responsive Grid Layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         <AnimatePresence mode="popLayout">
-          {items.map((virtualRow) => {
-            const isLoaderRow = virtualRow.index >= generations.length;
-            const generation = generations[virtualRow.index];
-
-            return (
-              <motion.div
-                key={isLoaderRow ? 'loader' : generation.id}
-                data-index={virtualRow.index}
-                ref={virtualizer.measureElement}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  transform: `translateY(${virtualRow.start}px)`,
-                }}
-              >
-                {isLoaderRow ? (
-                  <InfiniteScrollTrigger
-                    onLoadMore={loadMore}
-                    hasMore={hasMore}
-                    isLoading={loadingMore}
-                  />
-                ) : (
-                  <div className="pb-4">
-                    <MemoizedGenerationCard
-                      generation={generation}
-                      onDelete={onDelete}
-                    />
-                  </div>
-                )}
-              </motion.div>
-            );
-          })}
+          {generations.map((generation, index) => (
+            <motion.div
+              key={generation.id}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ 
+                duration: 0.3, 
+                delay: Math.min(index * 0.05, 0.3),
+                type: "spring",
+                stiffness: 300,
+                damping: 25
+              }}
+              layout
+            >
+              <MemoizedGenerationCard
+                generation={generation}
+                onDelete={onDelete}
+              />
+            </motion.div>
+          ))}
         </AnimatePresence>
       </div>
+
+      {/* Infinite Scroll Trigger */}
+      {hasMore && (
+        <InfiniteScrollTrigger
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          isLoading={loadingMore}
+        />
+      )}
     </div>
   );
 }
