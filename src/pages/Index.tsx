@@ -74,7 +74,7 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-32">
+      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-32">
         {heroBackgroundUrl ? (
           <div 
             className="absolute inset-0 z-0"
@@ -93,14 +93,14 @@ const Index = () => {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
         )}
-        <div className="container relative z-10 mx-auto px-4">
+        <div className="container relative z-10 mx-auto px-4 sm:px-6">
           <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
-              <Sparkles className="h-4 w-4" />
+            <div className="mb-4 sm:mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary">
+              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               AI-Powered Image Analysis
             </div>
             <h1 
-              className="mb-6 text-5xl font-bold leading-tight tracking-tight md:text-6xl lg:text-7xl"
+              className="mb-4 sm:mb-6 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight"
               style={heroTextStyle}
             >
               Generate Perfect
@@ -109,7 +109,7 @@ const Index = () => {
               </span>
             </h1>
             <p 
-              className="mx-auto mb-10 max-w-2xl text-lg md:text-xl"
+              className="mx-auto mb-6 sm:mb-10 max-w-2xl text-sm sm:text-lg md:text-xl px-2"
               style={{ 
                 color: heroTextColor ? `${heroTextColor}cc` : undefined,
                 textShadow: heroTextStyle.textShadow
@@ -118,31 +118,31 @@ const Index = () => {
               Transform any image into SEO-optimized titles, descriptions, tags, and detailed AI prompts. 
               Perfect for stock photographers, content creators, and digital marketers.
             </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 sm:flex-row">
               {user ? (
                 <Link to="/dashboard">
-                  <Button size="lg" className="gap-2 px-8 py-6 text-lg">
+                  <Button size="lg" className="gap-2 px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg w-full sm:w-auto">
                     Go to Dashboard
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </Link>
               ) : (
                 <>
-                  <Link to="/auth">
-                    <Button size="lg" className="gap-2 px-8 py-6 text-lg">
+                  <Link to="/auth" className="w-full sm:w-auto">
+                    <Button size="lg" className="gap-2 px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg w-full">
                       Start Free Trial
-                      <ArrowRight className="h-5 w-5" />
+                      <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </Link>
-                  <Link to="/pricing">
-                    <Button variant="outline" size="lg" className="px-8 py-6 text-lg">
+                  <Link to="/pricing" className="w-full sm:w-auto">
+                    <Button variant="outline" size="lg" className="px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg w-full">
                       View Pricing
                     </Button>
                   </Link>
                 </>
               )}
             </div>
-            <p className="mt-6 text-sm text-muted-foreground">
+            <p className="mt-4 sm:mt-6 text-xs sm:text-sm text-muted-foreground">
               ✨ Get 10 free credits to start • No credit card required
             </p>
           </div>
@@ -150,23 +150,23 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+      <section className="py-12 sm:py-24 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="mx-auto mb-8 sm:mb-16 max-w-2xl text-center">
+            <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
               Everything You Need
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-sm sm:text-lg text-muted-foreground px-2">
               Powerful features to help you create the perfect metadata for your images
             </p>
           </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto grid max-w-6xl gap-4 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => {
               const IconComponent = iconMap[feature.icon_name] || Sparkles;
               const isVideo = feature.image_url && ['.mp4', '.webm', '.mov'].some(ext => feature.image_url?.toLowerCase().includes(ext));
               
               return (
-                <Card key={feature.title} className="group border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg overflow-hidden">
+                <Card key={feature.title} className="group border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg overflow-hidden active:scale-[0.98]">
                   {feature.image_url && (
                     <div className="aspect-video overflow-hidden">
                       {isVideo ? (
@@ -183,18 +183,19 @@ const Index = () => {
                           src={feature.image_url} 
                           alt={feature.title}
                           className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          loading="lazy"
                         />
                       )}
                     </div>
                   )}
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 sm:p-6">
                     {!feature.image_url && (
-                      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                        <IconComponent className="h-6 w-6" />
+                      <div className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                        <IconComponent className="h-5 w-5 sm:h-6 sm:w-6" />
                       </div>
                     )}
-                    <h3 className="mb-2 text-xl font-semibold text-foreground">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <h3 className="mb-1.5 sm:mb-2 text-lg sm:text-xl font-semibold text-foreground">{feature.title}</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
                   </CardContent>
                 </Card>
               );
@@ -204,24 +205,24 @@ const Index = () => {
       </section>
 
       {/* Event Calendar CTA */}
-      <section className="py-16 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
-        <div className="container mx-auto px-4">
+      <section className="py-10 sm:py-16 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
-              <Calendar className="h-4 w-4" />
+            <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary">
+              <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               📅 Event Calendar 2026
             </div>
-            <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+            <h2 className="mb-3 sm:mb-4 text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
               Discover Important Dates & Get Inspired
             </h2>
-            <p className="mb-6 text-muted-foreground">
+            <p className="mb-5 sm:mb-6 text-sm sm:text-base text-muted-foreground px-2">
               Explore holidays, celebrations, and creative events throughout 2026. Get daily motivation and plan your content calendar!
             </p>
             <Link to={user ? "/calendar" : "/auth"}>
-              <Button size="lg" className="gap-2">
-                <Calendar className="h-5 w-5" />
+              <Button size="lg" className="gap-2 px-5 py-4 sm:px-6 sm:py-5 text-sm sm:text-base">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
                 {user ? "View Calendar" : "Sign Up to Access"}
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
             </Link>
           </div>
@@ -229,24 +230,24 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+      <section className="py-12 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="mx-auto mb-10 sm:mb-16 max-w-2xl text-center">
+            <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
               How It Works
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-sm sm:text-lg text-muted-foreground">
               Three simple steps to generate perfect metadata
             </p>
           </div>
-          <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-3">
+          <div className="mx-auto grid max-w-4xl gap-6 sm:gap-8 grid-cols-1 md:grid-cols-3">
             {howItWorks.map((item) => (
               <div key={item.step} className="text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
+                <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-primary text-xl sm:text-2xl font-bold text-primary-foreground">
                   {item.step}
                 </div>
-                <h3 className="mb-2 text-xl font-semibold text-foreground">{item.title}</h3>
-                <p className="text-muted-foreground">{item.description}</p>
+                <h3 className="mb-1.5 sm:mb-2 text-lg sm:text-xl font-semibold text-foreground">{item.title}</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">{item.description}</p>
               </div>
             ))}
           </div>
@@ -254,18 +255,18 @@ const Index = () => {
       </section>
 
       {/* What You Get Section */}
-      <section className="py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section className="py-12 sm:py-24 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="mx-auto max-w-4xl">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+            <div className="mb-10 sm:mb-16 text-center">
+              <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
                 What You Get
               </h2>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-sm sm:text-lg text-muted-foreground">
                 For each image, our AI generates comprehensive metadata
               </p>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
               {[
                 "Detailed AI image prompt for recreation",
                 "SEO-optimized title (under 60 characters)",
@@ -274,9 +275,9 @@ const Index = () => {
                 "One-click copy for each field",
                 "CSV export for bulk downloads"
               ].map((item) => (
-                <div key={item} className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 p-4">
-                  <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-primary" />
-                  <span className="text-foreground">{item}</span>
+                <div key={item} className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 p-3 sm:p-4">
+                  <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+                  <span className="text-sm sm:text-base text-foreground">{item}</span>
                 </div>
               ))}
             </div>
@@ -285,19 +286,19 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-3xl rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 p-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+      <section className="py-12 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="mx-auto max-w-3xl rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 p-8 sm:p-12 text-center">
+            <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
               Ready to Get Started?
             </h2>
-            <p className="mb-8 text-lg text-muted-foreground">
+            <p className="mb-6 sm:mb-8 text-sm sm:text-lg text-muted-foreground">
               Join thousands of creators using AI to generate perfect image metadata
             </p>
             <Link to={user ? "/dashboard" : "/auth"}>
-              <Button size="lg" className="gap-2 px-8 py-6 text-lg">
+              <Button size="lg" className="gap-2 px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg">
                 {user ? "Go to Dashboard" : "Start Your Free Trial"}
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
           </div>
@@ -305,18 +306,18 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+      <footer className="border-t border-border/50 py-6 sm:py-8">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <span className="font-semibold text-foreground">Prompt SEO Nest</span>
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <span className="font-semibold text-sm sm:text-base text-foreground">Prompt SEO Nest</span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
-              <Link to="/auth" className="hover:text-foreground">Login</Link>
+              <Link to="/pricing" className="hover:text-foreground py-1">Pricing</Link>
+              <Link to="/auth" className="hover:text-foreground py-1">Login</Link>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               © 2026 Prompt SEO Nest. All rights reserved.
             </p>
           </div>
