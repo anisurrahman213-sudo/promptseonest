@@ -190,52 +190,66 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-12 sm:py-24 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6">
-          <div className="mx-auto mb-8 sm:mb-16 max-w-2xl text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5 }}
+            className="mx-auto mb-8 sm:mb-16 max-w-2xl text-center"
+          >
             <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
               Everything You Need
             </h2>
             <p className="text-sm sm:text-lg text-muted-foreground px-2">
               Powerful features to help you create the perfect metadata for your images
             </p>
-          </div>
+          </motion.div>
           <div className="mx-auto grid max-w-6xl gap-4 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => {
+            {features.map((feature, index) => {
               const IconComponent = iconMap[feature.icon_name] || Sparkles;
               const isVideo = feature.image_url && ['.mp4', '.webm', '.mov'].some(ext => feature.image_url?.toLowerCase().includes(ext));
               
               return (
-                <Card key={feature.title} className="group border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg overflow-hidden active:scale-[0.98]">
-                  {feature.image_url && (
-                    <div className="aspect-video overflow-hidden">
-                      {isVideo ? (
-                        <video 
-                          src={feature.image_url}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          muted
-                          loop
-                          autoPlay
-                          playsInline
-                        />
-                      ) : (
-                        <img 
-                          src={feature.image_url} 
-                          alt={feature.title}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          loading="lazy"
-                        />
-                      )}
-                    </div>
-                  )}
-                  <CardContent className="p-4 sm:p-6">
-                    {!feature.image_url && (
-                      <div className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                        <IconComponent className="h-5 w-5 sm:h-6 sm:w-6" />
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card className="group h-full border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg overflow-hidden active:scale-[0.98]">
+                    {feature.image_url && (
+                      <div className="aspect-video overflow-hidden">
+                        {isVideo ? (
+                          <video 
+                            src={feature.image_url}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            muted
+                            loop
+                            autoPlay
+                            playsInline
+                          />
+                        ) : (
+                          <img 
+                            src={feature.image_url} 
+                            alt={feature.title}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        )}
                       </div>
                     )}
-                    <h3 className="mb-1.5 sm:mb-2 text-lg sm:text-xl font-semibold text-foreground">{feature.title}</h3>
-                    <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
+                    <CardContent className="p-4 sm:p-6">
+                      {!feature.image_url && (
+                        <div className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                          <IconComponent className="h-5 w-5 sm:h-6 sm:w-6" />
+                        </div>
+                      )}
+                      <h3 className="mb-1.5 sm:mb-2 text-lg sm:text-xl font-semibold text-foreground">{feature.title}</h3>
+                      <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               );
             })}
           </div>
