@@ -28,6 +28,7 @@ export function usePricingPlans() {
       const { data, error } = await supabase
         .from('pricing_plans')
         .select('*')
+        .eq('is_active', true)
         .order('sort_order', { ascending: true });
 
       if (error) throw error;
