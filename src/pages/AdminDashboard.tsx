@@ -31,8 +31,11 @@ import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Tras
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { GenerationsManagement } from '@/components/admin/GenerationsManagement';
+import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 
 export default function AdminDashboard() {
+  // Security: Auto-logout on inactivity
+  useAdminInactivityLogout();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
