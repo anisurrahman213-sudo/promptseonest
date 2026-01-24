@@ -17,6 +17,8 @@ import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, S
 import { PlanManagement } from '@/components/admin/PlanManagement';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
+import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
+
 const CREDITS_BY_PLAN: Record<string, number> = {
   'Lite': 100,
   'Pro': 500,
@@ -24,6 +26,8 @@ const CREDITS_BY_PLAN: Record<string, number> = {
 };
 
 export default function AdminPayments() {
+  // Security: Auto-logout on inactivity
+  useAdminInactivityLogout();
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: isAdminLoading } = useIsAdmin();
   const { data: payments, isLoading } = useAdminPaymentRequests();
