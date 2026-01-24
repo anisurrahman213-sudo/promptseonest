@@ -119,6 +119,36 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          attempt_count: number
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          last_attempt_at: string
+          locked_until: string | null
+        }
+        Insert: {
+          attempt_count?: number
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          last_attempt_at?: string
+          locked_until?: string | null
+        }
+        Update: {
+          attempt_count?: number
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          last_attempt_at?: string
+          locked_until?: string | null
+        }
+        Relationships: []
+      }
       notification_logs: {
         Row: {
           created_at: string
@@ -374,6 +404,7 @@ export type Database = {
         Returns: boolean
       }
       deduct_credit: { Args: { p_user_id: string }; Returns: boolean }
+      get_lock_remaining_seconds: { Args: { p_email: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -381,6 +412,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_account_locked: { Args: { p_email: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"

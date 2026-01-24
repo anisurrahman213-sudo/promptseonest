@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
-import { Sparkles, Moon, Sun, Loader2, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Sparkles, Moon, Sun, Loader2, ArrowLeft, Eye, EyeOff, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -29,9 +30,101 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isAccountLocked, setIsAccountLocked] = useState(false);
+  const [lockRemainingMinutes, setLockRemainingMinutes] = useState(0);
+  const [attemptsRemaining, setAttemptsRemaining] = useState(5);
   const { signIn, signUp, signInWithGoogle, resetPassword, updatePassword, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+
+  // Check lock status periodically when locked
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    
+    if (isAccountLocked && lockRemainingMinutes > 0) {
+      intervalId = setInterval(() => {
+        setLockRemainingMinutes(prev => {
+          if (prev <= 1) {
+            setIsAccountLocked(false);
+            setAttemptsRemaining(5);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 60000); // Update every minute
+    }
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isAccountLocked, lockRemainingMinutes]);
+
+  // Check login attempt status
+  const checkLoginAttempt = async (emailToCheck: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-login-attempt', {
+        body: { action: 'check', email: emailToCheck }
+      });
+      
+      if (error) {
+        console.error('Error checking login attempt:', error);
+        return true; // Allow login on error
+      }
+      
+      if (data?.locked) {
+        setIsAccountLocked(true);
+        setLockRemainingMinutes(data.remainingMinutes || 15);
+        toast.error(data.message || 'Account is locked. Try again later.');
+        return false;
+      }
+      
+      setAttemptsRemaining(data?.attemptsRemaining || 5);
+      return true;
+    } catch (err) {
+      console.error('Error in checkLoginAttempt:', err);
+      return true; // Allow login on error
+    }
+  };
+
+  // Record failed login attempt
+  const recordFailedAttempt = async (emailToRecord: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-login-attempt', {
+        body: { action: 'record_failure', email: emailToRecord }
+      });
+      
+      if (error) {
+        console.error('Error recording failed attempt:', error);
+        return;
+      }
+      
+      if (data?.locked) {
+        setIsAccountLocked(true);
+        setLockRemainingMinutes(data.remainingMinutes || 15);
+        toast.error(data.message);
+      } else if (data?.attemptsRemaining !== undefined) {
+        setAttemptsRemaining(data.attemptsRemaining);
+        if (data.attemptsRemaining <= 2) {
+          toast.warning(`Warning: ${data.attemptsRemaining} attempts remaining before account lock`);
+        }
+      }
+    } catch (err) {
+      console.error('Error in recordFailedAttempt:', err);
+    }
+  };
+
+  // Reset login attempts on successful login
+  const resetLoginAttempts = async (emailToReset: string) => {
+    try {
+      await supabase.functions.invoke('check-login-attempt', {
+        body: { action: 'reset', email: emailToReset }
+      });
+      setAttemptsRemaining(5);
+      setIsAccountLocked(false);
+    } catch (err) {
+      console.error('Error resetting login attempts:', err);
+    }
+  };
 
   // Handle Google OAuth callback and redirect if logged in
   useEffect(() => {
@@ -59,18 +152,29 @@ export default function Auth() {
       toast.error('Please fill in all fields');
       return;
     }
+
+    // Check if account is locked before attempting login
+    const canProceed = await checkLoginAttempt(email);
+    if (!canProceed) {
+      return;
+    }
     
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
     
     if (error) {
+      // Record failed attempt
+      await recordFailedAttempt(email);
+      
       if (error.message.includes('Invalid login credentials')) {
         toast.error('Invalid email or password');
       } else {
         toast.error(error.message);
       }
     } else {
+      // Reset attempts on successful login
+      await resetLoginAttempts(email);
       toast.success('Welcome back!');
       navigate('/dashboard');
     }
@@ -339,6 +443,26 @@ export default function Auth() {
 
                   <TabsContent value="login">
                     <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
+                      {/* Account Locked Warning */}
+                      {isAccountLocked && (
+                        <Alert variant="destructive" className="mb-4">
+                          <Lock className="h-4 w-4" />
+                          <AlertDescription>
+                            Account locked due to too many failed attempts. 
+                            Try again in <strong>{lockRemainingMinutes}</strong> minute(s).
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      
+                      {/* Low attempts warning */}
+                      {!isAccountLocked && attemptsRemaining <= 2 && attemptsRemaining > 0 && (
+                        <Alert variant="destructive" className="mb-4 bg-warning/10 border-warning text-warning-foreground">
+                          <AlertDescription className="text-sm">
+                            ⚠️ Warning: Only <strong>{attemptsRemaining}</strong> login attempt(s) remaining before account lock.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      
                       <div className="space-y-1.5 sm:space-y-2">
                         <Label htmlFor="login-email" className="text-sm">Email</Label>
                         <Input
@@ -347,7 +471,7 @@ export default function Auth() {
                           placeholder="you@example.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          disabled={loading}
+                          disabled={loading || isAccountLocked}
                           className="h-10 sm:h-11"
                         />
                       </div>
@@ -369,7 +493,7 @@ export default function Auth() {
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            disabled={loading}
+                            disabled={loading || isAccountLocked}
                             className="h-10 sm:h-11 pr-10"
                           />
                           <button
@@ -384,7 +508,7 @@ export default function Auth() {
                       <Button 
                         type="submit" 
                         className="w-full h-10 sm:h-11 bg-gradient-primary hover:opacity-90 text-sm sm:text-base"
-                        disabled={loading || googleLoading}
+                        disabled={loading || googleLoading || isAccountLocked}
                       >
                         {loading ? (
                           <>
