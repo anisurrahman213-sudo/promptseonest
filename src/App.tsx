@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { BackgroundProcessorProvider } from "@/contexts/BackgroundProcessorContext";
+import { BackgroundProcessingIndicator } from "@/components/BackgroundProcessingIndicator";
 import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import Index from "./pages/Index";
@@ -37,26 +39,29 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
-        <TooltipProvider>
-          <NetworkStatusIndicator />
-          <PWAInstallPrompt />
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/payment-history" element={<PaymentHistory />} />
-              <Route path="/admin/payments" element={<AdminPayments />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <BackgroundProcessorProvider>
+          <TooltipProvider>
+            <NetworkStatusIndicator />
+            <PWAInstallPrompt />
+            <BackgroundProcessingIndicator />
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="/payment-history" element={<PaymentHistory />} />
+                <Route path="/admin/payments" element={<AdminPayments />} />
+                <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </BackgroundProcessorProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
