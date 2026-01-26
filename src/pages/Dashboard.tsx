@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { MediaUploader, MediaFile } from '@/components/MediaUploader';
@@ -6,7 +6,6 @@ import { StatsCards } from '@/components/dashboard/StatsCards';
 import { UpgradeBanner } from '@/components/dashboard/UpgradeBanner';
 import { SearchFilter, SortOption } from '@/components/dashboard/SearchFilter';
 import { EmptyState } from '@/components/dashboard/EmptyState';
-import { BulkProgress, ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { ExportDialog } from '@/components/dashboard/ExportDialog';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
@@ -16,7 +15,7 @@ import { VirtualGenerationList } from '@/components/dashboard/VirtualGenerationL
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
-import { useParallelUpload } from '@/hooks/useParallelUpload';
+import { useBackgroundProcessor } from '@/contexts/BackgroundProcessorContext';
 import { Loader2, Sparkles, History, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,9 +37,7 @@ export default function Dashboard() {
     refreshGenerations,
     loading: generationsLoading 
   } = useInfiniteGenerations({ pageSize: 12 });
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingFiles, setProcessingFiles] = useState<ProcessingFile[]>([]);
-  const [currentProcessingIndex, setCurrentProcessingIndex] = useState(0);
+  const { startProcessing, isProcessing } = useBackgroundProcessor();
   const [activeTab, setActiveTab] = useState('upload');
   const [metadataSettings, setMetadataSettings] = useState<MetadataSettings>(defaultMetadataSettings);
   
@@ -103,52 +100,22 @@ export default function Dashboard() {
     return <Navigate to="/auth" replace />;
   }
 
-  // Parallel upload hook for maximum speed (10 concurrent files)
-  const handleFileStatusUpdate = useCallback((index: number, status: Partial<ProcessingFile>) => {
-    setProcessingFiles(prev => prev.map((pf, idx) => 
-      idx === index ? { ...pf, ...status } : pf
-    ));
-  }, []);
-
-  const { processFilesInParallel } = useParallelUpload({
-    userId: user?.id || '',
-    metadataSettings,
-    onFileStatusUpdate: handleFileStatusUpdate,
-    onSuccess: addGeneration,
-    onCreditRefresh: refreshCredits,
-  });
-
   const handleUpload = async (mediaFiles: MediaFile[]) => {
+    if (!user) return;
+    
     if (credits !== null && credits < mediaFiles.length) {
       toast.error(`Not enough credits. You need ${mediaFiles.length} credits but have ${credits}.`);
       return;
     }
 
-    // Initialize processing files state
-    const initialFiles: ProcessingFile[] = mediaFiles.map(mf => ({
-      name: mf.file.name,
-      status: 'pending'
-    }));
-    setProcessingFiles(initialFiles);
-    setCurrentProcessingIndex(0);
-    setIsProcessing(true);
-
-    // Process all files in parallel (10 at a time for maximum speed)
-    const successCount = await processFilesInParallel(mediaFiles);
-
-    setIsProcessing(false);
-    
-    if (successCount > 0) {
-      toast.success(`⚡ ${successCount} file${successCount > 1 ? 's' : ''} processed in parallel!`);
-      // Clear processing files after a delay and switch to history
-      setTimeout(() => {
-        setProcessingFiles([]);
-        setActiveTab('history');
-      }, 2000);
-    } else {
-      // Clear on complete failure after showing results
-      setTimeout(() => setProcessingFiles([]), 3000);
-    }
+    // Start background processing - will continue even if user navigates away
+    await startProcessing(
+      mediaFiles,
+      user.id,
+      metadataSettings,
+      addGeneration,
+      refreshCredits
+    );
   };
 
   // Video frame extraction now handled by videoFrameExtractor.ts
@@ -218,16 +185,7 @@ export default function Dashboard() {
           {/* Recent Activity Feed */}
           <RecentActivity generations={generations} maxItems={5} />
 
-          {/* Bulk Progress */}
-          <AnimatePresence>
-            {(isProcessing || processingFiles.length > 0) && (
-              <BulkProgress
-                files={processingFiles}
-                currentIndex={currentProcessingIndex}
-                isProcessing={isProcessing}
-              />
-            )}
-          </AnimatePresence>
+          {/* Background processing indicator is now global - shown in BackgroundProcessingIndicator.tsx */}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <motion.div
