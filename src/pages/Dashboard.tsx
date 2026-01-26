@@ -16,8 +16,7 @@ import { VirtualGenerationList } from '@/components/dashboard/VirtualGenerationL
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
-import { supabase } from '@/integrations/supabase/client';
-import { extractVideoFramesGrid } from '@/lib/videoFrameExtractor';
+import { useParallelUpload } from '@/hooks/useParallelUpload';
 import { Loader2, Sparkles, History, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -104,6 +103,21 @@ export default function Dashboard() {
     return <Navigate to="/auth" replace />;
   }
 
+  // Parallel upload hook for maximum speed (10 concurrent files)
+  const handleFileStatusUpdate = useCallback((index: number, status: Partial<ProcessingFile>) => {
+    setProcessingFiles(prev => prev.map((pf, idx) => 
+      idx === index ? { ...pf, ...status } : pf
+    ));
+  }, []);
+
+  const { processFilesInParallel } = useParallelUpload({
+    userId: user?.id || '',
+    metadataSettings,
+    onFileStatusUpdate: handleFileStatusUpdate,
+    onSuccess: addGeneration,
+    onCreditRefresh: refreshCredits,
+  });
+
   const handleUpload = async (mediaFiles: MediaFile[]) => {
     if (credits !== null && credits < mediaFiles.length) {
       toast.error(`Not enough credits. You need ${mediaFiles.length} credits but have ${credits}.`);
@@ -118,147 +132,14 @@ export default function Dashboard() {
     setProcessingFiles(initialFiles);
     setCurrentProcessingIndex(0);
     setIsProcessing(true);
-    let successCount = 0;
 
-    for (let i = 0; i < mediaFiles.length; i++) {
-      const mediaFile = mediaFiles[i];
-      const file = mediaFile.file;
-      
-      // Update current file to processing with start time
-      setCurrentProcessingIndex(i);
-      const startTime = Date.now();
-      setProcessingFiles(prev => prev.map((pf, idx) => 
-        idx === i ? { ...pf, status: 'processing', startTime } : pf
-      ));
-
-      try {
-        let base64: string;
-        
-        if (mediaFile.type === 'video') {
-          // Extract multiple frames as a grid for better AI analysis
-          base64 = await extractVideoFramesGrid(file, {
-            frameCount: 6,
-            gridCols: 3,
-            frameWidth: 640,
-            quality: 0.85
-          });
-        } else {
-          base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const result = reader.result as string;
-              const base64Data = result.split(',')[1];
-              resolve(base64Data);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        }
-
-        // Upload media to storage
-        const bucketName = mediaFile.type === 'video' ? 'videos' : 'images';
-        const filePath = `${user.id}/${Date.now()}-${file.name}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from(bucketName)
-          .upload(filePath, file);
-
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: 'Upload failed', endTime: Date.now() } : pf
-          ));
-          continue;
-        }
-
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from(bucketName)
-          .getPublicUrl(filePath);
-
-        // Call edge function to analyze media with settings
-        const { data, error } = await supabase.functions.invoke('analyze-image', {
-          body: { 
-            imageBase64: base64,
-            imageName: file.name,
-            mediaType: mediaFile.type,
-            settings: metadataSettings
-          }
-        });
-
-        if (error) {
-          console.error('Analysis error:', error);
-          setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: 'Analysis failed', endTime: Date.now() } : pf
-          ));
-          continue;
-        }
-
-        if (data.error) {
-          setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: data.error, endTime: Date.now() } : pf
-          ));
-          continue;
-        }
-
-        // Deduct credit
-        const { data: creditResult } = await supabase.rpc('deduct_credit', {
-          p_user_id: user.id
-        });
-
-        if (!creditResult) {
-          setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: 'Credit deduction failed', endTime: Date.now() } : pf
-          ));
-          continue;
-        }
-
-        // Save generation to database
-        const generationData = {
-          user_id: user.id,
-          image_name: data.data.imageName,
-          image_url: publicUrl,
-          prompt: data.data.prompt,
-          title: data.data.title,
-          description: data.data.description,
-          tags: data.data.tags
-        };
-
-        const { data: savedGen, error: saveError } = await supabase
-          .from('generations')
-          .insert(generationData)
-          .select()
-          .single();
-
-        if (saveError) {
-          console.error('Save error:', saveError);
-          setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: 'Save failed', endTime: Date.now() } : pf
-          ));
-          continue;
-        }
-
-        // Mark as success with end time
-        const endTime = Date.now();
-        setProcessingFiles(prev => prev.map((pf, idx) => 
-          idx === i ? { ...pf, status: 'success', endTime } : pf
-        ));
-        
-        addGeneration(savedGen);
-        successCount++;
-        refreshCredits();
-      } catch (error) {
-        console.error('Processing error:', error);
-        setProcessingFiles(prev => prev.map((pf, idx) => 
-          idx === i ? { ...pf, status: 'error', errorMessage: 'Processing error', endTime: Date.now() } : pf
-        ));
-      }
-    }
+    // Process all files in parallel (10 at a time for maximum speed)
+    const successCount = await processFilesInParallel(mediaFiles);
 
     setIsProcessing(false);
     
     if (successCount > 0) {
-      toast.success(`Successfully processed ${successCount} file${successCount > 1 ? 's' : ''}`);
+      toast.success(`⚡ ${successCount} file${successCount > 1 ? 's' : ''} processed in parallel!`);
       // Clear processing files after a delay and switch to history
       setTimeout(() => {
         setProcessingFiles([]);
