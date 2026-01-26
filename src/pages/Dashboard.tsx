@@ -124,10 +124,11 @@ export default function Dashboard() {
       const mediaFile = mediaFiles[i];
       const file = mediaFile.file;
       
-      // Update current file to processing
+      // Update current file to processing with start time
       setCurrentProcessingIndex(i);
+      const startTime = Date.now();
       setProcessingFiles(prev => prev.map((pf, idx) => 
-        idx === i ? { ...pf, status: 'processing' } : pf
+        idx === i ? { ...pf, status: 'processing', startTime } : pf
       ));
 
       try {
@@ -165,7 +166,7 @@ export default function Dashboard() {
         if (uploadError) {
           console.error('Upload error:', uploadError);
           setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: 'Upload failed' } : pf
+            idx === i ? { ...pf, status: 'error', errorMessage: 'Upload failed', endTime: Date.now() } : pf
           ));
           continue;
         }
@@ -188,14 +189,14 @@ export default function Dashboard() {
         if (error) {
           console.error('Analysis error:', error);
           setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: 'Analysis failed' } : pf
+            idx === i ? { ...pf, status: 'error', errorMessage: 'Analysis failed', endTime: Date.now() } : pf
           ));
           continue;
         }
 
         if (data.error) {
           setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: data.error } : pf
+            idx === i ? { ...pf, status: 'error', errorMessage: data.error, endTime: Date.now() } : pf
           ));
           continue;
         }
@@ -207,7 +208,7 @@ export default function Dashboard() {
 
         if (!creditResult) {
           setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: 'Credit deduction failed' } : pf
+            idx === i ? { ...pf, status: 'error', errorMessage: 'Credit deduction failed', endTime: Date.now() } : pf
           ));
           continue;
         }
@@ -232,14 +233,15 @@ export default function Dashboard() {
         if (saveError) {
           console.error('Save error:', saveError);
           setProcessingFiles(prev => prev.map((pf, idx) => 
-            idx === i ? { ...pf, status: 'error', errorMessage: 'Save failed' } : pf
+            idx === i ? { ...pf, status: 'error', errorMessage: 'Save failed', endTime: Date.now() } : pf
           ));
           continue;
         }
 
-        // Mark as success
+        // Mark as success with end time
+        const endTime = Date.now();
         setProcessingFiles(prev => prev.map((pf, idx) => 
-          idx === i ? { ...pf, status: 'success' } : pf
+          idx === i ? { ...pf, status: 'success', endTime } : pf
         ));
         
         addGeneration(savedGen);
@@ -248,7 +250,7 @@ export default function Dashboard() {
       } catch (error) {
         console.error('Processing error:', error);
         setProcessingFiles(prev => prev.map((pf, idx) => 
-          idx === i ? { ...pf, status: 'error', errorMessage: 'Processing error' } : pf
+          idx === i ? { ...pf, status: 'error', errorMessage: 'Processing error', endTime: Date.now() } : pf
         ));
       }
     }
