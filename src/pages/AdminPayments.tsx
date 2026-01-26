@@ -13,10 +13,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
-import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard, ImageIcon, Wallpaper } from 'lucide-react';
+import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard, ImageIcon, Wallpaper, History } from 'lucide-react';
 import { PlanManagement } from '@/components/admin/PlanManagement';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
+import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 
 const CREDITS_BY_PLAN: Record<string, number> = {
@@ -46,6 +47,15 @@ export default function AdminPayments() {
   const [emailTo, setEmailTo] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
+
+  // Customer history dialog state
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+
+  const openHistoryDialog = (customer: any) => {
+    setSelectedCustomer(customer);
+    setHistoryDialogOpen(true);
+  };
 
   if (authLoading || isAdminLoading) {
     return (
@@ -399,6 +409,16 @@ export default function AdminPayments() {
                               <p className="font-bold text-lg">{u.credits}</p>
                             </div>
                             <div className="flex gap-2">
+                              <Button 
+                                variant="default" 
+                                size="sm"
+                                onClick={() => openHistoryDialog(u)}
+                                title="View History"
+                                className="gap-1"
+                              >
+                                <History className="h-4 w-4" />
+                                History
+                              </Button>
                               {u.phone_number && (
                                 <>
                                   <a href={`tel:${u.phone_number}`}>
@@ -577,6 +597,13 @@ export default function AdminPayments() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Customer History Dialog */}
+        <CustomerHistoryDialog
+          customer={selectedCustomer}
+          open={historyDialogOpen}
+          onOpenChange={setHistoryDialogOpen}
+        />
       </main>
     </div>
   );
