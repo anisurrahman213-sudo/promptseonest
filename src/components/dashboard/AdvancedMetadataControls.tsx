@@ -8,7 +8,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-export type ExportPlatform = 'adobe_stock' | 'shutterstock' | 'freepik' | 'getty' | 'custom';
+export type ExportPlatform = 
+  | 'adobe_stock' 
+  | 'shutterstock' 
+  | 'istock' 
+  | 'getty' 
+  | 'alamy' 
+  | 'dreamstime' 
+  | '123rf' 
+  | 'depositphotos' 
+  | 'canva' 
+  | 'freepik' 
+  | 'vecteezy' 
+  | 'picfair' 
+  | 'eyeem' 
+  | 'rawpixel' 
+  | 'stocksy' 
+  | 'twenty20' 
+  | 'wirestock'
+  | 'custom';
+
 export type ImageType = 'none' | 'photo' | 'illustration' | 'vector' | '3d_render' | 'ai_generated';
 
 export interface MetadataSettings {
@@ -31,11 +50,24 @@ interface AdvancedMetadataControlsProps {
 }
 
 const platformOptions = [
-  { value: 'adobe_stock', label: 'Adobe Stock' },
-  { value: 'shutterstock', label: 'Shutterstock' },
-  { value: 'freepik', label: 'Freepik' },
-  { value: 'getty', label: 'Getty Images' },
-  { value: 'custom', label: 'Custom' },
+  { value: 'adobe_stock', label: '🎨 Adobe Stock' },
+  { value: 'shutterstock', label: '📷 Shutterstock' },
+  { value: 'istock', label: '📸 iStock' },
+  { value: 'getty', label: '🖼️ Getty Images' },
+  { value: 'alamy', label: '🏞️ Alamy' },
+  { value: 'dreamstime', label: '💭 Dreamstime' },
+  { value: '123rf', label: '🔢 123RF' },
+  { value: 'depositphotos', label: '📥 Depositphotos' },
+  { value: 'canva', label: '🎯 Canva Creators' },
+  { value: 'freepik', label: '✨ Freepik' },
+  { value: 'vecteezy', label: '🎭 Vecteezy' },
+  { value: 'picfair', label: '🖌️ Picfair' },
+  { value: 'eyeem', label: '👁️ EyeEm' },
+  { value: 'rawpixel', label: '📦 Rawpixel' },
+  { value: 'stocksy', label: '💎 Stocksy' },
+  { value: 'twenty20', label: '🔷 Twenty20' },
+  { value: 'wirestock', label: '🌐 Wirestock' },
+  { value: 'custom', label: '⚙️ Custom' },
 ];
 
 const imageTypeOptions = [
