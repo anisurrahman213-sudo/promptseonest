@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X, Image as ImageIcon, Video, Loader2, Sparkles, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,9 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { compressImage } from '@/lib/imageCompression';
 import { toast } from 'sonner';
+import { ImageValidationResults } from '@/components/dashboard/ImageValidationResults';
+import { validateMultipleImages, type ImageInfo, type ValidationResult } from '@/lib/platformValidation';
+import type { ExportPlatform } from '@/components/dashboard/AdvancedMetadataControls';
 
 export interface MediaFile {
   file: File;
@@ -14,17 +17,26 @@ export interface MediaFile {
   type: 'image' | 'video';
 }
 
+interface ValidationItem {
+  fileName: string;
+  info: ImageInfo;
+  validation: ValidationResult;
+}
+
 interface MediaUploaderProps {
   onUpload: (files: MediaFile[]) => void;
   isProcessing: boolean;
   maxFiles?: number;
+  selectedPlatform?: ExportPlatform;
 }
 
-export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaUploaderProps) {
+export function MediaUploader({ onUpload, isProcessing, maxFiles = 500, selectedPlatform = 'adobe_stock' }: MediaUploaderProps) {
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [validationResults, setValidationResults] = useState<ValidationItem[]>([]);
+  const [isValidating, setIsValidating] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setIsCompressing(true);
@@ -70,6 +82,29 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
     }
   }, [maxFiles]);
 
+  // Validate images when files change or platform changes
+  useEffect(() => {
+    const validateFiles = async () => {
+      const imageFiles = files.filter(f => f.type === 'image').map(f => f.file);
+      if (imageFiles.length === 0) {
+        setValidationResults([]);
+        return;
+      }
+      
+      setIsValidating(true);
+      try {
+        const results = await validateMultipleImages(imageFiles, selectedPlatform);
+        setValidationResults(results);
+      } catch (error) {
+        console.error('Validation error:', error);
+      } finally {
+        setIsValidating(false);
+      }
+    };
+    
+    validateFiles();
+  }, [files, selectedPlatform]);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -98,6 +133,13 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
       newFiles.splice(index, 1);
       return newFiles;
     });
+  };
+
+  // Clear validation when files are cleared
+  const clearAll = () => {
+    files.forEach(f => URL.revokeObjectURL(f.preview));
+    setFiles([]);
+    setValidationResults([]);
   };
 
   const handleProcess = () => {
@@ -232,10 +274,7 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    files.forEach(f => URL.revokeObjectURL(f.preview));
-                    setFiles([]);
-                  }}
+                  onClick={clearAll}
                   disabled={isProcessing}
                   className="text-muted-foreground hover:text-destructive text-xs sm:text-sm h-8 sm:h-9 touch-manipulation"
                 >
@@ -363,6 +402,15 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500 }: MediaU
                 )}
               </Button>
             </motion.div>
+
+            {/* Validation Results */}
+            {files.some(f => f.type === 'image') && (
+              <ImageValidationResults
+                platform={selectedPlatform}
+                results={validationResults}
+                isValidating={isValidating}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
