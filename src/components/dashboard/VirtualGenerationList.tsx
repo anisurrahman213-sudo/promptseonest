@@ -1,12 +1,17 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { GenerationCard } from '@/components/GenerationCard';
 import { InfiniteScrollTrigger } from './InfiniteScrollTrigger';
 import { Generation } from '@/hooks/useInfiniteGenerations';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Trash2, CheckSquare, Square, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface VirtualGenerationListProps {
   generations: Generation[];
   onDelete: (id: string) => void;
+  onBulkDelete: (ids: string[]) => Promise<{ success: number; failed: number }>;
   hasMore: boolean;
   loadMore: () => void;
   loadingMore: boolean;
@@ -18,12 +23,133 @@ const MemoizedGenerationCard = memo(GenerationCard);
 export function VirtualGenerationList({
   generations,
   onDelete,
+  onBulkDelete,
   hasMore,
   loadMore,
   loadingMore,
 }: VirtualGenerationListProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedIds(new Set(generations.map(g => g.id)));
+  };
+
+  const deselectAll = () => {
+    setSelectedIds(new Set());
+  };
+
+  const exitSelectionMode = () => {
+    setIsSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    
+    const confirmMessage = `Are you sure you want to delete ${selectedIds.size} item${selectedIds.size > 1 ? 's' : ''}? This action cannot be undone.`;
+    if (!confirm(confirmMessage)) return;
+    
+    setIsDeleting(true);
+    const result = await onBulkDelete(Array.from(selectedIds));
+    setIsDeleting(false);
+    
+    if (result.success > 0) {
+      setSelectedIds(new Set());
+      if (generations.length - result.success === 0) {
+        setIsSelectionMode(false);
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {/* Selection Controls */}
+      <AnimatePresence>
+        {isSelectionMode ? (
+          <motion.div
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-muted/50 border border-border"
+          >
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={exitSelectionMode}
+                className="h-8 gap-1.5"
+              >
+                <X className="h-4 w-4" />
+                Cancel
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {selectedIds.size} of {generations.length} selected
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={selectedIds.size === generations.length ? deselectAll : selectAll}
+                className="h-8 gap-1.5"
+              >
+                {selectedIds.size === generations.length ? (
+                  <>
+                    <Square className="h-3.5 w-3.5" />
+                    Deselect All
+                  </>
+                ) : (
+                  <>
+                    <CheckSquare className="h-3.5 w-3.5" />
+                    Select All
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+                disabled={selectedIds.size === 0 || isDeleting}
+                className="h-8 gap-1.5"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {isDeleting ? 'Deleting...' : `Delete (${selectedIds.size})`}
+              </Button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSelectionMode(true)}
+              className="h-8 gap-1.5"
+            >
+              <CheckSquare className="h-3.5 w-3.5" />
+              Select
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Responsive Grid Layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         <AnimatePresence mode="popLayout">
@@ -41,11 +167,47 @@ export function VirtualGenerationList({
                 damping: 25
               }}
               layout
+              className="relative"
             >
-              <MemoizedGenerationCard
-                generation={generation}
-                onDelete={onDelete}
-              />
+              {/* Selection Checkbox Overlay */}
+              {isSelectionMode && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className={cn(
+                    "absolute top-2 left-2 z-20 p-1 rounded-md bg-background/90 backdrop-blur-sm border shadow-md cursor-pointer",
+                    selectedIds.has(generation.id) 
+                      ? "border-primary bg-primary/10" 
+                      : "border-border hover:border-primary/50"
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSelection(generation.id);
+                  }}
+                >
+                  <Checkbox
+                    checked={selectedIds.has(generation.id)}
+                    onCheckedChange={() => toggleSelection(generation.id)}
+                    className="h-5 w-5"
+                  />
+                </motion.div>
+              )}
+              
+              {/* Selection Highlight Border */}
+              <div
+                className={cn(
+                  "rounded-xl transition-all duration-200",
+                  isSelectionMode && selectedIds.has(generation.id) 
+                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                    : ""
+                )}
+              >
+                <MemoizedGenerationCard
+                  generation={generation}
+                  onDelete={onDelete}
+                />
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
