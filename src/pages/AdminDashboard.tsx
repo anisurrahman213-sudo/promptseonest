@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdminUsers, useIsAdmin } from '@/hooks/usePaymentRequests';
+import { useAdminUsers, useIsAdmin, useDeleteUser } from '@/hooks/usePaymentRequests';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -21,6 +21,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,11 +50,14 @@ export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   const { data: users, isLoading: usersLoading } = useAdminUsers();
+  const deleteUserMutation = useDeleteUser();
   const queryClient = useQueryClient();
 
   const [addCreditsDialog, setAddCreditsDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ userId: string; email: string } | null>(null);
   const [creditsToAdd, setCreditsToAdd] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<{ userId: string; email: string } | null>(null);
 
   // Redirect non-admin users
   useEffect(() => {
@@ -90,6 +103,21 @@ export default function AdminDashboard() {
     setSelectedUser({ userId, email });
     setCreditsToAdd('');
     setAddCreditsDialog(true);
+  };
+
+  const openDeleteDialog = (userId: string, email: string) => {
+    setUserToDelete({ userId, email });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteUser = () => {
+    if (!userToDelete) return;
+    deleteUserMutation.mutate(userToDelete.userId, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false);
+        setUserToDelete(null);
+      },
+    });
   };
 
   // Show loading state
@@ -224,13 +252,22 @@ export default function AdminDashboard() {
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button
-                                size="sm"
-                                onClick={() => openAddCreditsDialog(u.user_id, u.email || 'Unknown')}
-                              >
-                                <Plus className="h-4 w-4 mr-1" />
-                                Add Credits
-                              </Button>
+                              <div className="flex gap-2 justify-end">
+                                <Button
+                                  size="sm"
+                                  onClick={() => openAddCreditsDialog(u.user_id, u.email || 'Unknown')}
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Credits
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => openDeleteDialog(u.user_id, u.email || 'Unknown')}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -298,6 +335,49 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Are you sure you want to delete <strong>{userToDelete?.email}</strong>?
+              </p>
+              <p className="text-destructive font-medium">
+                This will permanently delete:
+              </p>
+              <ul className="list-disc list-inside text-sm text-muted-foreground">
+                <li>User account & profile</li>
+                <li>All generated images</li>
+                <li>Payment history</li>
+                <li>All other associated data</li>
+              </ul>
+              <p className="text-destructive text-sm font-medium">
+                This action cannot be undone!
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={deleteUserMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUserMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete User'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
