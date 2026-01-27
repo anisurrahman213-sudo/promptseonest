@@ -1,12 +1,13 @@
-import { memo, useState } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
 import { GenerationCard } from '@/components/GenerationCard';
 import { InfiniteScrollTrigger } from './InfiniteScrollTrigger';
 import { Generation } from '@/hooks/useInfiniteGenerations';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Trash2, CheckSquare, Square, X } from 'lucide-react';
+import { Trash2, CheckSquare, Square, X, Keyboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface VirtualGenerationListProps {
   generations: Generation[];
@@ -31,6 +32,47 @@ export function VirtualGenerationList({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Keyboard shortcuts
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Only handle shortcuts when in selection mode
+    if (!isSelectionMode) return;
+
+    // Ctrl/Cmd + A to select all
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+      e.preventDefault();
+      setSelectedIds(new Set(generations.map(g => g.id)));
+    }
+
+    // Delete or Backspace to delete selected
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.size > 0 && !isDeleting) {
+      e.preventDefault();
+      const confirmMessage = `Are you sure you want to delete ${selectedIds.size} item${selectedIds.size > 1 ? 's' : ''}? This action cannot be undone.`;
+      if (confirm(confirmMessage)) {
+        setIsDeleting(true);
+        onBulkDelete(Array.from(selectedIds)).then((result) => {
+          setIsDeleting(false);
+          if (result.success > 0) {
+            setSelectedIds(new Set());
+            if (generations.length - result.success === 0) {
+              setIsSelectionMode(false);
+            }
+          }
+        });
+      }
+    }
+
+    // Escape to exit selection mode
+    if (e.key === 'Escape') {
+      setIsSelectionMode(false);
+      setSelectedIds(new Set());
+    }
+  }, [isSelectionMode, generations, selectedIds, isDeleting, onBulkDelete]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const toggleSelection = (id: string) => {
     setSelectedIds(prev => {
@@ -136,6 +178,7 @@ export function VirtualGenerationList({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="flex items-center gap-2"
           >
             <Button
               variant="outline"
@@ -146,6 +189,21 @@ export function VirtualGenerationList({
               <CheckSquare className="h-3.5 w-3.5" />
               Select
             </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="text-xs text-muted-foreground flex items-center gap-1 cursor-help">
+                  <Keyboard className="h-3 w-3" />
+                  <span className="hidden sm:inline">Shortcuts</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                <div className="space-y-1">
+                  <p><kbd className="px-1 py-0.5 bg-muted rounded text-[10px]">Ctrl+A</kbd> Select All</p>
+                  <p><kbd className="px-1 py-0.5 bg-muted rounded text-[10px]">Delete</kbd> Delete Selected</p>
+                  <p><kbd className="px-1 py-0.5 bg-muted rounded text-[10px]">Esc</kbd> Exit Selection</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
           </motion.div>
         )}
       </AnimatePresence>
