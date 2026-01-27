@@ -118,6 +118,24 @@ export function useInfiniteGenerations(options: UseInfiniteGenerationsOptions = 
     return true;
   }, []);
 
+  const deleteMultipleGenerations = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return { success: 0, failed: 0 };
+    
+    const { error } = await supabase
+      .from('generations')
+      .delete()
+      .in('id', ids);
+
+    if (error) {
+      console.error('Error deleting generations:', error);
+      return { success: 0, failed: ids.length };
+    }
+
+    setGenerations(prev => prev.filter(g => !ids.includes(g.id)));
+    setTotalCount(prev => prev - ids.length);
+    return { success: ids.length, failed: 0 };
+  }, []);
+
   const refreshGenerations = useCallback(() => {
     pageRef.current = 1;
     setHasMore(true);
@@ -133,6 +151,7 @@ export function useInfiniteGenerations(options: UseInfiniteGenerationsOptions = 
     loadMore,
     addGeneration,
     deleteGeneration,
+    deleteMultipleGenerations,
     refreshGenerations,
   };
 }

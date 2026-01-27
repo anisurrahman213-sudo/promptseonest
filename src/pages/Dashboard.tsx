@@ -33,7 +33,8 @@ export default function Dashboard() {
     loadMore,
     loadingMore,
     addGeneration, 
-    deleteGeneration, 
+    deleteGeneration,
+    deleteMultipleGenerations,
     refreshGenerations,
     loading: generationsLoading 
   } = useInfiniteGenerations({ pageSize: 12 });
@@ -127,6 +128,17 @@ export default function Dashboard() {
     } else {
       toast.error('Failed to delete generation');
     }
+  };
+
+  const handleBulkDelete = async (ids: string[]) => {
+    const result = await deleteMultipleGenerations(ids);
+    if (result.success > 0) {
+      toast.success(`${result.success} generation${result.success > 1 ? 's' : ''} deleted`);
+    }
+    if (result.failed > 0) {
+      toast.error(`Failed to delete ${result.failed} generation${result.failed > 1 ? 's' : ''}`);
+    }
+    return result;
   };
 
   // exportToCSV removed - now using ExportDialog component
@@ -353,6 +365,7 @@ export default function Dashboard() {
                       <VirtualGenerationList
                         generations={filteredGenerations}
                         onDelete={handleDelete}
+                        onBulkDelete={handleBulkDelete}
                         hasMore={hasMore}
                         loadMore={loadMore}
                         loadingMore={loadingMore}
