@@ -26,6 +26,7 @@ interface UserInfo {
   phone_number: string | null;
   full_name: string | null;
   credits: number;
+  created_at: string | null;
 }
 
 export function usePaymentRequests() {

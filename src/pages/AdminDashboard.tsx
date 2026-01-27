@@ -183,12 +183,13 @@ export default function AdminDashboard() {
                     No users found
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
+                <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Email</TableHead>
-                          <TableHead>User ID</TableHead>
+                          <TableHead>User Info</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Signup Date</TableHead>
                           <TableHead className="text-center">Credits</TableHead>
                           <TableHead className="text-right">Action</TableHead>
                         </TableRow>
@@ -196,11 +197,26 @@ export default function AdminDashboard() {
                       <TableBody>
                         {users.map((u) => (
                           <TableRow key={u.user_id}>
-                            <TableCell className="font-medium">
-                              {u.email || 'N/A'}
+                            <TableCell>
+                              <div className="space-y-1">
+                                <p className="font-medium">{u.full_name || 'No Name'}</p>
+                                <p className="text-sm text-muted-foreground">{u.email || 'N/A'}</p>
+                              </div>
                             </TableCell>
-                            <TableCell className="text-xs text-muted-foreground font-mono">
-                              {u.user_id?.slice(0, 8)}...
+                            <TableCell>
+                              <p className="text-sm">{u.phone_number || 'No Phone'}</p>
+                            </TableCell>
+                            <TableCell>
+                              <p className="text-sm">
+                                {u.created_at 
+                                  ? new Date(u.created_at).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric'
+                                    })
+                                  : 'N/A'
+                                }
+                              </p>
                             </TableCell>
                             <TableCell className="text-center">
                               <Badge variant="secondary" className="font-mono">
