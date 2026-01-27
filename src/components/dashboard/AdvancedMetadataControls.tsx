@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
+import { PlatformChecklist } from './PlatformChecklist';
 export type ExportPlatform = 
   | 'adobe_stock' 
   | 'shutterstock' 
@@ -138,12 +138,17 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select platform" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-popover border border-border shadow-lg z-50 max-h-[300px]">
                     {platformOptions.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                
+                {/* Platform Requirements Checklist */}
+                <AnimatePresence mode="wait">
+                  <PlatformChecklist platform={settings.exportPlatform} />
+                </AnimatePresence>
               </div>
 
               {/* Title Length */}
