@@ -14,13 +14,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
-import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard, ImageIcon, Wallpaper, History } from 'lucide-react';
+import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard, ImageIcon, Wallpaper, History, Download } from 'lucide-react';
 import { PlanManagement } from '@/components/admin/PlanManagement';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog';
 import { UserFiltersComponent, filterUsers, UserFilters } from '@/components/admin/UserFilters';
 import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
+import { UserListExport } from '@/components/admin/UserListExport';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 
 const CREDITS_BY_PLAN: Record<string, number> = {
@@ -458,16 +459,19 @@ export default function AdminPayments() {
                           : `${filteredUsers.length} users`}
                       </span>
                     </div>
-                    {selectedUserIds.size > 0 && (
-                      <Button 
-                        size="sm" 
-                        onClick={() => setBulkEmailDialogOpen(true)}
-                        className="gap-2"
-                      >
-                        <Mail className="h-4 w-4" />
-                        Email Selected ({selectedUserIds.size})
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <UserListExport users={filteredUsers} filename="customers" />
+                      {selectedUserIds.size > 0 && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => setBulkEmailDialogOpen(true)}
+                          className="gap-2"
+                        >
+                          <Mail className="h-4 w-4" />
+                          Email Selected ({selectedUserIds.size})
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {/* User List */}
