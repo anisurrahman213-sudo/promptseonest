@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, FileSpreadsheet, Check } from 'lucide-react';
+import { Download, FileSpreadsheet, Check, Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,118 +12,30 @@ import {
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
-
-type ExportFormat = 'adobe_stock' | 'shutterstock' | 'freepik' | 'generic';
-
-interface Generation {
-  id: string;
-  image_name: string;
-  image_url: string;
-  prompt: string;
-  title: string;
-  description: string;
-  tags: string;
-  created_at: string;
-}
+import { 
+  stockPlatforms, 
+  generateExport, 
+  type ExportFormat, 
+  type Generation 
+} from '@/lib/stockPlatformFormats';
 
 interface ExportDialogProps {
   generations: Generation[];
   disabled?: boolean;
 }
 
-const exportFormats = [
-  {
-    id: 'adobe_stock' as ExportFormat,
-    name: 'Adobe Stock',
-    description: 'Filename, Title, Keywords (max 25), Category',
-    icon: '🅰️',
-  },
-  {
-    id: 'shutterstock' as ExportFormat,
-    name: 'Shutterstock',
-    description: 'Filename, Description, Keywords (max 50), Categories, Editorial',
-    icon: '📷',
-  },
-  {
-    id: 'freepik' as ExportFormat,
-    name: 'Freepik',
-    description: 'Filename, Title, Tags, Type',
-    icon: '🎨',
-  },
-  {
-    id: 'generic' as ExportFormat,
-    name: 'Generic (All Fields)',
-    description: 'All metadata fields for custom use',
-    icon: '📋',
-  },
-];
-
 export function ExportDialog({ generations, disabled }: ExportDialogProps) {
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('adobe_stock');
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const escapeCSV = (text: string): string => {
-    if (!text) return '""';
-    // Escape quotes and wrap in quotes
-    return `"${text.replace(/"/g, '""')}"`;
-  };
-
-  const limitKeywords = (tags: string, limit: number): string => {
-    const keywords = tags.split(',').map(t => t.trim()).filter(Boolean);
-    return keywords.slice(0, limit).join(', ');
-  };
-
-  const exportAdobeStock = () => {
-    // Adobe Stock format: Filename, Title, Keywords (max 25)
-    const headers = ['Filename', 'Title', 'Keywords'];
-    const rows = generations.map(g => [
-      escapeCSV(g.image_name),
-      escapeCSV(g.title.slice(0, 60)), // Adobe Stock title max 60 chars
-      escapeCSV(limitKeywords(g.tags, 25)), // Max 25 keywords
-    ]);
-    return { headers, rows, filename: 'adobe-stock-export' };
-  };
-
-  const exportShutterstock = () => {
-    // Shutterstock format: Filename, Description, Keywords (max 50), Categories, Editorial
-    const headers = ['Filename', 'Description', 'Keywords', 'Categories', 'Editorial'];
-    const rows = generations.map(g => [
-      escapeCSV(g.image_name),
-      escapeCSV(g.description.slice(0, 200)), // Shutterstock description max 200 chars
-      escapeCSV(limitKeywords(g.tags, 50)), // Max 50 keywords
-      escapeCSV(''), // Categories - user fills in
-      escapeCSV('no'), // Editorial - default no
-    ]);
-    return { headers, rows, filename: 'shutterstock-export' };
-  };
-
-  const exportFreepik = () => {
-    // Freepik format: Filename, Title, Tags, Type
-    const headers = ['Filename', 'Title', 'Tags', 'Type'];
-    const rows = generations.map(g => [
-      escapeCSV(g.image_name),
-      escapeCSV(g.title),
-      escapeCSV(g.tags),
-      escapeCSV('photo'), // Default type
-    ]);
-    return { headers, rows, filename: 'freepik-export' };
-  };
-
-  const exportGeneric = () => {
-    // Generic format: All fields
-    const headers = ['Filename', 'Title', 'Description', 'Keywords', 'AI Prompt', 'Created At'];
-    const rows = generations.map(g => [
-      escapeCSV(g.image_name),
-      escapeCSV(g.title),
-      escapeCSV(g.description),
-      escapeCSV(g.tags),
-      escapeCSV(g.prompt),
-      escapeCSV(new Date(g.created_at).toISOString()),
-    ]);
-    return { headers, rows, filename: 'metadata-export' };
-  };
+  const filteredPlatforms = stockPlatforms.filter(platform =>
+    platform.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleExport = () => {
     if (generations.length === 0) {
@@ -134,23 +46,7 @@ export function ExportDialog({ generations, disabled }: ExportDialogProps) {
     setIsExporting(true);
 
     try {
-      let exportData: { headers: string[]; rows: string[][]; filename: string };
-
-      switch (selectedFormat) {
-        case 'adobe_stock':
-          exportData = exportAdobeStock();
-          break;
-        case 'shutterstock':
-          exportData = exportShutterstock();
-          break;
-        case 'freepik':
-          exportData = exportFreepik();
-          break;
-        case 'generic':
-        default:
-          exportData = exportGeneric();
-          break;
-      }
+      const exportData = generateExport(selectedFormat, generations);
 
       const csv = [
         exportData.headers.join(','),
@@ -167,7 +63,8 @@ export function ExportDialog({ generations, disabled }: ExportDialogProps) {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast.success(`Exported ${generations.length} items for ${exportFormats.find(f => f.id === selectedFormat)?.name}`);
+      const platform = stockPlatforms.find(f => f.id === selectedFormat);
+      toast.success(`✅ ${generations.length} items exported for ${platform?.name}`);
       setIsOpen(false);
     } catch (error) {
       console.error('Export error:', error);
@@ -190,55 +87,66 @@ export function ExportDialog({ generations, disabled }: ExportDialogProps) {
           <span className="hidden sm:inline">Export CSV</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5 text-primary" />
-            Export to CSV
+            Export to Stock Platforms
           </DialogTitle>
           <DialogDescription>
-            Select the platform format for your CSV export. Each platform has specific column requirements.
+            Select the platform format. Each follows platform-specific metadata guidelines.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search platforms..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
+        <ScrollArea className="h-[350px] pr-4">
           <RadioGroup
             value={selectedFormat}
             onValueChange={(value) => setSelectedFormat(value as ExportFormat)}
-            className="space-y-3"
+            className="space-y-2"
           >
-            {exportFormats.map((format) => (
+            {filteredPlatforms.map((platform) => (
               <motion.div
-                key={format.id}
+                key={platform.id}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
               >
                 <Label
-                  htmlFor={format.id}
+                  htmlFor={platform.id}
                   className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    selectedFormat === format.id
+                    selectedFormat === platform.id
                       ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
                       : 'border-border hover:border-primary/30 hover:bg-muted/30'
                   }`}
                 >
-                  <RadioGroupItem value={format.id} id={format.id} className="mt-0.5" />
+                  <RadioGroupItem value={platform.id} id={platform.id} className="mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">{format.icon}</span>
-                      <span className="font-medium text-foreground">{format.name}</span>
-                      {selectedFormat === format.id && (
-                        <Check className="h-4 w-4 text-primary ml-auto" />
+                      <span className="text-lg">{platform.icon}</span>
+                      <span className="font-medium text-foreground">{platform.name}</span>
+                      {selectedFormat === platform.id && (
+                        <Check className="h-4 w-4 text-primary ml-auto flex-shrink-0" />
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {format.description}
+                      {platform.description}
                     </p>
                   </div>
                 </Label>
               </motion.div>
             ))}
           </RadioGroup>
-        </div>
+        </ScrollArea>
 
         <div className="flex items-center justify-between pt-2 border-t">
           <p className="text-sm text-muted-foreground">
