@@ -336,6 +336,7 @@ export type Database = {
         Row: {
           created_at: string
           credits: number
+          email: string | null
           full_name: string | null
           id: string
           phone_number: string | null
@@ -345,6 +346,7 @@ export type Database = {
         Insert: {
           created_at?: string
           credits?: number
+          email?: string | null
           full_name?: string | null
           id?: string
           phone_number?: string | null
@@ -354,6 +356,7 @@ export type Database = {
         Update: {
           created_at?: string
           credits?: number
+          email?: string | null
           full_name?: string | null
           id?: string
           phone_number?: string | null
@@ -395,6 +398,24 @@ export type Database = {
           phone_number: string | null
           user_id: string | null
         }
+        Insert: {
+          created_at?: string | null
+          credits?: number | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          phone_number?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credits?: number | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          phone_number?: string | null
+          user_id?: string | null
+        }
         Relationships: []
       }
     }
@@ -405,6 +426,7 @@ export type Database = {
       }
       deduct_credit: { Args: { p_user_id: string }; Returns: boolean }
       get_lock_remaining_seconds: { Args: { p_email: string }; Returns: number }
+      get_user_email: { Args: { user_uuid: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -413,6 +435,7 @@ export type Database = {
         Returns: boolean
       }
       is_account_locked: { Args: { p_email: string }; Returns: boolean }
+      sync_user_emails: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
