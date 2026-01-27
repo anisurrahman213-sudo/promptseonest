@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Header } from '@/components/layout/Header';
 import { useAdminPaymentRequests, useAdminUsers, useApprovePayment, useRejectPayment, useIsAdmin, useSendCustomEmail } from '@/hooks/usePaymentRequests';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
@@ -18,6 +19,8 @@ import { PlanManagement } from '@/components/admin/PlanManagement';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog';
+import { UserFiltersComponent, filterUsers, UserFilters } from '@/components/admin/UserFilters';
+import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 
 const CREDITS_BY_PLAN: Record<string, number> = {
@@ -52,10 +55,55 @@ export default function AdminPayments() {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
 
+  // User filters state
+  const [userFilters, setUserFilters] = useState<UserFilters>({
+    search: '',
+    minCredits: null,
+    maxCredits: null,
+    startDate: null,
+    endDate: null,
+  });
+
+  // Selected users for bulk email
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [bulkEmailDialogOpen, setBulkEmailDialogOpen] = useState(false);
+
+  // Filter users based on current filters
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
+    return filterUsers(users, userFilters);
+  }, [users, userFilters]);
+
   const openHistoryDialog = (customer: any) => {
     setSelectedCustomer(customer);
     setHistoryDialogOpen(true);
   };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds(prev => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUserIds.size === filteredUsers.length) {
+      setSelectedUserIds(new Set());
+    } else {
+      setSelectedUserIds(new Set(filteredUsers.map(u => u.user_id)));
+    }
+  };
+
+  const selectedUsersForEmail = useMemo(() => {
+    return filteredUsers
+      .filter(u => selectedUserIds.has(u.user_id))
+      .map(u => ({ email: u.email, full_name: u.full_name }));
+  }, [filteredUsers, selectedUserIds]);
 
   if (authLoading || isAdminLoading) {
     return (
@@ -389,68 +437,128 @@ export default function AdminPayments() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid gap-4">
-                  {users.map((u: any) => (
-                    <Card key={u.user_id}>
-                      <CardContent className="py-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <User className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <p className="font-medium">{u.full_name || 'No name'}</p>
-                              <p className="text-sm text-muted-foreground">{u.email}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="text-sm text-muted-foreground">Credits</p>
-                              <p className="font-bold text-lg">{u.credits}</p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button 
-                                variant="default" 
-                                size="sm"
-                                onClick={() => openHistoryDialog(u)}
-                                title="View History"
-                                className="gap-1"
-                              >
-                                <History className="h-4 w-4" />
-                                History
-                              </Button>
-                              {u.phone_number && (
-                                <>
-                                  <a href={`tel:${u.phone_number}`}>
-                                    <Button variant="outline" size="icon" title="Call">
-                                      <Phone className="h-4 w-4" />
-                                    </Button>
-                                  </a>
-                                  <a 
-                                    href={`https://wa.me/${u.phone_number.replace(/[^0-9]/g, '')}`} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                  >
-                                    <Button variant="outline" size="icon" className="text-green-600 hover:text-green-700" title="WhatsApp">
-                                      <MessageCircle className="h-4 w-4" />
-                                    </Button>
-                                  </a>
-                                </>
-                              )}
-                              <Button 
-                                variant="outline" 
-                                size="icon"
-                                onClick={() => openEmailDialog(u.email)}
-                                title="Email"
-                              >
-                                <Mail className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
+                <div className="space-y-4">
+                  {/* User Filters */}
+                  <UserFiltersComponent 
+                    filters={userFilters} 
+                    onFiltersChange={setUserFilters} 
+                  />
+
+                  {/* Bulk Actions Bar */}
+                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Checkbox 
+                        checked={filteredUsers.length > 0 && selectedUserIds.size === filteredUsers.length}
+                        onCheckedChange={toggleSelectAll}
+                        aria-label="Select all users"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {selectedUserIds.size > 0 
+                          ? `${selectedUserIds.size} selected` 
+                          : `${filteredUsers.length} users`}
+                      </span>
+                    </div>
+                    {selectedUserIds.size > 0 && (
+                      <Button 
+                        size="sm" 
+                        onClick={() => setBulkEmailDialogOpen(true)}
+                        className="gap-2"
+                      >
+                        <Mail className="h-4 w-4" />
+                        Email Selected ({selectedUserIds.size})
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* User List */}
+                  {filteredUsers.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center">
+                        <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium">No users match your filters</h3>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Try adjusting your search or filter criteria
+                        </p>
                       </CardContent>
                     </Card>
-                  ))}
+                  ) : (
+                    <div className="grid gap-3">
+                      {filteredUsers.map((u: any) => (
+                        <Card 
+                          key={u.user_id} 
+                          className={selectedUserIds.has(u.user_id) ? 'ring-2 ring-primary' : ''}
+                        >
+                          <CardContent className="py-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <Checkbox 
+                                  checked={selectedUserIds.has(u.user_id)}
+                                  onCheckedChange={() => toggleUserSelection(u.user_id)}
+                                  aria-label={`Select ${u.full_name || u.email}`}
+                                />
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <User className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                  <p className="font-medium">{u.full_name || 'No name'}</p>
+                                  <p className="text-sm text-muted-foreground">{u.email}</p>
+                                  {u.created_at && (
+                                    <p className="text-xs text-muted-foreground">
+                                      Joined {format(new Date(u.created_at), 'MMM d, yyyy')}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                  <p className="text-sm text-muted-foreground">Credits</p>
+                                  <p className="font-bold text-lg">{u.credits}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    variant="default" 
+                                    size="sm"
+                                    onClick={() => openHistoryDialog(u)}
+                                    title="View History"
+                                    className="gap-1"
+                                  >
+                                    <History className="h-4 w-4" />
+                                    History
+                                  </Button>
+                                  {u.phone_number && (
+                                    <>
+                                      <a href={`tel:${u.phone_number}`}>
+                                        <Button variant="outline" size="icon" title="Call">
+                                          <Phone className="h-4 w-4" />
+                                        </Button>
+                                      </a>
+                                      <a 
+                                        href={`https://wa.me/${u.phone_number.replace(/[^0-9]/g, '')}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                      >
+                                        <Button variant="outline" size="icon" className="text-green-600 hover:text-green-700" title="WhatsApp">
+                                          <MessageCircle className="h-4 w-4" />
+                                        </Button>
+                                      </a>
+                                    </>
+                                  )}
+                                  <Button 
+                                    variant="outline" 
+                                    size="icon"
+                                    onClick={() => openEmailDialog(u.email)}
+                                    title="Email"
+                                  >
+                                    <Mail className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </TabsContent>
@@ -603,6 +711,13 @@ export default function AdminPayments() {
           customer={selectedCustomer}
           open={historyDialogOpen}
           onOpenChange={setHistoryDialogOpen}
+        />
+
+        {/* Bulk Email Dialog */}
+        <BulkEmailDialog
+          open={bulkEmailDialogOpen}
+          onOpenChange={setBulkEmailDialogOpen}
+          selectedUsers={selectedUsersForEmail}
         />
       </main>
     </div>
