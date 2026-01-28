@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable/index';
 
 interface AuthContextType {
   user: User | null;
@@ -9,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: Error | null; userId?: string }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithApple: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
@@ -67,17 +69,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth?provider=google`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      },
+    const result = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: window.location.origin,
     });
-    return { error };
+    return { error: result.error };
+  };
+
+  const signInWithApple = async () => {
+    const result = await lovable.auth.signInWithOAuth('apple', {
+      redirect_uri: window.location.origin,
+    });
+    return { error: result.error };
   };
 
   const resetPassword = async (email: string) => {
@@ -95,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signOut, resetPassword, updatePassword }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signInWithGoogle, signInWithApple, signOut, resetPassword, updatePassword }}>
       {children}
     </AuthContext.Provider>
   );
