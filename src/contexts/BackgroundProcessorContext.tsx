@@ -152,7 +152,7 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
 
       // Step 4: Deduct credit and save to database in parallel
       const [creditResult, saveResult] = await Promise.all([
-        supabase.rpc('deduct_credit', { p_user_id: userId }),
+        supabase.rpc('deduct_credit'),
         supabase
           .from('generations')
           .insert({
