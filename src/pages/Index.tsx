@@ -128,7 +128,7 @@ const Index = () => {
           }} transition={{
             duration: 0.5,
             ease: "easeOut"
-          }} className="mb-4 sm:mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary">
+          }} className="mb-4 sm:mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary-foreground">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               AI-Powered Image Analysis
             </motion.div>
