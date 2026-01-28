@@ -424,7 +424,9 @@ export type Database = {
         Args: { p_credits: number; p_user_id: string }
         Returns: boolean
       }
-      deduct_credit: { Args: { p_user_id: string }; Returns: boolean }
+      deduct_credit:
+        | { Args: never; Returns: boolean }
+        | { Args: { p_user_id: string }; Returns: boolean }
       get_lock_remaining_seconds: { Args: { p_email: string }; Returns: number }
       get_user_email: { Args: { user_uuid: string }; Returns: string }
       has_role: {
