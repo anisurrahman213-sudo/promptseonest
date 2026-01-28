@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
@@ -7,7 +7,6 @@ import { useIsAdmin } from '@/hooks/usePaymentRequests';
 import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
 
 export function Header() {
   const { user, signOut } = useAuth();
@@ -23,15 +22,23 @@ export function Header() {
     navigate('/');
   };
 
+  const handleNavigate = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 glass">
       <div className="container flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2">
+        <button 
+          onClick={() => navigate('/')} 
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-primary">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
           </div>
           <span className="font-display font-bold text-lg sm:text-xl">Prompt SEO Nest</span>
-        </Link>
+        </button>
 
         {/* Desktop Navigation */}
         <div className="hidden sm:flex items-center gap-3">
@@ -57,35 +64,36 @@ export function Header() {
                 </span>
               </div>
 
-              <Link to="/profile">
-                <Button variant="ghost" size="sm">
-                  <User className="h-4 w-4 mr-1" />
-                  Profile
-                </Button>
-              </Link>
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/profile')}>
+                <User className="h-4 w-4 mr-1" />
+                Profile
+              </Button>
 
-              <Link to="/payment-history">
-                <Button variant="ghost" size="sm">
-                  <History className="h-4 w-4 mr-1" />
-                  History
-                </Button>
-              </Link>
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/payment-history')}>
+                <History className="h-4 w-4 mr-1" />
+                History
+              </Button>
 
               {isAdmin && (
-                <Link to="/admin/payments">
-                  <Button variant="ghost" size="sm" className="text-primary">
-                    <ShieldCheck className="h-4 w-4 mr-1" />
-                    Admin
-                  </Button>
-                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-primary"
+                  onClick={() => handleNavigate('/admin/payments')}
+                >
+                  <ShieldCheck className="h-4 w-4 mr-1" />
+                  Admin
+                </Button>
               )}
 
-              <Link to="/pricing">
-                <Button size="sm" className="bg-gradient-primary hover:opacity-90 text-white">
-                  <Crown className="h-4 w-4 mr-1" />
-                  Upgrade
-                </Button>
-              </Link>
+              <Button 
+                size="sm" 
+                className="bg-gradient-primary hover:opacity-90 text-white"
+                onClick={() => handleNavigate('/pricing')}
+              >
+                <Crown className="h-4 w-4 mr-1" />
+                Upgrade
+              </Button>
 
               <Button
                 variant="ghost"
@@ -98,16 +106,16 @@ export function Header() {
             </>
           ) : (
             <>
-              <Link to="/auth">
-                <Button variant="ghost" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link to="/auth?tab=signup">
-                <Button size="sm" className="bg-gradient-primary hover:opacity-90">
-                  Get Started
-                </Button>
-              </Link>
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/auth')}>
+                Login
+              </Button>
+              <Button 
+                size="sm" 
+                className="bg-gradient-primary hover:opacity-90"
+                onClick={() => handleNavigate('/auth?tab=signup')}
+              >
+                Get Started
+              </Button>
             </>
           )}
         </div>
@@ -164,48 +172,39 @@ export function Header() {
             <div className="container px-4 py-4 space-y-3">
               {user ? (
                 <>
-                  <Link 
-                    to="/profile" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block"
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/profile')}
                   >
-                    <Button variant="ghost" className="w-full justify-center h-11">
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
-                    </Button>
-                  </Link>
-                  <Link 
-                    to="/payment-history" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block"
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/payment-history')}
                   >
-                    <Button variant="ghost" className="w-full justify-center h-11">
-                      <History className="mr-2 h-4 w-4" />
-                      Payment History
-                    </Button>
-                  </Link>
+                    <History className="mr-2 h-4 w-4" />
+                    Payment History
+                  </Button>
                   {isAdmin && (
-                    <Link 
-                      to="/admin/payments" 
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="block"
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-center h-11 text-primary"
+                      onClick={() => handleNavigate('/admin/payments')}
                     >
-                      <Button variant="ghost" className="w-full justify-center h-11 text-primary">
-                        <ShieldCheck className="mr-2 h-4 w-4" />
-                        Admin Panel
-                      </Button>
-                    </Link>
-                  )}
-                  <Link 
-                    to="/pricing" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block"
-                  >
-                    <Button className="w-full justify-center h-11 bg-gradient-primary hover:opacity-90 text-white">
-                      <Crown className="mr-2 h-4 w-4" />
-                      Upgrade Plan
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                      Admin Panel
                     </Button>
-                  </Link>
+                  )}
+                  <Button 
+                    className="w-full justify-center h-11 bg-gradient-primary hover:opacity-90 text-white"
+                    onClick={() => handleNavigate('/pricing')}
+                  >
+                    <Crown className="mr-2 h-4 w-4" />
+                    Upgrade Plan
+                  </Button>
                   <Button
                     variant="ghost"
                     onClick={handleSignOut}
@@ -217,24 +216,19 @@ export function Header() {
                 </>
               ) : (
                 <>
-                  <Link 
-                    to="/auth" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block"
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/auth')}
                   >
-                    <Button variant="outline" className="w-full justify-center h-11">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link 
-                    to="/auth?tab=signup" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block"
+                    Login
+                  </Button>
+                  <Button 
+                    className="w-full justify-center h-11 bg-gradient-primary hover:opacity-90"
+                    onClick={() => handleNavigate('/auth?tab=signup')}
                   >
-                    <Button className="w-full justify-center h-11 bg-gradient-primary hover:opacity-90">
-                      Get Started
-                    </Button>
-                  </Link>
+                    Get Started
+                  </Button>
                 </>
               )}
             </div>
