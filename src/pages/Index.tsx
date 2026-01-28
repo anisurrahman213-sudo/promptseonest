@@ -142,7 +142,7 @@ const Index = () => {
             duration: 0.5,
             delay: 0.1,
             ease: "easeOut"
-          }} className="mb-4 sm:mb-6 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight text-zinc-950" style={heroTextStyle}>
+          }} className="mb-4 sm:mb-6 text-3xl sm:text-5xl lg:text-7xl font-bold leading-tight tracking-tight text-zinc-950 md:text-[sidebar-accent-foreground]" style={heroTextStyle}>
               Generate Perfect
               <span className={heroTextColor ? '' : 'block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent'}>
                 Image Prompts & Metadata
