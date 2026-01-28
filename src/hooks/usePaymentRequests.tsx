@@ -21,8 +21,9 @@ interface PaymentRequest {
 }
 
 interface UserInfo {
+  id: string;
   user_id: string;
-  email: string;
+  email: string | null;
   phone_number: string | null;
   full_name: string | null;
   credits: number;
@@ -60,10 +61,9 @@ export function useAdminPaymentRequests() {
 
       if (paymentsError) throw paymentsError;
 
-      // Get user info from admin_user_view
+      // Get user info from secure RPC function
       const { data: users, error: usersError } = await supabase
-        .from('admin_user_view')
-        .select('user_id, email, phone_number, full_name');
+        .rpc('get_admin_user_view');
 
       if (usersError) {
         console.error('Error fetching user info:', usersError);
@@ -72,7 +72,7 @@ export function useAdminPaymentRequests() {
 
       // Merge user info with payments
       const paymentsWithUserInfo = payments?.map(payment => {
-        const userInfo = users?.find(u => u.user_id === payment.user_id);
+        const userInfo = (users as UserInfo[])?.find(u => u.user_id === payment.user_id);
         return {
           ...payment,
           user_email: userInfo?.email || null,
@@ -91,12 +91,18 @@ export function useAdminUsers() {
     queryKey: ['admin-users'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('admin_user_view')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('get_admin_user_view');
 
       if (error) throw error;
-      return data as UserInfo[];
+      
+      // Sort by created_at descending
+      const sortedData = (data as UserInfo[])?.sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateB - dateA;
+      });
+      
+      return sortedData;
     },
   });
 }

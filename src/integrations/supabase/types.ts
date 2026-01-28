@@ -388,36 +388,7 @@ export type Database = {
       }
     }
     Views: {
-      admin_user_view: {
-        Row: {
-          created_at: string | null
-          credits: number | null
-          email: string | null
-          full_name: string | null
-          id: string | null
-          phone_number: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          credits?: number | null
-          email?: string | null
-          full_name?: string | null
-          id?: string | null
-          phone_number?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          credits?: number | null
-          email?: string | null
-          full_name?: string | null
-          id?: string | null
-          phone_number?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       add_credits: {
@@ -427,6 +398,18 @@ export type Database = {
       deduct_credit:
         | { Args: never; Returns: boolean }
         | { Args: { p_user_id: string }; Returns: boolean }
+      get_admin_user_view: {
+        Args: never
+        Returns: {
+          created_at: string
+          credits: number
+          email: string
+          full_name: string
+          id: string
+          phone_number: string
+          user_id: string
+        }[]
+      }
       get_lock_remaining_seconds: { Args: { p_email: string }; Returns: number }
       get_user_email: { Args: { user_uuid: string }; Returns: string }
       has_role: {
