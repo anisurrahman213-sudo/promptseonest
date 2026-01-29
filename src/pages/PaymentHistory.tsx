@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { usePaymentRequests } from '@/hooks/usePaymentRequests';
 import { useAuth } from '@/hooks/useAuth';

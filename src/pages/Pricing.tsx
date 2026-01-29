@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import { Check, Sparkles, CreditCard, Crown, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Pricing() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: plans, isLoading } = usePricingPlans();
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null);

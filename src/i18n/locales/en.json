@@ -27,7 +27,10 @@
     "or": "or",
     "and": "and",
     "credits": "credits",
-    "credit": "credit"
+    "credit": "credit",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "name": "Name"
   },
   "header": {
     "profile": "Profile",
@@ -101,8 +104,7 @@
     "creditsRemaining": "Credits Remaining",
     "todayUploads": "Today's Uploads",
     "lowCredits": "Low credits!",
-    "creditsRemaining2": "You have {{count}} credit remaining",
-    "creditsRemaining2_plural": "You have {{count}} credits remaining",
+    "creditsRemainingCount": "You have {{count}} credit(s) remaining",
     "upgradeNow": "Upgrade Now",
     "noCreditsLeft": "No Credits Left",
     "noCreditsDesc": "You've used all your credits. Upgrade to continue generating metadata.",
@@ -113,37 +115,59 @@
     "dropzoneTitle": "Drop images or videos here",
     "dropzoneSubtitle": "or click to browse files",
     "processing": "Processing...",
-    "processingImages": "Processing {{current}} of {{total}} images..."
+    "processingImages": "Processing {{current}} of {{total}} images...",
+    "autoDeleteWarning": "Auto-Delete Active!",
+    "autoDeleteDesc": "Files older than 7 days are automatically deleted to save storage",
+    "recentActivity": "Recent Activity",
+    "searchPlaceholder": "Search by name, title, tags...",
+    "sortBy": "Sort by",
+    "emptyTitle": "No generations yet",
+    "emptyDesc": "Upload your first image to get started!",
+    "startGenerating": "Start Generating"
   },
   "auth": {
+    "welcome": "Welcome",
+    "welcomeDesc": "Sign in or create an account to get started",
     "login": "Login",
     "signUp": "Sign Up",
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "fullName": "Full Name",
-    "forgotPassword": "Forgot Password?",
+    "phoneNumber": "Phone Number",
+    "forgotPassword": "Forgot password?",
     "resetPassword": "Reset Password",
+    "forgotPasswordTitle": "Forgot Password",
+    "forgotPasswordDesc": "Enter your email to receive a reset link",
+    "resetPasswordTitle": "Reset Password",
+    "resetPasswordDesc": "Enter your new password",
     "sendResetLink": "Send Reset Link",
     "backToLogin": "Back to Login",
-    "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?",
     "orContinueWith": "Or continue with",
-    "signInWithGoogle": "Sign in with Google",
-    "signInWithApple": "Sign in with Apple",
-    "termsAgreement": "By signing up, you agree to our Terms of Service and Privacy Policy",
-    "welcomeBack": "Welcome back",
-    "createAccount": "Create your account",
-    "loginSuccess": "Logged in successfully",
-    "signUpSuccess": "Account created successfully",
-    "resetLinkSent": "Password reset link sent to your email"
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
+    "signingIn": "Signing in...",
+    "signIn": "Sign In",
+    "creatingAccount": "Creating account...",
+    "createAccount": "Create Account",
+    "sending": "Sending...",
+    "updating": "Updating...",
+    "updatePassword": "Update Password",
+    "newPassword": "New Password",
+    "accountLocked": "Account locked due to too many failed attempts. Try again in {{minutes}} minute(s).",
+    "attemptsWarning": "Warning: Only {{count}} login attempt(s) remaining before account lock.",
+    "appTitle": "PromptNest",
+    "appDesc": "AI-powered image prompts & metadata",
+    "yourName": "Your name"
   },
   "profile": {
     "title": "Profile Settings",
     "personalInfo": "Personal Information",
     "updateDetails": "Update your profile details",
     "fullName": "Full Name",
+    "fullNamePlaceholder": "Your full name",
     "phoneNumber": "Phone Number",
+    "phoneNumberPlaceholder": "+880 1XXX-XXXXXX",
     "email": "Email",
     "emailCannotChange": "Email cannot be changed",
     "saveChanges": "Save Changes",
@@ -153,7 +177,8 @@
     "newPassword": "New Password",
     "confirmNewPassword": "Confirm New Password",
     "passwordChanged": "Password changed successfully",
-    "profileUpdated": "Profile updated successfully"
+    "profileUpdated": "Profile updated successfully",
+    "changing": "Changing..."
   },
   "pricing": {
     "title": "Choose your plan",
@@ -164,10 +189,7 @@
     "buyNow": "Buy Now",
     "getLifetimeAccess": "Get Lifetime Access",
     "needMore": "Need more credits or custom plans?",
-    "contactUs": "Contact us",
-    "perMonth": "/month",
-    "oneTime": "one-time",
-    "unlimited": "Unlimited"
+    "contactUs": "Contact us"
   },
   "payment": {
     "title": "Payment History",
@@ -218,6 +240,18 @@
     "invalidEmail": "Invalid email address",
     "passwordTooShort": "Password must be at least 6 characters",
     "passwordMismatch": "Passwords do not match",
-    "somethingWentWrong": "Something went wrong. Please try again."
+    "somethingWentWrong": "Something went wrong. Please try again.",
+    "fillAllFields": "Please fill in all fields",
+    "invalidCredentials": "Invalid email or password",
+    "emailAlreadyRegistered": "This email is already registered",
+    "profileUpdateFailed": "Failed to update profile"
+  },
+  "toast": {
+    "welcomeBack": "Welcome back!",
+    "accountCreated": "Account created! You now have 10 free credits.",
+    "passwordResetSent": "Password reset link sent! Check your email.",
+    "passwordUpdated": "Password updated successfully!",
+    "generationDeleted": "Generation deleted",
+    "generationsDeleted": "{{count}} generation(s) deleted"
   }
 }

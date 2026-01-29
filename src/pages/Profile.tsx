@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +14,7 @@ import { toast } from 'sonner';
 import { User, Phone, Mail, Shield, Loader2, Save, Eye, EyeOff } from 'lucide-react';
 
 export default function Profile() {
+  const { t } = useTranslation();
   const { user, loading: authLoading, updatePassword } = useAuth();
   const navigate = useNavigate();
   
