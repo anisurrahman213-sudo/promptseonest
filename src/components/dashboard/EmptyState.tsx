@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ImagePlus, Sparkles, Upload, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -7,6 +8,8 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ onUploadClick }: EmptyStateProps) {
+  const { t } = useTranslation();
+
   return (
     <motion.div 
       className="flex flex-col items-center justify-center py-12 sm:py-16 px-4 text-center"
@@ -52,7 +55,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        No generations yet
+        {t('dashboard.emptyTitle')}
       </motion.h3>
       <motion.p 
         className="text-sm sm:text-base text-muted-foreground max-w-sm mb-6 sm:mb-8 px-4"
@@ -60,7 +63,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        Upload your first image to generate AI-powered prompts, titles, descriptions, and SEO-optimized tags.
+        {t('dashboard.emptyDesc')}
       </motion.p>
       
       {onUploadClick && (
@@ -77,7 +80,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
             className="bg-gradient-primary hover:opacity-90 gap-2 px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg font-medium shadow-lg touch-manipulation"
           >
             <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
-            Upload Your First Image
+            {t('dashboard.startGenerating')}
             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </motion.div>
@@ -87,15 +90,15 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
       <div className="mt-8 sm:mt-12 flex items-center gap-3 sm:gap-4 text-muted-foreground/60 text-xs sm:text-sm">
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
-          <span>AI Prompts</span>
+          <span>{t('features.aiPoweredPrompts')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-secondary/40" />
-          <span>SEO Titles</span>
+          <span>{t('features.seoMetadata')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-accent/40" />
-          <span>50+ Tags</span>
+          <span>50+ {t('dashboard.tagsLabel')}</span>
         </div>
       </div>
     </motion.div>

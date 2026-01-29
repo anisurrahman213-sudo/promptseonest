@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { User, Phone, Mail, Shield, Loader2, Save, Eye, EyeOff } from 'lucide-react';
@@ -73,20 +72,20 @@ export default function Profile() {
     setSaving(false);
     
     if (error) {
-      toast.error('Failed to update profile');
+      toast.error(t('errors.profileUpdateFailed'));
     } else {
-      toast.success('Profile updated successfully');
+      toast.success(t('profile.profileUpdated'));
     }
   };
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error(t('errors.passwordTooShort'));
       return;
     }
     
     if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('errors.passwordMismatch'));
       return;
     }
     
@@ -97,7 +96,7 @@ export default function Profile() {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Password changed successfully');
+      toast.success(t('profile.passwordChanged'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -126,7 +125,7 @@ export default function Profile() {
             <User className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-display text-3xl font-bold">Profile Settings</h1>
+            <h1 className="font-display text-3xl font-bold">{t('profile.title')}</h1>
             <p className="text-muted-foreground">{user?.email}</p>
           </div>
         </div>
@@ -136,9 +135,9 @@ export default function Profile() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Personal Information
+              {t('profile.personalInfo')}
             </CardTitle>
-            <CardDescription>Update your profile details</CardDescription>
+            <CardDescription>{t('profile.updateDetails')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {profileLoading ? (
@@ -149,26 +148,26 @@ export default function Profile() {
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName">{t('profile.fullName')}</Label>
                   <Input
                     id="fullName"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Your full name"
+                    placeholder={t('profile.fullNamePlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Label htmlFor="phoneNumber">{t('profile.phoneNumber')}</Label>
                   <Input
                     id="phoneNumber"
                     type="tel"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="+880 1XXX-XXXXXX"
+                    placeholder={t('profile.phoneNumberPlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('profile.email')}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="email"
@@ -178,18 +177,18 @@ export default function Profile() {
                     />
                     <Mail className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                  <p className="text-xs text-muted-foreground">{t('profile.emailCannotChange')}</p>
                 </div>
                 <Button onClick={handleSaveProfile} disabled={saving}>
                   {saving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      {t('profile.saving')}
                     </>
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4" />
-                      Save Changes
+                      {t('profile.saveChanges')}
                     </>
                   )}
                 </Button>
@@ -203,13 +202,13 @@ export default function Profile() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Change Password
+              {t('profile.changePassword')}
             </CardTitle>
-            <CardDescription>Update your password for security</CardDescription>
+            <CardDescription>{t('profile.updatePasswordDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
+              <Label htmlFor="newPassword">{t('profile.newPassword')}</Label>
               <div className="relative">
                 <Input
                   id="newPassword"
@@ -229,7 +228,7 @@ export default function Profile() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Label htmlFor="confirmPassword">{t('profile.confirmNewPassword')}</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -255,10 +254,10 @@ export default function Profile() {
               {changingPassword ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Changing...
+                  {t('profile.changing')}
                 </>
               ) : (
-                'Change Password'
+                t('profile.changePassword')
               )}
             </Button>
           </CardContent>

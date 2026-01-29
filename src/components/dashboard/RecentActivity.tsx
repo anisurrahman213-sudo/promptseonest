@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Clock, Image, CheckCircle, TrendingUp, AlertTriangle, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +23,8 @@ interface RecentActivityProps {
 }
 
 export function RecentActivity({ generations, maxItems = 8 }: RecentActivityProps) {
+  const { t } = useTranslation();
+
   const recentItems = useMemo(() => {
     return [...generations]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -55,9 +58,9 @@ export function RecentActivity({ generations, maxItems = 8 }: RecentActivityProp
       
       let dateKey: string;
       if (format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')) {
-        dateKey = 'Today';
+        dateKey = t('dashboard.today');
       } else if (format(date, 'yyyy-MM-dd') === format(yesterday, 'yyyy-MM-dd')) {
-        dateKey = 'Yesterday';
+        dateKey = t('dashboard.yesterday');
       } else {
         dateKey = format(date, 'MMM d, yyyy');
       }
@@ -69,7 +72,7 @@ export function RecentActivity({ generations, maxItems = 8 }: RecentActivityProp
     });
     
     return groups;
-  }, [recentItems]);
+  }, [recentItems, t]);
 
   // Calculate time remaining before auto-delete (3 days = 72 hours)
   const getTimeRemaining = (createdAt: string) => {
@@ -78,10 +81,10 @@ export function RecentActivity({ generations, maxItems = 8 }: RecentActivityProp
     deleteAt.setDate(deleteAt.getDate() + 3);
     const hoursRemaining = differenceInHours(deleteAt, new Date());
     
-    if (hoursRemaining <= 0) return { text: 'Expiring soon', urgent: true };
-    if (hoursRemaining < 24) return { text: `${hoursRemaining}h left`, urgent: true };
+    if (hoursRemaining <= 0) return { text: t('dashboard.expiringSoonLabel'), urgent: true };
+    if (hoursRemaining < 24) return { text: `${hoursRemaining}h ${t('dashboard.left')}`, urgent: true };
     const days = Math.floor(hoursRemaining / 24);
-    return { text: `${days}d ${hoursRemaining % 24}h left`, urgent: days < 1 };
+    return { text: `${days}d ${hoursRemaining % 24}h ${t('dashboard.left')}`, urgent: days < 1 };
   };
 
   if (recentItems.length === 0) {
@@ -108,10 +111,10 @@ export function RecentActivity({ generations, maxItems = 8 }: RecentActivityProp
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-amber-600 dark:text-amber-400">
-                ⚠️ Inactive for {daysSinceLastActivity} days!
+                ⚠️ {t('dashboard.inactiveDays', { days: daysSinceLastActivity })}
               </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                আপনি গত {daysSinceLastActivity} দিন কোনো ছবি আপলোড করেননি। মনে রাখবেন, 3 দিনের বেশি পুরনো generations স্বয়ংক্রিয়ভাবে মুছে যাবে!
+                {t('dashboard.inactiveDesc', { days: daysSinceLastActivity })}
               </p>
             </div>
           </div>
@@ -128,7 +131,7 @@ export function RecentActivity({ generations, maxItems = 8 }: RecentActivityProp
       >
         <Clock className="h-4 w-4 text-destructive shrink-0" />
         <p className="text-xs text-destructive">
-          <strong>⚠️ Auto-Delete:</strong> সব generations 3 দিন পর স্বয়ংক্রিয়ভাবে মুছে যাবে। প্রয়োজনীয় ডেটা আগেই এক্সপোর্ট করে নিন!
+          <strong>⚠️ {t('dashboard.autoDeleteWarning')}:</strong> {t('dashboard.autoDeleteNotice')}
         </p>
       </motion.div>
 
@@ -139,10 +142,10 @@ export function RecentActivity({ generations, maxItems = 8 }: RecentActivityProp
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
                 <TrendingUp className="h-4 w-4 text-primary" />
               </div>
-              Recent Activity
+              {t('dashboard.recentActivity')}
             </div>
             <Badge variant="outline" className="text-xs">
-              {generations.length} total
+              {generations.length} {t('dashboard.totalLabel')}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -258,7 +261,7 @@ export function RecentActivity({ generations, maxItems = 8 }: RecentActivityProp
           {generations.length > maxItems && (
             <div className="px-4 sm:px-6 pt-3 mt-3 border-t border-border/50">
               <p className="text-center text-xs text-muted-foreground">
-                Showing {maxItems} of {generations.length} total generations
+                {t('dashboard.showingOf', { shown: maxItems, total: generations.length })}
               </p>
             </div>
           )}

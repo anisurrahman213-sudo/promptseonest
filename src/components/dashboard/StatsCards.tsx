@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Image, Zap, TrendingUp, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -10,10 +11,12 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ totalGenerations, credits, todayGenerations }: StatsCardsProps) {
+  const { t } = useTranslation();
+
   const stats = [
     {
-      label: 'Total Generations',
-      shortLabel: 'Total',
+      label: t('dashboard.totalGenerations'),
+      shortLabel: t('dashboard.totalGenerations').split(' ')[0],
       value: totalGenerations,
       icon: Image,
       gradient: 'from-primary/20 to-primary/5',
@@ -22,8 +25,8 @@ export function StatsCards({ totalGenerations, credits, todayGenerations }: Stat
       borderColor: 'border-primary/20',
     },
     {
-      label: 'Credits Available',
-      shortLabel: 'Credits',
+      label: t('dashboard.creditsRemaining'),
+      shortLabel: t('common.credits'),
       value: credits ?? 0,
       icon: Zap,
       gradient: 'from-warning/20 to-warning/5',
@@ -32,8 +35,8 @@ export function StatsCards({ totalGenerations, credits, todayGenerations }: Stat
       borderColor: 'border-warning/20',
     },
     {
-      label: 'Generated Today',
-      shortLabel: 'Today',
+      label: t('dashboard.todayUploads'),
+      shortLabel: t('dashboard.todayUploads').split(' ')[0],
       value: todayGenerations,
       icon: TrendingUp,
       gradient: 'from-accent/20 to-accent/5',
