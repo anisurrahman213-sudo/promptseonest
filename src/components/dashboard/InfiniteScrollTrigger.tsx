@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -13,6 +14,7 @@ export function InfiniteScrollTrigger({
   hasMore, 
   isLoading 
 }: InfiniteScrollTriggerProps) {
+  const { t } = useTranslation();
   const triggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,7 +50,7 @@ export function InfiniteScrollTrigger({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        সব generations লোড হয়ে গেছে ✨
+        {t('dashboard.allLoaded')} ✨
       </motion.div>
     );
   }
@@ -62,7 +64,7 @@ export function InfiniteScrollTrigger({
           animate={{ opacity: 1 }}
         >
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          <span className="text-sm text-muted-foreground">আরো লোড হচ্ছে...</span>
+          <span className="text-sm text-muted-foreground">{t('dashboard.loadingMore')}</span>
         </motion.div>
       )}
     </div>

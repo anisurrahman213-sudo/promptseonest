@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Clock, Trash2, Download, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,8 @@ interface AutoDeleteWarningProps {
 }
 
 export function AutoDeleteWarning({ generations }: AutoDeleteWarningProps) {
+  const { t } = useTranslation();
+
   // Calculate stats
   const stats = useMemo(() => {
     if (generations.length === 0) {
@@ -82,17 +85,17 @@ export function AutoDeleteWarning({ generations }: AutoDeleteWarningProps) {
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-destructive flex items-center gap-2 flex-wrap">
                 <Clock className="h-4 w-4" />
-                ⚠️ Auto-Delete সক্রিয়!
+                ⚠️ {t('dashboard.autoDeleteWarning')}
               </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                সব generations <strong>3 দিন</strong> পর স্বয়ংক্রিয়ভাবে মুছে যাবে। প্রয়োজনীয় ডেটা আগেই <strong>Export/Copy</strong> করে রাখুন!
+                {t('dashboard.autoDeleteDesc')}
               </p>
             </div>
           </div>
           <Link to="/dashboard" className="shrink-0">
             <Button variant="outline" size="sm" className="gap-2 border-destructive/30 text-destructive hover:bg-destructive/10">
               <Download className="h-4 w-4" />
-              Export Now
+              {t('common.export')}
             </Button>
           </Link>
         </div>
@@ -112,10 +115,10 @@ export function AutoDeleteWarning({ generations }: AutoDeleteWarningProps) {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-amber-600 dark:text-amber-400">
-                🔥 {stats.expiringToday}টি generation আজ মুছে যাবে!
+                🔥 {t('dashboard.expiringToday', { count: stats.expiringToday })}
               </h4>
               <p className="text-sm text-muted-foreground mt-0.5">
-                এই items গুলোর মেয়াদ আজ শেষ হচ্ছে। এখনই copy/export করুন!
+                {t('dashboard.expiringTodayDesc')}
               </p>
             </div>
           </div>
@@ -133,7 +136,7 @@ export function AutoDeleteWarning({ generations }: AutoDeleteWarningProps) {
           <div className="flex items-center gap-2 text-sm">
             <Clock className="h-4 w-4 text-orange-500" />
             <span className="text-orange-600 dark:text-orange-400">
-              <strong>{stats.expiringSoon}টি</strong> generation আগামী ২ দিনে মুছে যাবে
+              {t('dashboard.expiringSoon', { count: stats.expiringSoon })}
             </span>
           </div>
         </motion.div>
@@ -153,13 +156,13 @@ export function AutoDeleteWarning({ generations }: AutoDeleteWarningProps) {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-purple-600 dark:text-purple-400">
-                😴 {stats.daysSinceActivity} দিন ধরে Inactive!
+                😴 {t('dashboard.inactiveDays', { days: stats.daysSinceActivity })}
               </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                আপনি গত {stats.daysSinceActivity} দিন কোনো ছবি আপলোড করেননি। আপনার পুরনো generations মুছে যাচ্ছে!
+                {t('dashboard.inactiveDesc', { days: stats.daysSinceActivity })}
               </p>
               <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-purple-500 hover:text-purple-600 mt-2 font-medium">
-                এখনই আপলোড করুন <ArrowRight className="h-3 w-3" />
+                {t('dashboard.uploadNow')} <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </div>

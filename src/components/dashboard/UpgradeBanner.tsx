@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Crown, Sparkles, Zap } from 'lucide-react';
@@ -8,6 +9,7 @@ interface UpgradeBannerProps {
 }
 
 export function UpgradeBanner({ credits }: UpgradeBannerProps) {
+  const { t } = useTranslation();
   const isLowCredits = credits !== null && credits <= 5;
 
   return (
@@ -35,12 +37,12 @@ export function UpgradeBanner({ credits }: UpgradeBannerProps) {
           </div>
           <div>
             <h3 className="font-display font-semibold text-lg">
-              {isLowCredits ? 'Running low on credits!' : 'Upgrade to Unlimited'}
+              {isLowCredits ? t('dashboard.runningLow') : t('dashboard.upgradeToUnlimited')}
             </h3>
             <p className="text-sm text-muted-foreground mt-0.5">
               {isLowCredits 
-                ? `You have only ${credits} credits left. Upgrade now to continue generating.`
-                : 'Get lifetime access with unlimited generations for just ৳6,000'
+                ? t('dashboard.lowCreditsDesc', { count: credits })
+                : t('dashboard.upgradeDesc')
               }
             </p>
           </div>
@@ -52,7 +54,7 @@ export function UpgradeBanner({ credits }: UpgradeBannerProps) {
             size="lg"
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            {isLowCredits ? 'Get More Credits' : 'Upgrade Now'}
+            {isLowCredits ? t('dashboard.getMoreCredits') : t('dashboard.upgradeNow')}
           </Button>
         </Link>
       </div>

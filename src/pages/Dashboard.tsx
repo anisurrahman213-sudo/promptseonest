@@ -93,7 +93,7 @@ export default function Dashboard() {
             <div className="absolute inset-0 bg-gradient-primary blur-xl opacity-30 rounded-full" />
             <Loader2 className="h-10 w-10 animate-spin text-primary relative" />
           </div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -107,7 +107,7 @@ export default function Dashboard() {
     if (!user) return;
     
     if (credits !== null && credits < mediaFiles.length) {
-      toast.error(`Not enough credits. You need ${mediaFiles.length} credits but have ${credits}.`);
+      toast.error(t('errors.notEnoughCredits', { needed: mediaFiles.length, have: credits }));
       return;
     }
 
@@ -121,29 +121,25 @@ export default function Dashboard() {
     );
   };
 
-  // Video frame extraction now handled by videoFrameExtractor.ts
-
   const handleDelete = async (id: string) => {
     const success = await deleteGeneration(id);
     if (success) {
-      toast.success('Generation deleted');
+      toast.success(t('toast.generationDeleted'));
     } else {
-      toast.error('Failed to delete generation');
+      toast.error(t('errors.deleteFailed'));
     }
   };
 
   const handleBulkDelete = async (ids: string[]) => {
     const result = await deleteMultipleGenerations(ids);
     if (result.success > 0) {
-      toast.success(`${result.success} generation${result.success > 1 ? 's' : ''} deleted`);
+      toast.success(t('toast.generationsDeleted', { count: result.success }));
     }
     if (result.failed > 0) {
-      toast.error(`Failed to delete ${result.failed} generation${result.failed > 1 ? 's' : ''}`);
+      toast.error(t('errors.deleteFailed'));
     }
     return result;
   };
-
-  // exportToCSV removed - now using ExportDialog component
 
   return (
     <motion.div 
@@ -170,7 +166,7 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
               >
-                Generate Stock Metadata
+                {t('dashboard.title')}
               </motion.span>
             </h1>
             <motion.p 
@@ -179,7 +175,7 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              Upload images or videos to generate unique, platform-optimized metadata for Adobe Stock, Shutterstock, Freepik & AI marketplaces
+              {t('dashboard.subtitle')}
             </motion.p>
           </motion.div>
 
@@ -199,8 +195,6 @@ export default function Dashboard() {
           {/* Recent Activity Feed */}
           <RecentActivity generations={generations} maxItems={5} />
 
-          {/* Background processing indicator is now global - shown in BackgroundProcessingIndicator.tsx */}
-
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -213,14 +207,14 @@ export default function Dashboard() {
                   className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-md sm:rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md font-medium text-xs sm:text-sm transition-all touch-manipulation"
                 >
                   <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span>Generate</span>
+                  <span>{t('dashboard.generateTab')}</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="history" 
                   className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-md sm:rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md font-medium text-xs sm:text-sm transition-all touch-manipulation"
                 >
                   <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span>History ({totalCount})</span>
+                  <span>{t('dashboard.historyTab')} ({totalCount})</span>
                 </TabsTrigger>
               </TabsList>
             </motion.div>
@@ -267,15 +261,15 @@ export default function Dashboard() {
                             <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-warning" />
                           </motion.div>
                           <div>
-                            <p className="font-medium text-warning text-sm sm:text-base">Low credits!</p>
+                            <p className="font-medium text-warning text-sm sm:text-base">{t('dashboard.lowCredits')}</p>
                             <p className="text-xs sm:text-sm text-muted-foreground">
-                              You have {credits} credit{credits !== 1 ? 's' : ''} remaining
+                              {t('dashboard.creditsRemainingCount', { count: credits })}
                             </p>
                           </div>
                         </div>
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                           <Button asChild className="w-full sm:w-auto bg-gradient-to-r from-warning to-orange-500 hover:opacity-90 touch-manipulation">
-                            <a href="/pricing">Upgrade Now</a>
+                            <a href="/pricing">{t('dashboard.upgradeNow')}</a>
                           </Button>
                         </motion.div>
                       </motion.div>
@@ -295,13 +289,13 @@ export default function Dashboard() {
                         >
                           <Zap className="h-10 w-10 sm:h-12 sm:w-12 text-destructive mb-3 sm:mb-4" />
                         </motion.div>
-                        <h3 className="font-display font-bold text-lg sm:text-xl mb-2">No Credits Left</h3>
+                        <h3 className="font-display font-bold text-lg sm:text-xl mb-2">{t('dashboard.noCreditsLeft')}</h3>
                         <p className="text-muted-foreground text-sm sm:text-base mb-4">
-                          You've used all your credits. Upgrade to continue generating metadata.
+                          {t('dashboard.noCreditsDesc')}
                         </p>
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                           <Button asChild className="bg-gradient-primary hover:opacity-90 touch-manipulation">
-                            <a href="/pricing">View Pricing Plans</a>
+                            <a href="/pricing">{t('dashboard.viewPricingPlans')}</a>
                           </Button>
                         </motion.div>
                       </motion.div>
@@ -353,7 +347,7 @@ export default function Dashboard() {
                         animate={{ opacity: 1 }}
                       >
                         <p className="text-muted-foreground">
-                          No results found for "{searchQuery}"
+                          {t('dashboard.noResults', { query: searchQuery })}
                         </p>
                         <motion.div whileHover={{ scale: 1.05 }}>
                           <Button
@@ -361,7 +355,7 @@ export default function Dashboard() {
                             onClick={() => setSearchQuery('')}
                             className="mt-2"
                           >
-                            Clear search
+                            {t('dashboard.clearSearch')}
                           </Button>
                         </motion.div>
                       </motion.div>

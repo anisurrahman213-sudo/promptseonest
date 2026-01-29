@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function Auth() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const defaultTab = tabParam === 'signup' ? 'signup' : tabParam === 'reset' ? 'reset' : tabParam === 'forgot' ? 'forgot' : 'login';
@@ -75,7 +77,7 @@ export default function Auth() {
       if (data?.locked) {
         setIsAccountLocked(true);
         setLockRemainingMinutes(data.remainingMinutes || 15);
-        toast.error(data.message || 'Account is locked. Try again later.');
+        toast.error(data.message || t('auth.accountLocked', { minutes: data.remainingMinutes || 15 }));
         return false;
       }
       
@@ -106,7 +108,7 @@ export default function Auth() {
       } else if (data?.attemptsRemaining !== undefined) {
         setAttemptsRemaining(data.attemptsRemaining);
         if (data.attemptsRemaining <= 2) {
-          toast.warning(`Warning: ${data.attemptsRemaining} attempts remaining before account lock`);
+          toast.warning(t('auth.attemptsWarning', { count: data.attemptsRemaining }));
         }
       }
     } catch (err) {
@@ -133,7 +135,7 @@ export default function Auth() {
       // Check if this is a Google OAuth callback
       const provider = searchParams.get('provider');
       if (provider === 'google' && user) {
-        toast.success('Google login successful!');
+        toast.success(t('toast.welcomeBack'));
         navigate('/dashboard');
         return;
       }
@@ -145,12 +147,12 @@ export default function Auth() {
     };
     
     handleAuthCallback();
-  }, [user, activeTab, navigate, searchParams]);
+  }, [user, activeTab, navigate, searchParams, t]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.error('Please fill in all fields');
+      toast.error(t('errors.fillAllFields'));
       return;
     }
 
@@ -169,14 +171,14 @@ export default function Auth() {
       await recordFailedAttempt(email);
       
       if (error.message.includes('Invalid login credentials')) {
-        toast.error('Invalid email or password');
+        toast.error(t('errors.invalidCredentials'));
       } else {
         toast.error(error.message);
       }
     } else {
       // Reset attempts on successful login
       await resetLoginAttempts(email);
-      toast.success('Welcome back!');
+      toast.success(t('toast.welcomeBack'));
       navigate('/dashboard');
     }
   };
@@ -202,12 +204,12 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !fullName || !phoneNumber) {
-      toast.error('Please fill in all fields');
+      toast.error(t('errors.fillAllFields'));
       return;
     }
     
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error(t('errors.passwordTooShort'));
       return;
     }
     
@@ -216,10 +218,8 @@ export default function Auth() {
     
     if (error) {
       setLoading(false);
-      if (error.message.includes('already registered')) {
-        toast.error('This email is already registered');
-      } else if (error.message.includes('User already registered')) {
-        toast.error('This email is already registered. Please login instead.');
+      if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+        toast.error(t('errors.emailAlreadyRegistered'));
       } else {
         toast.error(error.message);
       }
@@ -255,14 +255,14 @@ export default function Auth() {
     }
     
     setLoading(false);
-    toast.success('Account created! You now have 10 free credits.');
+    toast.success(t('toast.accountCreated'));
     navigate('/dashboard');
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast.error('Please enter your email');
+      toast.error(t('errors.fillAllFields'));
       return;
     }
     
@@ -273,24 +273,24 @@ export default function Auth() {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Password reset link sent! Check your email.');
+      toast.success(t('toast.passwordResetSent'));
     }
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword || !confirmPassword) {
-      toast.error('Please fill in all fields');
+      toast.error(t('errors.fillAllFields'));
       return;
     }
     
     if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error(t('errors.passwordTooShort'));
       return;
     }
     
     if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('errors.passwordMismatch'));
       return;
     }
     
@@ -301,7 +301,7 @@ export default function Auth() {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Password updated successfully!');
+      toast.success(t('toast.passwordUpdated'));
       navigate('/dashboard');
     }
   };
@@ -311,7 +311,7 @@ export default function Auth() {
       <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-10">
         <Link to="/" className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground transition-colors p-1">
           <ArrowLeft className="h-4 w-4" />
-          <span className="text-xs sm:text-sm">Back</span>
+          <span className="text-xs sm:text-sm">{t('common.back')}</span>
         </Link>
       </div>
       
@@ -327,23 +327,23 @@ export default function Auth() {
             <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-primary mb-3 sm:mb-4">
               <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" />
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold">PromptNest</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold">{t('auth.appTitle')}</h1>
             <p className="text-muted-foreground mt-1.5 sm:mt-2 text-sm sm:text-base">
-              AI-powered image prompts & metadata
+              {t('auth.appDesc')}
             </p>
           </div>
 
           <Card className="shadow-glow">
             <CardHeader className="space-y-1 pb-3 sm:pb-4 px-4 sm:px-6">
               <CardTitle className="text-lg sm:text-xl text-center font-display">
-                {activeTab === 'reset' ? 'Reset Password' : activeTab === 'forgot' ? 'Forgot Password' : 'Welcome'}
+                {activeTab === 'reset' ? t('auth.resetPasswordTitle') : activeTab === 'forgot' ? t('auth.forgotPasswordTitle') : t('auth.welcome')}
               </CardTitle>
               <CardDescription className="text-center text-xs sm:text-sm">
                 {activeTab === 'reset' 
-                  ? 'Enter your new password' 
+                  ? t('auth.resetPasswordDesc')
                   : activeTab === 'forgot' 
-                    ? 'Enter your email to receive a reset link'
-                    : 'Sign in or create an account to get started'
+                    ? t('auth.forgotPasswordDesc')
+                    : t('auth.welcomeDesc')
                 }
               </CardDescription>
             </CardHeader>
@@ -351,7 +351,7 @@ export default function Auth() {
               {activeTab === 'forgot' ? (
                 <form onSubmit={handleForgotPassword} className="space-y-3 sm:space-y-4">
                   <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="forgot-email" className="text-sm">Email</Label>
+                    <Label htmlFor="forgot-email" className="text-sm">{t('auth.email')}</Label>
                     <Input
                       id="forgot-email"
                       type="email"
@@ -370,10 +370,10 @@ export default function Auth() {
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Sending...
+                        {t('auth.sending')}
                       </>
                     ) : (
-                      'Send Reset Link'
+                      t('auth.sendResetLink')
                     )}
                   </Button>
                   <Button 
@@ -382,13 +382,13 @@ export default function Auth() {
                     className="w-full h-10 sm:h-11 text-sm sm:text-base"
                     onClick={() => setActiveTab('login')}
                   >
-                    Back to Login
+                    {t('auth.backToLogin')}
                   </Button>
                 </form>
               ) : activeTab === 'reset' ? (
                 <form onSubmit={handleResetPassword} className="space-y-3 sm:space-y-4">
                   <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="new-password" className="text-sm">New Password</Label>
+                    <Label htmlFor="new-password" className="text-sm">{t('auth.newPassword')}</Label>
                     <div className="relative">
                       <Input
                         id="new-password"
@@ -409,7 +409,7 @@ export default function Auth() {
                     </div>
                   </div>
                   <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="confirm-password" className="text-sm">Confirm Password</Label>
+                    <Label htmlFor="confirm-password" className="text-sm">{t('auth.confirmPassword')}</Label>
                     <div className="relative">
                       <Input
                         id="confirm-password"
@@ -437,18 +437,18 @@ export default function Auth() {
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Updating...
+                        {t('auth.updating')}
                       </>
                     ) : (
-                      'Update Password'
+                      t('auth.updatePassword')
                     )}
                   </Button>
                 </form>
               ) : (
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6 h-10 sm:h-11">
-                    <TabsTrigger value="login" className="text-sm">Login</TabsTrigger>
-                    <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
+                    <TabsTrigger value="login" className="text-sm">{t('auth.login')}</TabsTrigger>
+                    <TabsTrigger value="signup" className="text-sm">{t('auth.signUp')}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="login">
@@ -458,8 +458,7 @@ export default function Auth() {
                         <Alert variant="destructive" className="mb-4">
                           <Lock className="h-4 w-4" />
                           <AlertDescription>
-                            Account locked due to too many failed attempts. 
-                            Try again in <strong>{lockRemainingMinutes}</strong> minute(s).
+                            {t('auth.accountLocked', { minutes: lockRemainingMinutes })}
                           </AlertDescription>
                         </Alert>
                       )}
@@ -468,13 +467,13 @@ export default function Auth() {
                       {!isAccountLocked && attemptsRemaining <= 2 && attemptsRemaining > 0 && (
                         <Alert variant="destructive" className="mb-4 bg-warning/10 border-warning text-warning-foreground">
                           <AlertDescription className="text-sm">
-                            ⚠️ Warning: Only <strong>{attemptsRemaining}</strong> login attempt(s) remaining before account lock.
+                            ⚠️ {t('auth.attemptsWarning', { count: attemptsRemaining })}
                           </AlertDescription>
                         </Alert>
                       )}
                       
                       <div className="space-y-1.5 sm:space-y-2">
-                        <Label htmlFor="login-email" className="text-sm">Email</Label>
+                        <Label htmlFor="login-email" className="text-sm">{t('auth.email')}</Label>
                         <Input
                           id="login-email"
                           type="email"
@@ -487,13 +486,13 @@ export default function Auth() {
                       </div>
                       <div className="space-y-1.5 sm:space-y-2">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="login-password" className="text-sm">Password</Label>
+                          <Label htmlFor="login-password" className="text-sm">{t('auth.password')}</Label>
                           <button
                             type="button"
                             onClick={() => setActiveTab('forgot')}
                             className="text-xs text-primary hover:underline py-0.5"
                           >
-                            Forgot password?
+                            {t('auth.forgotPassword')}
                           </button>
                         </div>
                         <div className="relative">
@@ -523,10 +522,10 @@ export default function Auth() {
                         {loading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Signing in...
+                            {t('auth.signingIn')}
                           </>
                         ) : (
-                          'Sign In'
+                          t('auth.signIn')
                         )}
                       </Button>
 
@@ -535,7 +534,7 @@ export default function Auth() {
                           <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                          <span className="bg-card px-2 text-muted-foreground">{t('auth.orContinueWith')}</span>
                         </div>
                       </div>
 
@@ -569,7 +568,7 @@ export default function Auth() {
                               />
                             </svg>
                           )}
-                          Continue with Google
+                          {t('auth.continueWithGoogle')}
                         </Button>
 
                         <Button
@@ -586,7 +585,7 @@ export default function Auth() {
                               <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                             </svg>
                           )}
-                          Continue with Apple
+                          {t('auth.continueWithApple')}
                         </Button>
                       </div>
                     </form>
@@ -595,11 +594,11 @@ export default function Auth() {
                   <TabsContent value="signup">
                     <form onSubmit={handleSignUp} className="space-y-3 sm:space-y-4">
                       <div className="space-y-1.5 sm:space-y-2">
-                        <Label htmlFor="signup-name" className="text-sm">Full Name</Label>
+                        <Label htmlFor="signup-name" className="text-sm">{t('auth.fullName')}</Label>
                         <Input
                           id="signup-name"
                           type="text"
-                          placeholder="Your name"
+                          placeholder={t('auth.yourName')}
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           disabled={loading}
@@ -607,7 +606,7 @@ export default function Auth() {
                         />
                       </div>
                       <div className="space-y-1.5 sm:space-y-2">
-                        <Label htmlFor="signup-phone" className="text-sm">Phone Number</Label>
+                        <Label htmlFor="signup-phone" className="text-sm">{t('auth.phoneNumber')}</Label>
                         <Input
                           id="signup-phone"
                           type="tel"
@@ -619,7 +618,7 @@ export default function Auth() {
                         />
                       </div>
                       <div className="space-y-1.5 sm:space-y-2">
-                        <Label htmlFor="signup-email" className="text-sm">Email</Label>
+                        <Label htmlFor="signup-email" className="text-sm">{t('auth.email')}</Label>
                         <Input
                           id="signup-email"
                           type="email"
@@ -631,7 +630,7 @@ export default function Auth() {
                         />
                       </div>
                       <div className="space-y-1.5 sm:space-y-2">
-                        <Label htmlFor="signup-password" className="text-sm">Password</Label>
+                        <Label htmlFor="signup-password" className="text-sm">{t('auth.password')}</Label>
                         <div className="relative">
                           <Input
                             id="signup-password"
@@ -659,10 +658,10 @@ export default function Auth() {
                         {loading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Creating account...
+                            {t('auth.creatingAccount')}
                           </>
                         ) : (
-                          'Create Account'
+                          t('auth.createAccount')
                         )}
                       </Button>
 
@@ -671,7 +670,7 @@ export default function Auth() {
                           <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                          <span className="bg-card px-2 text-muted-foreground">{t('auth.orContinueWith')}</span>
                         </div>
                       </div>
 
@@ -705,7 +704,7 @@ export default function Auth() {
                               />
                             </svg>
                           )}
-                          Continue with Google
+                          {t('auth.continueWithGoogle')}
                         </Button>
 
                         <Button
@@ -722,7 +721,7 @@ export default function Auth() {
                               <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                             </svg>
                           )}
-                          Continue with Apple
+                          {t('auth.continueWithApple')}
                         </Button>
                       </div>
                     </form>
