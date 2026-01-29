@@ -142,6 +142,29 @@ export function useInfiniteGenerations(options: UseInfiniteGenerationsOptions = 
     fetchGenerations(1, false);
   }, [fetchGenerations]);
 
+  // Fetch ALL generations for export (bypasses pagination)
+  const fetchAllForExport = useCallback(async (): Promise<Generation[]> => {
+    if (!user) return [];
+    
+    try {
+      const { data, error } = await supabase
+        .from('generations')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching all generations:', error);
+        return [];
+      }
+      
+      return data || [];
+    } catch (error) {
+      console.error('Error:', error);
+      return [];
+    }
+  }, [user]);
+
   return {
     generations,
     loading,
@@ -153,5 +176,6 @@ export function useInfiniteGenerations(options: UseInfiniteGenerationsOptions = 
     deleteGeneration,
     deleteMultipleGenerations,
     refreshGenerations,
+    fetchAllForExport,
   };
 }

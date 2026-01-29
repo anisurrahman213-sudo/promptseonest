@@ -38,6 +38,7 @@ export default function Dashboard() {
     deleteGeneration,
     deleteMultipleGenerations,
     refreshGenerations,
+    fetchAllForExport,
     loading: generationsLoading 
   } = useInfiniteGenerations({ pageSize: 12 });
   const { startProcessing, isProcessing } = useBackgroundProcessor();
@@ -328,7 +329,11 @@ export default function Dashboard() {
                             onSortChange={setSortBy}
                           />
                         </div>
-                        <ExportDialog generations={filteredGenerations} />
+                        <ExportDialog 
+                          generations={filteredGenerations} 
+                          fetchAllForExport={fetchAllForExport}
+                          searchQuery={searchQuery}
+                        />
                       </motion.div>
                     )}
                     
