@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { MediaUploader, MediaFile } from '@/components/MediaUploader';
 import { StatsCards } from '@/components/dashboard/StatsCards';
@@ -24,6 +25,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const { credits, refreshCredits } = useCredits();
   const { 
