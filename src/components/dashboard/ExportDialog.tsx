@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, FileSpreadsheet, Check, Search, Eye, List } from 'lucide-react';
+import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -27,23 +27,26 @@ import {
 interface ExportDialogProps {
   generations: Generation[];
   disabled?: boolean;
+  fetchAllForExport?: () => Promise<Generation[]>;
+  searchQuery?: string;
 }
 
-export function ExportDialog({ generations, disabled }: ExportDialogProps) {
+export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery }: ExportDialogProps) {
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('adobe_stock');
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoadingAll, setIsLoadingAll] = useState(false);
+  const [platformSearchQuery, setPlatformSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'platforms' | 'preview'>('platforms');
 
   const filteredPlatforms = stockPlatforms.filter(platform =>
-    platform.name.toLowerCase().includes(searchQuery.toLowerCase())
+    platform.name.toLowerCase().includes(platformSearchQuery.toLowerCase())
   );
 
   const selectedPlatform = stockPlatforms.find(p => p.id === selectedFormat);
   const previewData = generations.length > 0 ? generateExport(selectedFormat, generations) : null;
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (generations.length === 0) {
       toast.error('No generations to export');
       return;
@@ -52,7 +55,25 @@ export function ExportDialog({ generations, disabled }: ExportDialogProps) {
     setIsExporting(true);
 
     try {
-      const exportData = generateExport(selectedFormat, generations);
+      let dataToExport = generations;
+      
+      // If there's no search filter and we have fetchAllForExport, fetch ALL generations
+      if (!filterSearchQuery?.trim() && fetchAllForExport) {
+        setIsLoadingAll(true);
+        try {
+          const allGenerations = await fetchAllForExport();
+          if (allGenerations.length > 0) {
+            dataToExport = allGenerations;
+          }
+        } catch (error) {
+          console.error('Failed to fetch all generations:', error);
+          // Fall back to current generations
+        } finally {
+          setIsLoadingAll(false);
+        }
+      }
+      
+      const exportData = generateExport(selectedFormat, dataToExport);
 
       const csv = [
         exportData.headers.join(','),
@@ -70,13 +91,14 @@ export function ExportDialog({ generations, disabled }: ExportDialogProps) {
       URL.revokeObjectURL(url);
 
       const platform = stockPlatforms.find(f => f.id === selectedFormat);
-      toast.success(`✅ ${generations.length} items exported for ${platform?.name}`);
+      toast.success(`✅ ${dataToExport.length} items exported for ${platform?.name}`);
       setIsOpen(false);
     } catch (error) {
       console.error('Export error:', error);
       toast.error('Failed to export CSV');
     } finally {
       setIsExporting(false);
+      setIsLoadingAll(false);
     }
   };
 
@@ -133,8 +155,8 @@ export function ExportDialog({ generations, disabled }: ExportDialogProps) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search platforms..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={platformSearchQuery}
+                onChange={(e) => setPlatformSearchQuery(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -263,19 +285,18 @@ export function ExportDialog({ generations, disabled }: ExportDialogProps) {
         </Tabs>
 
         <div className="flex items-center justify-between pt-2 border-t">
-          <p className="text-sm text-muted-foreground">
-            {generations.length} item{generations.length !== 1 ? 's' : ''} to export
-          </p>
-          <Button onClick={handleExport} disabled={isExporting} className="gap-2">
-            {isExporting ? (
+          <div className="text-sm text-muted-foreground">
+            {filterSearchQuery?.trim() ? (
+              <span>{generations.length} filtered item{generations.length !== 1 ? 's' : ''}</span>
+            ) : (
+              <span>All items will be exported</span>
+            )}
+          </div>
+          <Button onClick={handleExport} disabled={isExporting || isLoadingAll} className="gap-2">
+            {isExporting || isLoadingAll ? (
               <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                >
-                  <Download className="h-4 w-4" />
-                </motion.div>
-                Exporting...
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {isLoadingAll ? 'Loading all...' : 'Exporting...'}
               </>
             ) : (
               <>
