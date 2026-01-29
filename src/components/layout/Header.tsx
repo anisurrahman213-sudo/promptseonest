@@ -1,14 +1,17 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Header() {
+  const { t } = useTranslation();
   const { user, signOut } = useAuth();
   const { credits } = useCredits();
   const { theme, toggleTheme } = useTheme();
@@ -42,6 +45,8 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <div className="hidden sm:flex items-center gap-3">
+          <LanguageSwitcher />
+          
           <Button
             variant="ghost"
             size="icon"
@@ -60,18 +65,18 @@ export function Header() {
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
                 <Coins className="h-4 w-4 text-warning" />
                 <span className="font-medium text-sm">
-                  {credits !== null ? credits : '...'} credits
+                  {credits !== null ? credits : '...'} {t('common.credits')}
                 </span>
               </div>
 
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/profile')}>
                 <User className="h-4 w-4 mr-1" />
-                Profile
+                {t('header.profile')}
               </Button>
 
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/payment-history')}>
                 <History className="h-4 w-4 mr-1" />
-                History
+                {t('header.history')}
               </Button>
 
               {isAdmin && (
@@ -82,7 +87,7 @@ export function Header() {
                   onClick={() => handleNavigate('/admin/payments')}
                 >
                   <ShieldCheck className="h-4 w-4 mr-1" />
-                  Admin
+                  {t('header.admin')}
                 </Button>
               )}
 
@@ -107,21 +112,21 @@ export function Header() {
           ) : (
             <>
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/auth')}>
-                Login
+                {t('header.login')}
               </Button>
               <Button 
                 size="sm" 
                 className="bg-gradient-primary hover:opacity-90"
                 onClick={() => handleNavigate('/auth?tab=signup')}
               >
-                Get Started
+                {t('header.getStarted')}
               </Button>
             </>
           )}
         </div>
 
         {/* Mobile Navigation */}
-        <div className="flex sm:hidden items-center gap-2">
+        <div className="flex sm:hidden items-center gap-1.5">
           {user && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted text-xs">
               <Coins className="h-3.5 w-3.5 text-warning" />
@@ -130,6 +135,8 @@ export function Header() {
               </span>
             </div>
           )}
+          
+          <LanguageSwitcher />
           
           <Button
             variant="ghost"
@@ -178,7 +185,7 @@ export function Header() {
                     onClick={() => handleNavigate('/profile')}
                   >
                     <User className="mr-2 h-4 w-4" />
-                    Profile
+                    {t('header.profile')}
                   </Button>
                   <Button 
                     variant="ghost" 
@@ -186,7 +193,7 @@ export function Header() {
                     onClick={() => handleNavigate('/payment-history')}
                   >
                     <History className="mr-2 h-4 w-4" />
-                    Payment History
+                    {t('header.paymentHistory')}
                   </Button>
                   {isAdmin && (
                     <Button 
@@ -195,7 +202,7 @@ export function Header() {
                       onClick={() => handleNavigate('/admin/payments')}
                     >
                       <ShieldCheck className="mr-2 h-4 w-4" />
-                      Admin Panel
+                      {t('header.adminPanel')}
                     </Button>
                   )}
                   <Button 
@@ -203,7 +210,7 @@ export function Header() {
                     onClick={() => handleNavigate('/pricing')}
                   >
                     <Crown className="mr-2 h-4 w-4" />
-                    Upgrade Plan
+                    {t('header.upgradePlan')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -211,7 +218,7 @@ export function Header() {
                     className="w-full justify-center h-11 text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
+                    {t('header.signOut')}
                   </Button>
                 </>
               ) : (
@@ -221,13 +228,13 @@ export function Header() {
                     className="w-full justify-center h-11"
                     onClick={() => handleNavigate('/auth')}
                   >
-                    Login
+                    {t('header.login')}
                   </Button>
                   <Button 
                     className="w-full justify-center h-11 bg-gradient-primary hover:opacity-90"
                     onClick={() => handleNavigate('/auth?tab=signup')}
                   >
-                    Get Started
+                    {t('header.getStarted')}
                   </Button>
                 </>
               )}
