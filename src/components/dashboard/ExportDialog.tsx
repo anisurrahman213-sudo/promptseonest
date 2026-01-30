@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2 } from 'lucide-react';
+import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,12 +16,14 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { 
   stockPlatforms, 
   generateExport, 
   type ExportFormat, 
-  type Generation 
+  type Generation,
+  type StockPlatform
 } from '@/lib/stockPlatformFormats';
 
 interface ExportDialogProps {
@@ -31,6 +33,87 @@ interface ExportDialogProps {
   searchQuery?: string;
 }
 
+// Memoized platform item component for better performance
+const PlatformItem = memo(({ 
+  platform, 
+  isSelected, 
+  onSelect 
+}: { 
+  platform: StockPlatform; 
+  isSelected: boolean; 
+  onSelect: () => void;
+}) => (
+  <motion.div
+    whileHover={{ scale: 1.01 }}
+    whileTap={{ scale: 0.99 }}
+    layout
+  >
+    <Label
+      htmlFor={platform.id}
+      onClick={onSelect}
+      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+        isSelected
+          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+          : 'border-border hover:border-primary/30 hover:bg-muted/30'
+      }`}
+    >
+      <RadioGroupItem value={platform.id} id={platform.id} className="mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{platform.icon}</span>
+          <span className="font-medium text-foreground">{platform.name}</span>
+          {isSelected && (
+            <Check className="h-4 w-4 text-primary ml-auto flex-shrink-0" />
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {platform.description}
+        </p>
+      </div>
+    </Label>
+  </motion.div>
+));
+PlatformItem.displayName = 'PlatformItem';
+
+// Memoized preview row component
+const PreviewRow = memo(({ 
+  row, 
+  headers, 
+  index 
+}: { 
+  row: string[]; 
+  headers: string[]; 
+  index: number;
+}) => {
+  const cleanValue = (val: string) => {
+    if (!val) return '-';
+    return val.replace(/^"|"$/g, '').replace(/""/g, '"');
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.03 }}
+      className="p-3 rounded-lg border bg-card"
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xs font-mono text-muted-foreground">#{index + 1}</span>
+        <span className="text-sm font-medium truncate">{cleanValue(row[0])}</span>
+      </div>
+      <div className="grid gap-1.5">
+        {headers.slice(1).map((header, colIndex) => (
+          <div key={colIndex} className="flex gap-2 text-xs">
+            <span className="text-muted-foreground min-w-[80px] flex-shrink-0">{header}:</span>
+            <span className="text-foreground break-all line-clamp-2">{cleanValue(row[colIndex + 1])}</span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+});
+PreviewRow.displayName = 'PreviewRow';
+
 export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery }: ExportDialogProps) {
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('adobe_stock');
   const [isOpen, setIsOpen] = useState(false);
@@ -38,21 +121,36 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   const [platformSearchQuery, setPlatformSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'platforms' | 'preview'>('platforms');
+  const [exportProgress, setExportProgress] = useState(0);
 
-  const filteredPlatforms = stockPlatforms.filter(platform =>
-    platform.name.toLowerCase().includes(platformSearchQuery.toLowerCase())
+  // Memoized filtered platforms
+  const filteredPlatforms = useMemo(() => 
+    stockPlatforms.filter(platform =>
+      platform.name.toLowerCase().includes(platformSearchQuery.toLowerCase())
+    ), [platformSearchQuery]
   );
 
-  const selectedPlatform = stockPlatforms.find(p => p.id === selectedFormat);
-  const previewData = generations.length > 0 ? generateExport(selectedFormat, generations) : null;
+  // Memoized selected platform
+  const selectedPlatform = useMemo(() => 
+    stockPlatforms.find(p => p.id === selectedFormat),
+    [selectedFormat]
+  );
 
-  const handleExport = async () => {
+  // Memoized preview data - only compute when needed
+  const previewData = useMemo(() => 
+    generations.length > 0 ? generateExport(selectedFormat, generations) : null,
+    [selectedFormat, generations]
+  );
+
+  // Optimized export handler with progress tracking
+  const handleExport = useCallback(async () => {
     if (generations.length === 0) {
       toast.error('No generations to export');
       return;
     }
 
     setIsExporting(true);
+    setExportProgress(10);
 
     try {
       let dataToExport = generations;
@@ -60,21 +158,24 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       // If there's no search filter and we have fetchAllForExport, fetch ALL generations
       if (!filterSearchQuery?.trim() && fetchAllForExport) {
         setIsLoadingAll(true);
+        setExportProgress(20);
         try {
           const allGenerations = await fetchAllForExport();
+          setExportProgress(50);
           if (allGenerations.length > 0) {
             dataToExport = allGenerations;
           }
         } catch (error) {
           console.error('Failed to fetch all generations:', error);
-          // Fall back to current generations
         } finally {
           setIsLoadingAll(false);
         }
       }
       
+      setExportProgress(60);
       const exportData = generateExport(selectedFormat, dataToExport);
 
+      setExportProgress(80);
       const csv = [
         exportData.headers.join(','),
         ...exportData.rows.map(r => r.join(',')),
@@ -87,6 +188,8 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       const a = document.createElement('a');
       a.href = url;
       a.download = `${exportData.filename}-${new Date().toISOString().split('T')[0]}.csv`;
+      
+      setExportProgress(100);
       a.click();
       URL.revokeObjectURL(url);
 
@@ -99,17 +202,27 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
     } finally {
       setIsExporting(false);
       setIsLoadingAll(false);
+      setExportProgress(0);
     }
-  };
+  }, [generations, filterSearchQuery, fetchAllForExport, selectedFormat]);
 
-  // Remove CSV escaping for preview display
-  const cleanValue = (val: string) => {
-    if (!val) return '-';
-    return val.replace(/^"|"$/g, '').replace(/""/g, '"');
-  };
+  // Handle format selection
+  const handleFormatSelect = useCallback((format: ExportFormat) => {
+    setSelectedFormat(format);
+  }, []);
+
+  // Reset state on dialog close
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      setPlatformSearchQuery('');
+      setActiveTab('platforms');
+      setExportProgress(0);
+    }
+  }, []);
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
           variant="outline"
@@ -127,8 +240,9 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
             <FileSpreadsheet className="h-5 w-5 text-primary" />
             Export to Stock Platforms
           </DialogTitle>
-          <DialogDescription>
-            Select platform and preview metadata before exporting.
+          <DialogDescription className="flex items-center gap-2">
+            <Zap className="h-3 w-3 text-primary" />
+            Optimized for 17+ platforms • Fast batch export
           </DialogDescription>
         </DialogHeader>
 
@@ -136,7 +250,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="platforms" className="gap-2">
               <List className="h-4 w-4" />
-              Platforms
+              Platforms ({filteredPlatforms.length})
             </TabsTrigger>
             <TabsTrigger value="preview" className="gap-2">
               <Eye className="h-4 w-4" />
@@ -164,38 +278,16 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
             <ScrollArea className="h-[300px] pr-4">
               <RadioGroup
                 value={selectedFormat}
-                onValueChange={(value) => setSelectedFormat(value as ExportFormat)}
+                onValueChange={(value) => handleFormatSelect(value as ExportFormat)}
                 className="space-y-2"
               >
                 {filteredPlatforms.map((platform) => (
-                  <motion.div
+                  <PlatformItem
                     key={platform.id}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <Label
-                      htmlFor={platform.id}
-                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                        selectedFormat === platform.id
-                          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                          : 'border-border hover:border-primary/30 hover:bg-muted/30'
-                      }`}
-                    >
-                      <RadioGroupItem value={platform.id} id={platform.id} className="mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{platform.icon}</span>
-                          <span className="font-medium text-foreground">{platform.name}</span>
-                          {selectedFormat === platform.id && (
-                            <Check className="h-4 w-4 text-primary ml-auto flex-shrink-0" />
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {platform.description}
-                        </p>
-                      </div>
-                    </Label>
-                  </motion.div>
+                    platform={platform}
+                    isSelected={selectedFormat === platform.id}
+                    onSelect={() => handleFormatSelect(platform.id)}
+                  />
                 ))}
               </RadioGroup>
             </ScrollArea>
@@ -209,17 +301,20 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.15 }}
                 >
                   {/* Platform Info */}
                   <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-muted/50">
                     <span className="text-xl">{selectedPlatform.icon}</span>
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium text-sm">{selectedPlatform.name}</p>
                       <p className="text-xs text-muted-foreground">
                         Max {selectedPlatform.maxKeywords} keywords • Title {selectedPlatform.maxTitleLength} chars
                       </p>
                     </div>
+                    <Badge variant="outline" className="text-xs">
+                      {previewData.rows.length} items
+                    </Badge>
                   </div>
 
                   {/* CSV Headers */}
@@ -234,43 +329,21 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                     </div>
                   </div>
 
-                  {/* Preview Items */}
-                  <ScrollArea className="h-[250px]">
+                  {/* Preview Items - Show only first 3 for performance */}
+                  <ScrollArea className="h-[220px]">
                     <div className="space-y-3">
-                      {previewData.rows.slice(0, 5).map((row, rowIndex) => (
-                        <motion.div
-                          key={rowIndex}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: rowIndex * 0.05 }}
-                          className="p-3 rounded-lg border bg-card"
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xs font-mono text-muted-foreground">
-                              #{rowIndex + 1}
-                            </span>
-                            <span className="text-sm font-medium truncate">
-                              {cleanValue(row[0])}
-                            </span>
-                          </div>
-                          <div className="grid gap-1.5">
-                            {previewData.headers.slice(1).map((header, colIndex) => (
-                              <div key={colIndex} className="flex gap-2 text-xs">
-                                <span className="text-muted-foreground min-w-[80px] flex-shrink-0">
-                                  {header}:
-                                </span>
-                                <span className="text-foreground break-all line-clamp-2">
-                                  {cleanValue(row[colIndex + 1])}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </motion.div>
+                      {previewData.rows.slice(0, 3).map((row, rowIndex) => (
+                        <PreviewRow 
+                          key={rowIndex} 
+                          row={row} 
+                          headers={previewData.headers} 
+                          index={rowIndex} 
+                        />
                       ))}
-                      {previewData.rows.length > 5 && (
-                        <p className="text-center text-xs text-muted-foreground py-2">
-                          +{previewData.rows.length - 5} more items...
-                        </p>
+                      {previewData.rows.length > 3 && (
+                        <div className="text-center py-3 text-xs text-muted-foreground border border-dashed rounded-lg">
+                          +{previewData.rows.length - 3} more items will be exported
+                        </div>
                       )}
                     </div>
                   </ScrollArea>
@@ -284,24 +357,42 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           </TabsContent>
         </Tabs>
 
+        {/* Export Progress */}
+        {exportProgress > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="space-y-1"
+          >
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Exporting...</span>
+              <span>{exportProgress}%</span>
+            </div>
+            <Progress value={exportProgress} className="h-1.5" />
+          </motion.div>
+        )}
+
         <div className="flex items-center justify-between pt-2 border-t">
           <div className="text-sm text-muted-foreground">
             {filterSearchQuery?.trim() ? (
               <span>{generations.length} filtered item{generations.length !== 1 ? 's' : ''}</span>
             ) : (
-              <span>All items will be exported</span>
+              <span className="flex items-center gap-1">
+                <Zap className="h-3 w-3 text-primary" />
+                All items will be exported
+              </span>
             )}
           </div>
           <Button onClick={handleExport} disabled={isExporting || isLoadingAll} className="gap-2">
             {isExporting || isLoadingAll ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {isLoadingAll ? 'Loading all...' : 'Exporting...'}
+                {isLoadingAll ? 'Loading...' : 'Exporting...'}
               </>
             ) : (
               <>
                 <Download className="h-4 w-4" />
-                Export
+                Export CSV
               </>
             )}
           </Button>
