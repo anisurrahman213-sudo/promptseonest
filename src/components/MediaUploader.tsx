@@ -41,27 +41,33 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
   const [isValidating, setIsValidating] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setIsCompressing(true);
+    // Only images are optimized (compressed). Videos are added as-is.
+    // This prevents showing a confusing/stuck "Optimizing... 0/0" state on video-only uploads.
     setCompressionFiles([]);
     
     try {
       // Separate images and videos
       const imageFiles = acceptedFiles.filter(f => f.type.startsWith('image/'));
       const videoFiles = acceptedFiles.filter(f => f.type.startsWith('video/'));
+
+      const shouldCompress = imageFiles.length > 0;
+      setIsCompressing(shouldCompress);
       
       // Compress all images in parallel with progress tracking
-      const compressedImages = await compressImages(
-        imageFiles,
-        {
-          maxWidth: 2048,
-          maxHeight: 2048,
-          quality: 0.75,
-          maxSizeKB: 400,
-          aggressive: true,
-        },
-        20, // concurrency
-        (progress) => setCompressionFiles(progress)
-      );
+      const compressedImages = shouldCompress
+        ? await compressImages(
+            imageFiles,
+            {
+              maxWidth: 2048,
+              maxHeight: 2048,
+              quality: 0.75,
+              maxSizeKB: 400,
+              aggressive: true,
+            },
+            20, // concurrency
+            (progress) => setCompressionFiles(progress)
+          )
+        : [];
       
       // Create MediaFile objects from compressed images
       const processedImages: MediaFile[] = compressedImages.map(file => ({
@@ -81,14 +87,15 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
       
       setFiles(prev => [...prev, ...allProcessed]);
       
-      // Calculate savings
-      const originalSize = imageFiles.reduce((sum, f) => sum + f.size, 0);
-      const compressedSize = compressedImages.reduce((sum, f) => sum + f.size, 0);
-      const savedMB = ((originalSize - compressedSize) / (1024 * 1024)).toFixed(1);
-      const totalMB = (compressedSize / (1024 * 1024)).toFixed(1);
-      
+      // Calculate savings (images only)
       if (processedImages.length > 0) {
+        const originalSize = imageFiles.reduce((sum, f) => sum + f.size, 0);
+        const compressedSize = compressedImages.reduce((sum, f) => sum + f.size, 0);
+        const savedMB = ((originalSize - compressedSize) / (1024 * 1024)).toFixed(1);
+        const totalMB = (compressedSize / (1024 * 1024)).toFixed(1);
         toast.success(`✓ ${allProcessed.length} files optimized (${totalMB}MB, saved ${savedMB}MB)`);
+      } else if (processedVideos.length > 0) {
+        toast.success(`✓ ${processedVideos.length} video${processedVideos.length > 1 ? 's' : ''} added`);
       }
     } catch (error) {
       console.error('Error processing files:', error);
@@ -250,7 +257,9 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
               animate={{ scale: isDragActive ? 1.05 : 1 }}
             >
               {isCompressing 
-                ? `Optimizing... ${compressionFiles.filter(f => f.status === 'done' || f.status === 'skipped').length}/${compressionFiles.length}` 
+                ? (compressionFiles.length > 0
+                    ? `Optimizing... ${compressionFiles.filter(f => f.status === 'done' || f.status === 'skipped').length}/${compressionFiles.length}`
+                    : 'Optimizing...')
                 : isDragActive 
                   ? 'Drop files here' 
                   : 'Drag & drop files here, or click to select'}
