@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { extractVideoFramesGrid } from '@/lib/videoFrameExtractor';
+import { compressImage } from '@/lib/imageCompression';
 import { MediaFile } from '@/components/MediaUploader';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { toast } from 'sonner';
@@ -126,7 +127,21 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
         publicUrl = urlData.publicUrl;
         
       } else {
-        // IMAGE PROCESSING: Compress and upload in parallel
+        // IMAGE PROCESSING: Compress first, then upload
+        console.log(`🖼️ Image processing: ${file.name} (${(file.size / 1024).toFixed(1)}KB)`);
+        
+        // Compress the image first
+        const compressedFile = await compressImage(file, {
+          maxWidth: 2048,
+          maxHeight: 2048,
+          quality: 0.75,
+          maxSizeKB: 400,
+          aggressive: true
+        });
+        
+        console.log(`📦 Compressed: ${(file.size / 1024).toFixed(1)}KB → ${(compressedFile.size / 1024).toFixed(1)}KB (-${((1 - compressedFile.size / file.size) * 100).toFixed(0)}%)`);
+        
+        // Read base64 from compressed file
         const base64Promise = new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
@@ -134,11 +149,12 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
             resolve(result.split(',')[1]);
           };
           reader.onerror = reject;
-          reader.readAsDataURL(file);
+          reader.readAsDataURL(compressedFile);
         });
         
         const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
-        const uploadPromise = supabase.storage.from('images').upload(filePath, file);
+        // Upload compressed file instead of original
+        const uploadPromise = supabase.storage.from('images').upload(filePath, compressedFile);
         
         const [extractedBase64, uploadResult] = await Promise.all([base64Promise, uploadPromise]);
         base64 = extractedBase64;
