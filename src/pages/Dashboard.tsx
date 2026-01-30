@@ -239,7 +239,7 @@ export default function Dashboard() {
                     <MediaUploader 
                       onUpload={handleUpload} 
                       isProcessing={isProcessing}
-                      maxFiles={credits !== null ? Math.min(credits, 10) : 10}
+                      maxFiles={credits !== null ? Math.min(credits, 500) : 500}
                       selectedPlatform={metadataSettings.exportPlatform}
                     />
                   </motion.div>
