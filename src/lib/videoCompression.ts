@@ -1,3 +1,5 @@
+import { isWebCodecsSupported, compressVideoWithWebCodecs } from './webCodecsCompression';
+
 export interface VideoCompressionOptions {
   maxWidth?: number;
   maxHeight?: number;
@@ -12,6 +14,8 @@ export interface VideoCompressionProgress {
   status: 'compressing' | 'done' | 'error' | 'skipped';
   compressedSize?: number;
   progress?: number;
+  method?: 'webcodecs' | 'mediarecorder' | 'skipped';
+  speedup?: number; // x times faster than real-time
 }
 
 const DEFAULT_OPTIONS: VideoCompressionOptions = {
@@ -22,21 +26,62 @@ const DEFAULT_OPTIONS: VideoCompressionOptions = {
   frameRate: 30,
 };
 
-/**
- * Compress a video file using canvas + MediaRecorder
- * This reduces resolution and bitrate for faster uploads
- */
+// Check and log WebCodecs support on load
+const webCodecsAvailable = isWebCodecsSupported();
+console.log(`🎬 Video compression: ${webCodecsAvailable ? '⚡ WebCodecs (5-10x faster)' : '📹 MediaRecorder (real-time)'}`);
+
 export async function compressVideo(
   file: File,
-  options: VideoCompressionOptions = {}
-): Promise<File> {
+  options: VideoCompressionOptions = {},
+  onProgress?: (progress: number) => void
+): Promise<{ file: File; method: 'webcodecs' | 'mediarecorder' | 'skipped'; speedup?: number }> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   
   // Skip if file is already small (under 5MB)
   if (file.size < 5 * 1024 * 1024) {
     console.log(`⏭️ Video already small, skipping compression: ${file.name}`);
-    return file;
+    return { file, method: 'skipped' };
   }
+
+  // Try WebCodecs first (5-10x faster)
+  if (webCodecsAvailable) {
+    try {
+      console.log(`⚡ Using WebCodecs for: ${file.name}`);
+      const startTime = Date.now();
+      const compressed = await compressVideoWithWebCodecs(file, opts, onProgress);
+      const elapsed = (Date.now() - startTime) / 1000;
+      
+      // Estimate speedup based on video duration
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(file);
+      await new Promise(resolve => {
+        video.onloadedmetadata = resolve;
+      });
+      const duration = video.duration;
+      URL.revokeObjectURL(video.src);
+      
+      const speedup = duration / elapsed;
+      return { file: compressed, method: 'webcodecs', speedup };
+    } catch (error) {
+      console.warn('⚠️ WebCodecs failed, falling back to MediaRecorder:', error);
+    }
+  }
+
+  // Fallback to MediaRecorder (real-time speed)
+  console.log(`📹 Using MediaRecorder for: ${file.name}`);
+  const compressed = await compressVideoWithMediaRecorder(file, opts);
+  return { file: compressed, method: 'mediarecorder', speedup: 1 };
+}
+
+/**
+ * Compress video using Canvas + MediaRecorder (fallback method)
+ * This is slower as it plays video in real-time
+ */
+async function compressVideoWithMediaRecorder(
+  file: File,
+  options: VideoCompressionOptions = {}
+): Promise<File> {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
 
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
@@ -223,15 +268,24 @@ export async function compressVideos(
     const file = files[index];
     
     try {
-      const compressed = await compressVideo(file, options);
-      results[index] = compressed;
+      const result = await compressVideo(file, options, (p) => {
+        progress[index] = {
+          ...progress[index],
+          progress: Math.round(p * 100),
+        };
+        if (onProgress) onProgress([...progress]);
+      });
+      
+      results[index] = result.file;
       
       progress[index] = {
         fileName: file.name,
         originalSize: file.size,
-        compressedSize: compressed.size,
-        status: compressed === file ? 'skipped' : 'done',
+        compressedSize: result.file.size,
+        status: result.method === 'skipped' ? 'skipped' : 'done',
         progress: 100,
+        method: result.method,
+        speedup: result.speedup,
       };
     } catch (error) {
       console.error(`Error compressing ${file.name}:`, error);
