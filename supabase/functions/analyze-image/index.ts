@@ -342,18 +342,54 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse the JSON response
+    // Parse the JSON response with robust handling
     let analysisResult: AnalysisResult;
     try {
-      // Remove any markdown code blocks if present
-      const cleanedText = textContent.replace(/```json\n?|\n?```/g, "").trim();
+      // Remove markdown code blocks and clean up the response
+      let cleanedText = textContent
+        .replace(/```json\s*/gi, "")
+        .replace(/```\s*/g, "")
+        .trim();
+      
+      // Try to extract JSON if there's extra text before/after
+      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanedText = jsonMatch[0];
+      }
+      
       analysisResult = JSON.parse(cleanedText);
+      
+      // Validate required fields
+      if (!analysisResult.prompt || !analysisResult.title || !analysisResult.description || !analysisResult.tags) {
+        throw new Error("Missing required fields in AI response");
+      }
     } catch (parseError) {
-      console.error("Failed to parse AI response:", textContent);
-      return new Response(
-        JSON.stringify({ error: "Failed to parse AI response" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.error("Failed to parse AI response:", textContent.substring(0, 500));
+      
+      // Attempt to extract data manually if JSON parse fails
+      try {
+        const promptMatch = textContent.match(/"prompt"\s*:\s*"([^"]+)"/);
+        const titleMatch = textContent.match(/"title"\s*:\s*"([^"]+)"/);
+        const descMatch = textContent.match(/"description"\s*:\s*"([^"]+)"/);
+        const tagsMatch = textContent.match(/"tags"\s*:\s*"([^"]+)"/);
+        
+        if (promptMatch && titleMatch && descMatch && tagsMatch) {
+          analysisResult = {
+            prompt: promptMatch[1],
+            title: titleMatch[1],
+            description: descMatch[1],
+            tags: tagsMatch[1],
+          };
+          console.log("Recovered data via regex extraction");
+        } else {
+          throw new Error("Could not extract fields");
+        }
+      } catch {
+        return new Response(
+          JSON.stringify({ error: "Failed to parse AI response. Please try again." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     return new Response(
