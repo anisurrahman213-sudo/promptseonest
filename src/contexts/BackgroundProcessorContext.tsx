@@ -90,14 +90,14 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
       let publicUrl: string;
       
       if (mediaFile.type === 'video') {
-        // OPTIMIZED VIDEO PROCESSING:
-        // 1. Extract frame grid (fast, ~10-12 seconds)
-        // 2. Convert frame grid to blob and upload (small, ~200-400KB vs 50-500MB original)
-        // This makes video processing 10-20x faster!
+        // VIDEO PROCESSING:
+        // 1. Extract frame grid for AI analysis (fast, lightweight)
+        // 2. Upload original video to videos bucket for playback
+        // 3. Upload frame grid to images bucket for thumbnail
         
-        console.log(`🎬 Optimized video processing: ${file.name}`);
+        console.log(`🎬 Video processing: ${file.name}`);
         
-        // Extract frame grid as base64
+        // Extract frame grid as base64 for AI analysis
         base64 = await extractVideoFramesGrid(file, {
           frameCount: 6,
           gridCols: 3,
@@ -105,26 +105,29 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
           quality: 0.85
         });
         
-        // Convert base64 to blob for upload (much smaller than original video!)
+        // Upload original video and frame grid in parallel
         const frameGridBlob = await fetch(`data:image/jpeg;base64,${base64}`).then(r => r.blob());
         const frameFileName = file.name.replace(/\.[^/.]+$/, '') + '_frames.jpg';
-        const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${frameFileName}`;
+        const frameFilePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${frameFileName}`;
+        const videoFilePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
         
-        console.log(`📦 Video frame grid size: ${(frameGridBlob.size / 1024).toFixed(1)}KB (original: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+        console.log(`📦 Frame grid: ${(frameGridBlob.size / 1024).toFixed(1)}KB, Video: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
         
-        // Upload the small frame grid image instead of full video
-        const uploadResult = await supabase.storage
-          .from('images') // Use images bucket for the frame grid
-          .upload(filePath, frameGridBlob, { contentType: 'image/jpeg' });
+        // Upload both in parallel - frame grid for thumbnail, video for playback
+        const [frameUploadResult, videoUploadResult] = await Promise.all([
+          supabase.storage.from('images').upload(frameFilePath, frameGridBlob, { contentType: 'image/jpeg' }),
+          supabase.storage.from('videos').upload(videoFilePath, file, { contentType: file.type })
+        ]);
         
-        if (uploadResult.error) {
-          console.error('Upload error:', uploadResult.error);
+        if (frameUploadResult.error || videoUploadResult.error) {
+          console.error('Upload error:', frameUploadResult.error || videoUploadResult.error);
           updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Upload failed', endTime: Date.now() });
           return false;
         }
         
-        const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
-        publicUrl = urlData.publicUrl;
+        // Use video URL for playback (not frame grid)
+        const { data: videoUrlData } = supabase.storage.from('videos').getPublicUrl(videoFilePath);
+        publicUrl = videoUrlData.publicUrl;
         
       } else {
         // IMAGE PROCESSING: Compress first, then upload
@@ -202,7 +205,8 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
             prompt: data.data.prompt,
             title: data.data.title,
             description: data.data.description,
-            tags: data.data.tags
+            tags: data.data.tags,
+            media_type: mediaFile.type
           })
           .select()
           .single()

@@ -11,6 +11,7 @@ export interface Generation {
   description: string;
   tags: string;
   created_at: string;
+  media_type: 'image' | 'video';
 }
 
 export function useGenerations() {
@@ -35,7 +36,7 @@ export function useGenerations() {
       console.error('Error fetching generations:', error);
       setGenerations([]);
     } else {
-      setGenerations(data || []);
+      setGenerations((data || []) as Generation[]);
     }
     setLoading(false);
   };
