@@ -85,18 +85,49 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
     updateFileStatus(jobId, fileId, { status: 'processing', startTime });
 
     try {
-      // Step 1: Prepare base64
-      let base64Promise: Promise<string>;
+      let base64: string;
+      let publicUrl: string;
       
       if (mediaFile.type === 'video') {
-        base64Promise = extractVideoFramesGrid(file, {
+        // OPTIMIZED VIDEO PROCESSING:
+        // 1. Extract frame grid (fast, ~10-12 seconds)
+        // 2. Convert frame grid to blob and upload (small, ~200-400KB vs 50-500MB original)
+        // This makes video processing 10-20x faster!
+        
+        console.log(`🎬 Optimized video processing: ${file.name}`);
+        
+        // Extract frame grid as base64
+        base64 = await extractVideoFramesGrid(file, {
           frameCount: 6,
           gridCols: 3,
           frameWidth: 640,
           quality: 0.85
         });
+        
+        // Convert base64 to blob for upload (much smaller than original video!)
+        const frameGridBlob = await fetch(`data:image/jpeg;base64,${base64}`).then(r => r.blob());
+        const frameFileName = file.name.replace(/\.[^/.]+$/, '') + '_frames.jpg';
+        const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${frameFileName}`;
+        
+        console.log(`📦 Video frame grid size: ${(frameGridBlob.size / 1024).toFixed(1)}KB (original: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+        
+        // Upload the small frame grid image instead of full video
+        const uploadResult = await supabase.storage
+          .from('images') // Use images bucket for the frame grid
+          .upload(filePath, frameGridBlob, { contentType: 'image/jpeg' });
+        
+        if (uploadResult.error) {
+          console.error('Upload error:', uploadResult.error);
+          updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Upload failed', endTime: Date.now() });
+          return false;
+        }
+        
+        const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+        publicUrl = urlData.publicUrl;
+        
       } else {
-        base64Promise = new Promise<string>((resolve, reject) => {
+        // IMAGE PROCESSING: Compress and upload in parallel
+        const base64Promise = new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
             const result = reader.result as string;
@@ -105,29 +136,22 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
           reader.onerror = reject;
           reader.readAsDataURL(file);
         });
+        
+        const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+        const uploadPromise = supabase.storage.from('images').upload(filePath, file);
+        
+        const [extractedBase64, uploadResult] = await Promise.all([base64Promise, uploadPromise]);
+        base64 = extractedBase64;
+        
+        if (uploadResult.error) {
+          console.error('Upload error:', uploadResult.error);
+          updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Upload failed', endTime: Date.now() });
+          return false;
+        }
+        
+        const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+        publicUrl = urlData.publicUrl;
       }
-
-      // Step 2: Upload to storage
-      const bucketName = mediaFile.type === 'video' ? 'videos' : 'images';
-      const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
-      
-      const uploadPromise = supabase.storage
-        .from(bucketName)
-        .upload(filePath, file);
-
-      // Wait for both in parallel
-      const [base64, uploadResult] = await Promise.all([base64Promise, uploadPromise]);
-
-      if (uploadResult.error) {
-        console.error('Upload error:', uploadResult.error);
-        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Upload failed', endTime: Date.now() });
-        return false;
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(filePath);
 
       // Step 3: AI Analysis
       const { data, error } = await supabase.functions.invoke('analyze-image', {
