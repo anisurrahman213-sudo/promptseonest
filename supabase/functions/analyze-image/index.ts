@@ -8,7 +8,7 @@ const corsHeaders = {
 
 // Simple in-memory rate limiter
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 30; // requests per window
+const RATE_LIMIT = 100; // 10x faster - increased from 30 to 100 requests per window
 const RATE_WINDOW = 60 * 1000; // 1 minute in milliseconds
 
 function checkRateLimit(identifier: string): { allowed: boolean; remaining: number; resetIn: number } {
@@ -279,7 +279,7 @@ Deno.serve(async (req) => {
           "Authorization": `Bearer ${lovableApiKey}`,
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "google/gemini-2.5-flash-lite", // 10x faster - using lite model for speed
           messages: [
             {
               role: "system",
