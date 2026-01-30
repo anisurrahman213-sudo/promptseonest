@@ -61,13 +61,38 @@ export async function extractVideoFramesGrid(
   
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
-    video.preload = 'metadata';
+    video.preload = 'auto'; // Changed from metadata to auto for better loading
     video.muted = true;
     video.playsInline = true;
+    video.crossOrigin = 'anonymous';
+    
+    // Timeout for video loading - reject after 30 seconds
+    const loadTimeout = setTimeout(() => {
+      URL.revokeObjectURL(video.src);
+      reject(new Error('Video loading timeout - took too long to load'));
+    }, 30000);
+    
+    const handleError = () => {
+      clearTimeout(loadTimeout);
+      URL.revokeObjectURL(video.src);
+      reject(new Error('Failed to load video file'));
+    };
+    
+    video.onerror = handleError;
     
     video.onloadedmetadata = async () => {
+      clearTimeout(loadTimeout);
+      
       try {
         const duration = video.duration;
+        
+        // Validate duration
+        if (!duration || duration === 0 || !isFinite(duration)) {
+          URL.revokeObjectURL(video.src);
+          reject(new Error('Invalid video duration'));
+          return;
+        }
+        
         const aspectRatio = video.videoHeight / video.videoWidth;
         const frameHeight = Math.round(frameWidth * aspectRatio);
         
@@ -83,6 +108,7 @@ export async function extractVideoFramesGrid(
         
         const gridCtx = gridCanvas.getContext('2d');
         if (!gridCtx) {
+          URL.revokeObjectURL(video.src);
           reject(new Error('Could not get grid canvas context'));
           return;
         }
@@ -96,14 +122,16 @@ export async function extractVideoFramesGrid(
         const startTime = duration * 0.05;
         const endTime = duration * 0.95;
         const timeSpan = endTime - startTime;
-        const timeStep = timeSpan / (frameCount - 1);
+        const timeStep = frameCount > 1 ? timeSpan / (frameCount - 1) : 0;
         
         // Extract frames at different time points
+        let extractedFrames = 0;
         for (let i = 0; i < frameCount; i++) {
           const time = startTime + (timeStep * i);
           
           try {
             const imageData = await extractFrameAtTime(video, time, frameWidth, frameHeight);
+            extractedFrames++;
             
             // Calculate position in grid
             const col = i % gridCols;
@@ -133,6 +161,13 @@ export async function extractVideoFramesGrid(
           }
         }
         
+        // If no frames extracted, reject
+        if (extractedFrames === 0) {
+          URL.revokeObjectURL(video.src);
+          reject(new Error('Could not extract any frames from video'));
+          return;
+        }
+        
         // Add video info header
         const headerHeight = 30;
         const finalCanvas = document.createElement('canvas');
@@ -141,6 +176,7 @@ export async function extractVideoFramesGrid(
         
         const finalCtx = finalCanvas.getContext('2d');
         if (!finalCtx) {
+          URL.revokeObjectURL(video.src);
           reject(new Error('Could not get final canvas context'));
           return;
         }
@@ -165,7 +201,7 @@ export async function extractVideoFramesGrid(
         
         URL.revokeObjectURL(video.src);
         
-        console.log(`Extracted ${frameCount} frames from video: ${file.name} (${formatTimestamp(duration)})`);
+        console.log(`✓ Extracted ${extractedFrames}/${frameCount} frames from video: ${file.name} (${formatTimestamp(duration)})`);
         resolve(base64);
       } catch (error) {
         URL.revokeObjectURL(video.src);
@@ -173,12 +209,10 @@ export async function extractVideoFramesGrid(
       }
     };
     
-    video.onerror = () => {
-      URL.revokeObjectURL(video.src);
-      reject(new Error('Failed to load video'));
-    };
-    
     video.src = URL.createObjectURL(file);
+    
+    // Trigger loading
+    video.load();
   });
 }
 
@@ -197,38 +231,54 @@ function formatTimestamp(seconds: number): string {
 export function extractSingleFrame(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
-    video.preload = 'metadata';
+    video.preload = 'auto';
     video.muted = true;
     video.playsInline = true;
+    video.crossOrigin = 'anonymous';
     
-    video.onloadeddata = () => {
-      video.currentTime = Math.min(1, video.duration * 0.1);
-    };
-    
-    video.onseeked = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Could not get canvas context'));
-        return;
-      }
-      
-      ctx.drawImage(video, 0, 0);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      const base64 = dataUrl.split(',')[1];
-      
+    // Timeout for video loading
+    const loadTimeout = setTimeout(() => {
       URL.revokeObjectURL(video.src);
-      resolve(base64);
-    };
+      reject(new Error('Video loading timeout'));
+    }, 15000);
     
     video.onerror = () => {
+      clearTimeout(loadTimeout);
       URL.revokeObjectURL(video.src);
       reject(new Error('Failed to load video'));
     };
     
+    video.onloadeddata = () => {
+      clearTimeout(loadTimeout);
+      video.currentTime = Math.min(1, video.duration * 0.1);
+    };
+    
+    video.onseeked = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          URL.revokeObjectURL(video.src);
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+        
+        ctx.drawImage(video, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        const base64 = dataUrl.split(',')[1];
+        
+        URL.revokeObjectURL(video.src);
+        resolve(base64);
+      } catch (error) {
+        URL.revokeObjectURL(video.src);
+        reject(error);
+      }
+    };
+    
     video.src = URL.createObjectURL(file);
+    video.load();
   });
 }
