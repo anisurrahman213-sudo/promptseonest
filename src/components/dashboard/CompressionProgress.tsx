@@ -1,5 +1,6 @@
+import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, CheckCircle2, XCircle, SkipForward, Timer, Zap } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, SkipForward, Timer, Zap, Rocket } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { CompressionProgress as CompressionProgressType } from '@/lib/imageCompression';
@@ -7,6 +8,12 @@ import { CompressionProgress as CompressionProgressType } from '@/lib/imageCompr
 interface CompressionProgressProps {
   files: CompressionProgressType[];
   isCompressing: boolean;
+}
+
+// Extended type to include video compression fields
+interface ExtendedCompressionProgress extends CompressionProgressType {
+  method?: 'webcodecs' | 'mediarecorder' | 'skipped';
+  speedup?: number;
 }
 
 function formatSize(bytes: number): string {
@@ -20,79 +27,92 @@ function formatTime(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-function CompressionFileRow({ file }: { file: CompressionProgressType }) {
-  const elapsed = file.endTime && file.startTime 
-    ? file.endTime - file.startTime 
-    : file.startTime ? Date.now() - file.startTime : 0;
-  
-  const reduction = file.compressedSize && file.originalSize > file.compressedSize
-    ? Math.round((1 - file.compressedSize / file.originalSize) * 100)
-    : 0;
+const CompressionFileRow = forwardRef<HTMLDivElement, { file: ExtendedCompressionProgress }>(
+  ({ file }, ref) => {
+    const elapsed = file.endTime && file.startTime 
+      ? file.endTime - file.startTime 
+      : file.startTime ? Date.now() - file.startTime : 0;
+    
+    const reduction = file.compressedSize && file.originalSize > file.compressedSize
+      ? Math.round((1 - file.compressedSize / file.originalSize) * 100)
+      : 0;
 
-  return (
-    <motion.div
-      className={cn(
-        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors",
-        file.status === 'compressing' && "bg-primary/10 border border-primary/20",
-        file.status === 'done' && "bg-green-500/5",
-        file.status === 'skipped' && "bg-muted/50",
-        file.status === 'error' && "bg-destructive/5",
-        file.status === 'pending' && "opacity-40"
-      )}
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.15 }}
-    >
-      {/* Status icon */}
-      <div className="shrink-0">
-        {file.status === 'compressing' && (
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 0.6, ease: "linear" }}
-          >
-            <Loader2 className="h-3.5 w-3.5 text-primary" />
-          </motion.div>
+    return (
+      <motion.div
+        ref={ref}
+        className={cn(
+          "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-colors",
+          file.status === 'compressing' && "bg-primary/10 border border-primary/20",
+          file.status === 'done' && "bg-green-500/5",
+          file.status === 'skipped' && "bg-muted/50",
+          file.status === 'error' && "bg-destructive/5",
+          file.status === 'pending' && "opacity-40"
         )}
-        {file.status === 'done' && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
-        {file.status === 'skipped' && <SkipForward className="h-3.5 w-3.5 text-muted-foreground" />}
-        {file.status === 'error' && <XCircle className="h-3.5 w-3.5 text-destructive" />}
-        {file.status === 'pending' && <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/30" />}
-      </div>
-      
-      {/* File name */}
-      <span className="flex-1 truncate font-medium">{file.fileName}</span>
-      
-      {/* Size info */}
-      <span className="text-muted-foreground shrink-0">
-        {formatSize(file.originalSize)}
-        {file.compressedSize && file.status === 'done' && (
-          <span className="text-green-600 ml-1">→ {formatSize(file.compressedSize)}</span>
-        )}
-      </span>
-      
-      {/* Reduction badge */}
-      {reduction > 0 && file.status === 'done' && (
-        <span className="px-1.5 py-0.5 rounded bg-green-500/20 text-green-600 font-mono text-[10px]">
-          -{reduction}%
-        </span>
-      )}
-      
-      {/* Timer */}
-      {elapsed > 0 && (
-        <div className={cn(
-          "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-mono shrink-0",
-          file.status === 'compressing' && "bg-primary/20 text-primary",
-          file.status === 'done' && "bg-green-500/15 text-green-600",
-          file.status === 'skipped' && "bg-muted text-muted-foreground",
-          file.status === 'error' && "bg-destructive/15 text-destructive"
-        )}>
-          <Timer className="h-2.5 w-2.5" />
-          {formatTime(elapsed)}
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.15 }}
+      >
+        {/* Status icon */}
+        <div className="shrink-0">
+          {file.status === 'compressing' && (
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 0.6, ease: "linear" }}
+            >
+              <Loader2 className="h-3.5 w-3.5 text-primary" />
+            </motion.div>
+          )}
+          {file.status === 'done' && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
+          {file.status === 'skipped' && <SkipForward className="h-3.5 w-3.5 text-muted-foreground" />}
+          {file.status === 'error' && <XCircle className="h-3.5 w-3.5 text-destructive" />}
+          {file.status === 'pending' && <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/30" />}
         </div>
-      )}
-    </motion.div>
-  );
-}
+        
+        {/* File name */}
+        <span className="flex-1 truncate font-medium">{file.fileName}</span>
+        
+        {/* Size info */}
+        <span className="text-muted-foreground shrink-0">
+          {formatSize(file.originalSize)}
+          {file.compressedSize && file.status === 'done' && (
+            <span className="text-green-600 ml-1">→ {formatSize(file.compressedSize)}</span>
+          )}
+        </span>
+        
+        {/* Reduction badge */}
+        {reduction > 0 && file.status === 'done' && (
+          <span className="px-1.5 py-0.5 rounded bg-green-500/20 text-green-600 font-mono text-[10px]">
+            -{reduction}%
+          </span>
+        )}
+        
+        {/* WebCodecs speedup badge */}
+        {file.method === 'webcodecs' && file.speedup && file.speedup > 1 && file.status === 'done' && (
+          <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-600 font-mono text-[10px]">
+            <Rocket className="h-2.5 w-2.5" />
+            {file.speedup.toFixed(1)}x
+          </span>
+        )}
+        
+        {/* Timer */}
+        {elapsed > 0 && (
+          <div className={cn(
+            "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-mono shrink-0",
+            file.status === 'compressing' && "bg-primary/20 text-primary",
+            file.status === 'done' && "bg-green-500/15 text-green-600",
+            file.status === 'skipped' && "bg-muted text-muted-foreground",
+            file.status === 'error' && "bg-destructive/15 text-destructive"
+          )}>
+            <Timer className="h-2.5 w-2.5" />
+            {formatTime(elapsed)}
+          </div>
+        )}
+      </motion.div>
+    );
+  }
+);
+
+CompressionFileRow.displayName = 'CompressionFileRow';
 
 export function CompressionProgress({ files, isCompressing }: CompressionProgressProps) {
   const completed = files.filter(f => f.status === 'done' || f.status === 'skipped' || f.status === 'error').length;
