@@ -90,6 +90,7 @@ export type Database = {
           id: string
           image_name: string
           image_url: string
+          media_type: string
           prompt: string
           tags: string
           title: string
@@ -101,6 +102,7 @@ export type Database = {
           id?: string
           image_name: string
           image_url: string
+          media_type?: string
           prompt: string
           tags: string
           title: string
@@ -112,6 +114,7 @@ export type Database = {
           id?: string
           image_name?: string
           image_url?: string
+          media_type?: string
           prompt?: string
           tags?: string
           title?: string

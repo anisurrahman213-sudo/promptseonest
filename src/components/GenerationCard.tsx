@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2 } from 'lucide-react';
+import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2, Video, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,18 +114,53 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
       >
         <Card className="overflow-hidden border border-border/50 bg-card/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group">
           <CardHeader className="p-0">
-            {/* Image Section with Overlay */}
+            {/* Media Section with Overlay */}
             <div className="relative aspect-video sm:aspect-[16/9] overflow-hidden bg-muted">
-              <motion.img
-                src={generation.image_url}
-                alt={generation.image_name}
-                className="w-full h-full object-cover"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.4 }}
-              />
+              {generation.media_type === 'video' ? (
+                <video
+                  src={generation.image_url}
+                  className="w-full h-full object-cover"
+                  muted
+                  loop
+                  playsInline
+                  onMouseEnter={(e) => e.currentTarget.play()}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.pause();
+                    e.currentTarget.currentTime = 0;
+                  }}
+                />
+              ) : (
+                <motion.img
+                  src={generation.image_url}
+                  alt={generation.image_name}
+                  className="w-full h-full object-cover"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.4 }}
+                />
+              )}
+              
+              {/* Media Type Badge */}
+              <div className={cn(
+                "absolute top-2 left-2 px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-1",
+                generation.media_type === 'video' 
+                  ? "bg-secondary/90 text-secondary-foreground" 
+                  : "bg-primary/90 text-primary-foreground"
+              )}>
+                {generation.media_type === 'video' ? (
+                  <>
+                    <Video className="h-3 w-3" />
+                    VIDEO
+                  </>
+                ) : (
+                  <>
+                    <ImageIcon className="h-3 w-3" />
+                    IMG
+                  </>
+                )}
+              </div>
               
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity pointer-events-none" />
               
               {/* Top Actions */}
               <div className="absolute top-2 right-2 flex items-center gap-1.5">
@@ -330,7 +365,7 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
 
       {/* Lightbox */}
       <Lightbox
-        media={[{ src: generation.image_url, name: generation.image_name, type: 'image' }]}
+        media={[{ src: generation.image_url, name: generation.image_name, type: generation.media_type }]}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
         initialIndex={0}

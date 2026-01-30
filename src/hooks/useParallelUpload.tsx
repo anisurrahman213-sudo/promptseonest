@@ -41,9 +41,10 @@ export function useParallelUpload({
       let publicUrl: string;
       
       if (mediaFile.type === 'video') {
-        // OPTIMIZED VIDEO PROCESSING:
-        // Extract frame grid and upload that instead of full video (10-20x faster!)
-        console.log(`🎬 Optimized video processing: ${file.name}`);
+        // VIDEO PROCESSING:
+        // 1. Extract frame grid for AI analysis
+        // 2. Upload original video to videos bucket for playback
+        console.log(`🎬 Video processing: ${file.name}`);
         
         base64 = await extractVideoFramesGrid(file, {
           frameCount: 6,
@@ -52,25 +53,28 @@ export function useParallelUpload({
           quality: 0.85
         });
         
-        // Convert base64 to blob for upload
+        // Upload original video and frame grid in parallel
         const frameGridBlob = await fetch(`data:image/jpeg;base64,${base64}`).then(r => r.blob());
         const frameFileName = file.name.replace(/\.[^/.]+$/, '') + '_frames.jpg';
-        const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${frameFileName}`;
+        const frameFilePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${frameFileName}`;
+        const videoFilePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
         
-        console.log(`📦 Video frame grid: ${(frameGridBlob.size / 1024).toFixed(1)}KB (original: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+        console.log(`📦 Frame grid: ${(frameGridBlob.size / 1024).toFixed(1)}KB, Video: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
         
-        const uploadResult = await supabase.storage
-          .from('images')
-          .upload(filePath, frameGridBlob, { contentType: 'image/jpeg' });
+        const [frameUploadResult, videoUploadResult] = await Promise.all([
+          supabase.storage.from('images').upload(frameFilePath, frameGridBlob, { contentType: 'image/jpeg' }),
+          supabase.storage.from('videos').upload(videoFilePath, file, { contentType: file.type })
+        ]);
         
-        if (uploadResult.error) {
-          console.error('Upload error:', uploadResult.error);
+        if (frameUploadResult.error || videoUploadResult.error) {
+          console.error('Upload error:', frameUploadResult.error || videoUploadResult.error);
           onFileStatusUpdate(index, { status: 'error', errorMessage: 'Upload failed', endTime: Date.now() });
           return false;
         }
         
-        const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
-        publicUrl = urlData.publicUrl;
+        // Use video URL for playback
+        const { data: videoUrlData } = supabase.storage.from('videos').getPublicUrl(videoFilePath);
+        publicUrl = videoUrlData.publicUrl;
         
       } else {
         // IMAGE PROCESSING: Compress first, then upload
@@ -148,7 +152,8 @@ export function useParallelUpload({
             prompt: data.data.prompt,
             title: data.data.title,
             description: data.data.description,
-            tags: data.data.tags
+            tags: data.data.tags,
+            media_type: mediaFile.type
           })
           .select()
           .single()

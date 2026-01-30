@@ -11,6 +11,7 @@ export interface Generation {
   description: string;
   tags: string;
   created_at: string;
+  media_type: 'image' | 'video';
 }
 
 interface UseInfiniteGenerationsOptions {
@@ -65,7 +66,7 @@ export function useInfiniteGenerations(options: UseInfiniteGenerationsOptions = 
         console.error('Error fetching generations:', error);
         if (!append) setGenerations([]);
       } else {
-        const newData = data || [];
+        const newData = (data || []) as Generation[];
         
         if (append) {
           setGenerations(prev => [...prev, ...newData]);
@@ -158,7 +159,7 @@ export function useInfiniteGenerations(options: UseInfiniteGenerationsOptions = 
         return [];
       }
       
-      return data || [];
+      return (data || []) as Generation[];
     } catch (error) {
       console.error('Error:', error);
       return [];
