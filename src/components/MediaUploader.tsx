@@ -6,6 +6,7 @@ import { Lightbox } from '@/components/ui/lightbox';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { compressImages, CompressionProgress as CompressionProgressType } from '@/lib/imageCompression';
+import { compressVideos, VideoCompressionProgress } from '@/lib/videoCompression';
 import { toast } from 'sonner';
 import { ImageValidationResults } from '@/components/dashboard/ImageValidationResults';
 import { validateMultipleImages, type ImageInfo, type ValidationResult } from '@/lib/platformValidation';
@@ -41,8 +42,6 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
   const [isValidating, setIsValidating] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    // Only images are optimized (compressed). Videos are added as-is.
-    // This prevents showing a confusing/stuck "Optimizing... 0/0" state on video-only uploads.
     setCompressionFiles([]);
     
     try {
@@ -50,11 +49,11 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
       const imageFiles = acceptedFiles.filter(f => f.type.startsWith('image/'));
       const videoFiles = acceptedFiles.filter(f => f.type.startsWith('video/'));
 
-      const shouldCompress = imageFiles.length > 0;
-      setIsCompressing(shouldCompress);
+      const hasMedia = imageFiles.length > 0 || videoFiles.length > 0;
+      setIsCompressing(hasMedia);
       
-      // Compress all images in parallel with progress tracking
-      const compressedImages = shouldCompress
+      // Compress images in parallel with progress tracking
+      const compressedImages = imageFiles.length > 0
         ? await compressImages(
             imageFiles,
             {
@@ -65,19 +64,49 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
               aggressive: true,
             },
             20, // concurrency
-            (progress) => setCompressionFiles(progress)
+            (progress) => setCompressionFiles(prev => {
+              // Merge with video progress
+              const videoProgress = prev.filter(p => !imageFiles.some(f => f.name === p.fileName));
+              return [...progress, ...videoProgress];
+            })
           )
         : [];
       
-      // Create MediaFile objects from compressed images
+      // Compress videos in parallel with progress tracking
+      const compressedVideos = videoFiles.length > 0
+        ? await compressVideos(
+            videoFiles,
+            {
+              maxWidth: 1280,
+              maxHeight: 720,
+              videoBitrate: 1000, // 1 Mbps
+              frameRate: 30,
+            },
+            2, // lower concurrency for videos (CPU intensive)
+            (progress) => setCompressionFiles(prev => {
+              // Convert video progress to image compression format
+              const videoAsImageProgress: CompressionProgressType[] = progress.map(vp => ({
+                fileName: vp.fileName,
+                originalSize: vp.originalSize,
+                compressedSize: vp.compressedSize,
+                status: vp.status,
+                compressionRatio: vp.compressedSize ? 1 - (vp.compressedSize / vp.originalSize) : undefined,
+              }));
+              // Merge with image progress
+              const imageProgress = prev.filter(p => !videoFiles.some(f => f.name === p.fileName));
+              return [...imageProgress, ...videoAsImageProgress];
+            })
+          )
+        : [];
+      
+      // Create MediaFile objects from compressed media
       const processedImages: MediaFile[] = compressedImages.map(file => ({
         file,
         preview: URL.createObjectURL(file),
         type: 'image' as const,
       }));
       
-      // Add videos without compression
-      const processedVideos: MediaFile[] = videoFiles.map(file => ({
+      const processedVideos: MediaFile[] = compressedVideos.map(file => ({
         file,
         preview: URL.createObjectURL(file),
         type: 'video' as const,
@@ -87,15 +116,19 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
       
       setFiles(prev => [...prev, ...allProcessed]);
       
-      // Calculate savings (images only)
-      if (processedImages.length > 0) {
-        const originalSize = imageFiles.reduce((sum, f) => sum + f.size, 0);
-        const compressedSize = compressedImages.reduce((sum, f) => sum + f.size, 0);
-        const savedMB = ((originalSize - compressedSize) / (1024 * 1024)).toFixed(1);
-        const totalMB = (compressedSize / (1024 * 1024)).toFixed(1);
+      // Calculate savings for all media
+      const originalImageSize = imageFiles.reduce((sum, f) => sum + f.size, 0);
+      const compressedImageSize = compressedImages.reduce((sum, f) => sum + f.size, 0);
+      const originalVideoSize = videoFiles.reduce((sum, f) => sum + f.size, 0);
+      const compressedVideoSize = compressedVideos.reduce((sum, f) => sum + f.size, 0);
+      
+      const totalOriginal = originalImageSize + originalVideoSize;
+      const totalCompressed = compressedImageSize + compressedVideoSize;
+      const savedMB = ((totalOriginal - totalCompressed) / (1024 * 1024)).toFixed(1);
+      const totalMB = (totalCompressed / (1024 * 1024)).toFixed(1);
+      
+      if (allProcessed.length > 0) {
         toast.success(`✓ ${allProcessed.length} files optimized (${totalMB}MB, saved ${savedMB}MB)`);
-      } else if (processedVideos.length > 0) {
-        toast.success(`✓ ${processedVideos.length} video${processedVideos.length > 1 ? 's' : ''} added`);
       }
     } catch (error) {
       console.error('Error processing files:', error);
