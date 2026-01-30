@@ -1,18 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdminUsers, useIsAdmin, useDeleteUser } from '@/hooks/usePaymentRequests';
+import { useAdminUsers, useIsAdmin, useDeleteUser, useSendCustomEmail } from '@/hooks/usePaymentRequests';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { format } from 'date-fns';
 import {
   Dialog,
   DialogContent,
@@ -34,13 +27,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Mail, Phone, User, MessageCircle, History, Send } from 'lucide-react';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { GenerationsManagement } from '@/components/admin/GenerationsManagement';
+import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog';
+import { UserFiltersComponent, filterUsers, UserFilters } from '@/components/admin/UserFilters';
+import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
+import { UserListExport } from '@/components/admin/UserListExport';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 
 export default function AdminDashboard() {
@@ -51,6 +50,7 @@ export default function AdminDashboard() {
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   const { data: users, isLoading: usersLoading } = useAdminUsers();
   const deleteUserMutation = useDeleteUser();
+  const sendEmailMutation = useSendCustomEmail();
   const queryClient = useQueryClient();
 
   const [addCreditsDialog, setAddCreditsDialog] = useState(false);
@@ -58,6 +58,66 @@ export default function AdminDashboard() {
   const [creditsToAdd, setCreditsToAdd] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ userId: string; email: string } | null>(null);
+
+  // Email dialog state
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailTo, setEmailTo] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+
+  // Customer history dialog state
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+
+  // User filters state
+  const [userFilters, setUserFilters] = useState<UserFilters>({
+    search: '',
+    minCredits: null,
+    maxCredits: null,
+    startDate: null,
+    endDate: null,
+  });
+
+  // Selected users for bulk email
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [bulkEmailDialogOpen, setBulkEmailDialogOpen] = useState(false);
+
+  // Filter users based on current filters
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
+    return filterUsers(users, userFilters);
+  }, [users, userFilters]);
+
+  const openHistoryDialog = (customer: any) => {
+    setSelectedCustomer(customer);
+    setHistoryDialogOpen(true);
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds(prev => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUserIds.size === filteredUsers.length) {
+      setSelectedUserIds(new Set());
+    } else {
+      setSelectedUserIds(new Set(filteredUsers.map(u => u.user_id)));
+    }
+  };
+
+  const selectedUsersForEmail = useMemo(() => {
+    return filteredUsers
+      .filter(u => selectedUserIds.has(u.user_id))
+      .map(u => ({ email: u.email, full_name: u.full_name }));
+  }, [filteredUsers, selectedUserIds]);
 
   // Redirect non-admin users
   useEffect(() => {
@@ -120,6 +180,31 @@ export default function AdminDashboard() {
     });
   };
 
+  const openEmailDialog = (email: string) => {
+    setEmailTo(email);
+    setEmailSubject('');
+    setEmailBody('');
+    setEmailDialogOpen(true);
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailTo || !emailSubject || !emailBody) {
+      return;
+    }
+
+    await sendEmailMutation.mutateAsync({
+      to: emailTo,
+      subject: emailSubject,
+      html: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <p>${emailBody.replace(/\n/g, '<br>')}</p>
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+        <p style="color: #666; font-size: 14px;">Best regards,<br>The PromptNest Team</p>
+      </div>`,
+    });
+
+    setEmailDialogOpen(false);
+  };
+
   // Show loading state
   if (authLoading || adminLoading) {
     return (
@@ -147,7 +232,7 @@ export default function AdminDashboard() {
           </Button>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage user credits</p>
+            <p className="text-muted-foreground">Manage users & credits</p>
           </div>
         </div>
 
@@ -195,88 +280,163 @@ export default function AdminDashboard() {
               </Card>
             </div>
 
-            {/* Users Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle>All Users</CardTitle>
-                <CardDescription>Manage credits for all registered users</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {usersLoading ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            {/* Users List with Filters */}
+            {usersLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : !users || users.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No users found</h3>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {/* User Filters */}
+                <UserFiltersComponent 
+                  filters={userFilters} 
+                  onFiltersChange={setUserFilters} 
+                />
+
+                {/* Bulk Actions Bar */}
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Checkbox 
+                      checked={filteredUsers.length > 0 && selectedUserIds.size === filteredUsers.length}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all users"
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {selectedUserIds.size > 0 
+                        ? `${selectedUserIds.size} selected` 
+                        : `${filteredUsers.length} users`}
+                    </span>
                   </div>
-                ) : !users || users.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No users found
+                  <div className="flex items-center gap-2">
+                    <UserListExport users={filteredUsers} filename="customers" />
+                    {selectedUserIds.size > 0 && (
+                      <Button 
+                        size="sm" 
+                        onClick={() => setBulkEmailDialogOpen(true)}
+                        className="gap-2"
+                      >
+                        <Mail className="h-4 w-4" />
+                        Email Selected ({selectedUserIds.size})
+                      </Button>
+                    )}
                   </div>
+                </div>
+
+                {/* User List */}
+                {filteredUsers.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium">No users match your filters</h3>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Try adjusting your search or filter criteria
+                      </p>
+                    </CardContent>
+                  </Card>
                 ) : (
-                <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>User Info</TableHead>
-                          <TableHead>Contact</TableHead>
-                          <TableHead>Signup Date</TableHead>
-                          <TableHead className="text-center">Credits</TableHead>
-                          <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users.map((u) => (
-                          <TableRow key={u.user_id}>
-                            <TableCell>
-                              <div className="space-y-1">
-                                <p className="font-medium">{u.full_name || 'No Name'}</p>
-                                <p className="text-sm text-muted-foreground">{u.email || 'N/A'}</p>
+                  <div className="grid gap-3">
+                    {filteredUsers.map((u: any) => (
+                      <Card 
+                        key={u.user_id} 
+                        className={selectedUserIds.has(u.user_id) ? 'ring-2 ring-primary' : ''}
+                      >
+                        <CardContent className="py-4">
+                          <div className="flex items-center justify-between flex-wrap gap-4">
+                            <div className="flex items-center gap-4">
+                              <Checkbox 
+                                checked={selectedUserIds.has(u.user_id)}
+                                onCheckedChange={() => toggleUserSelection(u.user_id)}
+                                aria-label={`Select ${u.full_name || u.email}`}
+                              />
+                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                <User className="h-5 w-5 text-primary" />
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              <p className="text-sm">{u.phone_number || 'No Phone'}</p>
-                            </TableCell>
-                            <TableCell>
-                              <p className="text-sm">
-                                {u.created_at 
-                                  ? new Date(u.created_at).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'short',
-                                      day: 'numeric'
-                                    })
-                                  : 'N/A'
-                                }
-                              </p>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <Badge variant="secondary" className="font-mono">
-                                {u.credits || 0}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex gap-2 justify-end">
+                              <div>
+                                <p className="font-medium">{u.full_name || 'No name'}</p>
+                                <p className="text-sm text-muted-foreground">{u.email}</p>
+                                {u.created_at && (
+                                  <p className="text-xs text-muted-foreground">
+                                    Joined {format(new Date(u.created_at), 'MMM d, yyyy')}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <p className="text-sm text-muted-foreground">Credits</p>
+                                <p className="font-bold text-lg">{u.credits}</p>
+                              </div>
+                              <div className="flex gap-2 flex-wrap">
+                                <Button 
+                                  variant="default" 
+                                  size="sm"
+                                  onClick={() => openHistoryDialog(u)}
+                                  title="View History"
+                                  className="gap-1"
+                                >
+                                  <History className="h-4 w-4" />
+                                  History
+                                </Button>
                                 <Button
                                   size="sm"
+                                  variant="outline"
                                   onClick={() => openAddCreditsDialog(u.user_id, u.email || 'Unknown')}
+                                  title="Add Credits"
                                 >
                                   <Plus className="h-4 w-4 mr-1" />
                                   Credits
                                 </Button>
+                                {u.phone_number && (
+                                  <>
+                                    <a href={`tel:${u.phone_number}`}>
+                                      <Button variant="outline" size="icon" title="Call">
+                                        <Phone className="h-4 w-4" />
+                                      </Button>
+                                    </a>
+                                    <a 
+                                      href={`https://wa.me/${u.phone_number.replace(/[^0-9]/g, '')}`} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                    >
+                                      <Button variant="outline" size="icon" className="text-green-600 hover:text-green-700" title="WhatsApp">
+                                        <MessageCircle className="h-4 w-4" />
+                                      </Button>
+                                    </a>
+                                  </>
+                                )}
+                                <Button 
+                                  variant="outline" 
+                                  size="icon"
+                                  onClick={() => openEmailDialog(u.email)}
+                                  title="Email"
+                                >
+                                  <Mail className="h-4 w-4" />
+                                </Button>
                                 <Button
-                                  size="sm"
+                                  size="icon"
                                   variant="destructive"
                                   onClick={() => openDeleteDialog(u.user_id, u.email || 'Unknown')}
+                                  title="Delete User"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="generations">
@@ -336,6 +496,60 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Email Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Email</DialogTitle>
+            <DialogDescription>
+              Send an email to: <strong>{emailTo}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="email-subject">Subject</Label>
+              <Input
+                id="email-subject"
+                placeholder="Enter email subject"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email-body">Message</Label>
+              <Textarea
+                id="email-body"
+                placeholder="Enter your message..."
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                rows={6}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSendEmail}
+              disabled={sendEmailMutation.isPending || !emailSubject || !emailBody}
+            >
+              {sendEmailMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Email
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete User Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
@@ -378,6 +592,23 @@ export default function AdminDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Customer History Dialog */}
+      <CustomerHistoryDialog
+        customer={selectedCustomer}
+        open={historyDialogOpen}
+        onOpenChange={setHistoryDialogOpen}
+      />
+
+      {/* Bulk Email Dialog */}
+      <BulkEmailDialog
+        open={bulkEmailDialogOpen}
+        onOpenChange={(open) => {
+          setBulkEmailDialogOpen(open);
+          if (!open) setSelectedUserIds(new Set());
+        }}
+        selectedUsers={selectedUsersForEmail}
+      />
     </div>
   );
 }
