@@ -9,6 +9,16 @@ export interface CompressionOptions {
   aggressive?: boolean;
 }
 
+export interface CompressionProgress {
+  fileName: string;
+  status: 'pending' | 'compressing' | 'done' | 'skipped' | 'error';
+  originalSize: number;
+  compressedSize?: number;
+  startTime?: number;
+  endTime?: number;
+  errorMessage?: string;
+}
+
 const defaultOptions: CompressionOptions = {
   maxWidth: 2048,
   maxHeight: 2048,
@@ -152,13 +162,26 @@ export async function compressImage(
   }
 }
 
-// Ultra-fast parallel compression with high concurrency
+// Ultra-fast parallel compression with high concurrency and progress tracking
 export async function compressImages(
   files: File[],
   options?: CompressionOptions,
-  concurrency: number = 20 // 4x higher concurrency
+  concurrency: number = 20,
+  onProgress?: (progress: CompressionProgress[]) => void
 ): Promise<File[]> {
   const results: File[] = new Array(files.length);
+  
+  // Initialize progress tracking
+  const progressList: CompressionProgress[] = files.map(f => ({
+    fileName: f.name,
+    status: 'pending' as const,
+    originalSize: f.size,
+  }));
+  
+  const updateProgress = (index: number, update: Partial<CompressionProgress>) => {
+    progressList[index] = { ...progressList[index], ...update };
+    onProgress?.([...progressList]);
+  };
   
   // Process all files with controlled concurrency using a semaphore pattern
   let activeCount = 0;
@@ -168,11 +191,21 @@ export async function compressImages(
     const processNext = async () => {
       while (currentIndex < files.length && activeCount < concurrency) {
         const index = currentIndex++;
+        const file = files[index];
         activeCount++;
         
-        compressImage(files[index], options)
+        const startTime = Date.now();
+        updateProgress(index, { status: 'compressing', startTime });
+        
+        compressImage(file, options)
           .then((result) => {
             results[index] = result;
+            const wasSkipped = result === file && file.size / 1024 < 100;
+            updateProgress(index, { 
+              status: wasSkipped ? 'skipped' : 'done',
+              compressedSize: result.size,
+              endTime: Date.now()
+            });
             activeCount--;
             
             if (currentIndex >= files.length && activeCount === 0) {
@@ -181,8 +214,13 @@ export async function compressImages(
               processNext();
             }
           })
-          .catch(() => {
-            results[index] = files[index];
+          .catch((error) => {
+            results[index] = file;
+            updateProgress(index, { 
+              status: 'error',
+              errorMessage: error instanceof Error ? error.message : 'Compression failed',
+              endTime: Date.now()
+            });
             activeCount--;
             processNext();
           });
