@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Lightbox } from '@/components/ui/lightbox';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { compressImage } from '@/lib/imageCompression';
+import { compressImages, CompressionProgress as CompressionProgressType } from '@/lib/imageCompression';
 import { toast } from 'sonner';
 import { ImageValidationResults } from '@/components/dashboard/ImageValidationResults';
 import { validateMultipleImages, type ImageInfo, type ValidationResult } from '@/lib/platformValidation';
 import type { ExportPlatform } from '@/components/dashboard/AdvancedMetadataControls';
+import { CompressionProgress } from '@/components/dashboard/CompressionProgress';
 
 export interface MediaFile {
   file: File;
@@ -35,76 +36,67 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isCompressing, setIsCompressing] = useState(false);
-  const [compressionProgress, setCompressionProgress] = useState({ current: 0, total: 0 });
+  const [compressionFiles, setCompressionFiles] = useState<CompressionProgressType[]>([]);
   const [validationResults, setValidationResults] = useState<ValidationItem[]>([]);
   const [isValidating, setIsValidating] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setIsCompressing(true);
-    setCompressionProgress({ current: 0, total: acceptedFiles.length });
+    setCompressionFiles([]);
     
     try {
-      const processedFiles: MediaFile[] = [];
-      const batchSize = 20; // 4x higher concurrency for 10x speed boost
-      
       // Separate images and videos
       const imageFiles = acceptedFiles.filter(f => f.type.startsWith('image/'));
       const videoFiles = acceptedFiles.filter(f => f.type.startsWith('video/'));
       
-      // Process images in parallel batches (ultra-fast)
-      for (let i = 0; i < imageFiles.length; i += batchSize) {
-        const batch = imageFiles.slice(i, i + batchSize);
-        
-        const batchResults = await Promise.all(
-          batch.map(async (file) => {
-            const processedFile = await compressImage(file, {
-              maxWidth: 2048,
-              maxHeight: 2048,
-              quality: 0.75,
-              maxSizeKB: 400,
-              aggressive: true,
-            });
-            
-            return {
-              file: processedFile,
-              preview: URL.createObjectURL(processedFile),
-              type: 'image' as const,
-            };
-          })
-        );
-        
-        processedFiles.push(...batchResults);
-        setCompressionProgress({ 
-          current: Math.min(i + batchSize, imageFiles.length), 
-          total: acceptedFiles.length 
-        });
-      }
+      // Compress all images in parallel with progress tracking
+      const compressedImages = await compressImages(
+        imageFiles,
+        {
+          maxWidth: 2048,
+          maxHeight: 2048,
+          quality: 0.75,
+          maxSizeKB: 400,
+          aggressive: true,
+        },
+        20, // concurrency
+        (progress) => setCompressionFiles(progress)
+      );
+      
+      // Create MediaFile objects from compressed images
+      const processedImages: MediaFile[] = compressedImages.map(file => ({
+        file,
+        preview: URL.createObjectURL(file),
+        type: 'image' as const,
+      }));
       
       // Add videos without compression
-      videoFiles.forEach(file => {
-        processedFiles.push({
-          file,
-          preview: URL.createObjectURL(file),
-          type: 'video' as const,
-        });
-      });
+      const processedVideos: MediaFile[] = videoFiles.map(file => ({
+        file,
+        preview: URL.createObjectURL(file),
+        type: 'video' as const,
+      }));
       
-      setCompressionProgress({ current: acceptedFiles.length, total: acceptedFiles.length });
+      const allProcessed = [...processedImages, ...processedVideos];
       
-      setFiles(prev => [...prev, ...processedFiles]);
+      setFiles(prev => [...prev, ...allProcessed]);
       
-      const imageCount = processedFiles.filter(f => f.type === 'image').length;
-      const totalSizeMB = (processedFiles.reduce((sum, f) => sum + f.file.size, 0) / (1024 * 1024)).toFixed(1);
+      // Calculate savings
+      const originalSize = imageFiles.reduce((sum, f) => sum + f.size, 0);
+      const compressedSize = compressedImages.reduce((sum, f) => sum + f.size, 0);
+      const savedMB = ((originalSize - compressedSize) / (1024 * 1024)).toFixed(1);
+      const totalMB = (compressedSize / (1024 * 1024)).toFixed(1);
       
-      if (imageCount > 0) {
-        toast.success(`✓ ${processedFiles.length} files optimized (${totalSizeMB}MB total)`);
+      if (processedImages.length > 0) {
+        toast.success(`✓ ${allProcessed.length} files optimized (${totalMB}MB, saved ${savedMB}MB)`);
       }
     } catch (error) {
       console.error('Error processing files:', error);
       toast.error('Error processing some files');
     } finally {
       setIsCompressing(false);
-      setCompressionProgress({ current: 0, total: 0 });
+      // Keep compression files visible briefly then clear
+      setTimeout(() => setCompressionFiles([]), 2000);
     }
   }, []);
 
@@ -258,7 +250,7 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
               animate={{ scale: isDragActive ? 1.05 : 1 }}
             >
               {isCompressing 
-                ? `Optimizing... ${compressionProgress.current}/${compressionProgress.total}` 
+                ? `Optimizing... ${compressionFiles.filter(f => f.status === 'done' || f.status === 'skipped').length}/${compressionFiles.length}` 
                 : isDragActive 
                   ? 'Drop files here' 
                   : 'Drag & drop files here, or click to select'}
@@ -269,6 +261,16 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
           </div>
         </div>
       </motion.div>
+
+      {/* Compression Progress UI */}
+      <AnimatePresence>
+        {compressionFiles.length > 0 && (
+          <CompressionProgress 
+            files={compressionFiles} 
+            isCompressing={isCompressing} 
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence mode="wait">
         {files.length > 0 && (
