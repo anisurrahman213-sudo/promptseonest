@@ -30,57 +30,70 @@ interface MediaUploaderProps {
   selectedPlatform?: ExportPlatform;
 }
 
-export function MediaUploader({ onUpload, isProcessing, maxFiles = 500, selectedPlatform = 'adobe_stock' }: MediaUploaderProps) {
+export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selectedPlatform = 'adobe_stock' }: MediaUploaderProps) {
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState({ current: 0, total: 0 });
   const [validationResults, setValidationResults] = useState<ValidationItem[]>([]);
   const [isValidating, setIsValidating] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setIsCompressing(true);
+    setCompressionProgress({ current: 0, total: acceptedFiles.length });
     
     try {
-      // Compress images in parallel for faster processing
-      const processedFiles = await Promise.all(
-        acceptedFiles.map(async (file) => {
-          const isVideo = file.type.startsWith('video/');
-          
-          // Compress images before adding
-          let processedFile = file;
-          if (!isVideo && file.type.startsWith('image/')) {
-            processedFile = await compressImage(file, {
-              maxWidth: 2048,
-              maxHeight: 2048,
-              quality: 0.85,
-            });
-          }
-          
-          return {
-            file: processedFile,
-            preview: URL.createObjectURL(processedFile),
-            type: isVideo ? 'video' as const : 'image' as const,
-          };
-        })
-      );
+      const processedFiles: MediaFile[] = [];
+      const batchSize = 5; // Process 5 files at a time for faster compression
       
-      setFiles(prev => {
-        const combined = [...prev, ...processedFiles].slice(0, maxFiles);
-        return combined;
-      });
+      for (let i = 0; i < acceptedFiles.length; i += batchSize) {
+        const batch = acceptedFiles.slice(i, i + batchSize);
+        
+        const batchResults = await Promise.all(
+          batch.map(async (file) => {
+            const isVideo = file.type.startsWith('video/');
+            
+            // Aggressive compression for images
+            let processedFile = file;
+            if (!isVideo && file.type.startsWith('image/')) {
+              processedFile = await compressImage(file, {
+                maxWidth: 2048,
+                maxHeight: 2048,
+                quality: 0.8,
+                maxSizeKB: 400, // Target 400KB for fast uploads
+                aggressive: true,
+              });
+            }
+            
+            return {
+              file: processedFile,
+              preview: URL.createObjectURL(processedFile),
+              type: isVideo ? 'video' as const : 'image' as const,
+            };
+          })
+        );
+        
+        processedFiles.push(...batchResults);
+        setCompressionProgress({ current: Math.min(i + batchSize, acceptedFiles.length), total: acceptedFiles.length });
+      }
       
-      const compressedCount = processedFiles.filter(f => f.type === 'image').length;
-      if (compressedCount > 0) {
-        toast.success(`${compressedCount} image(s) optimized for faster upload`);
+      setFiles(prev => [...prev, ...processedFiles]);
+      
+      const imageCount = processedFiles.filter(f => f.type === 'image').length;
+      const totalSizeMB = (processedFiles.reduce((sum, f) => sum + f.file.size, 0) / (1024 * 1024)).toFixed(1);
+      
+      if (imageCount > 0) {
+        toast.success(`✓ ${processedFiles.length} files optimized (${totalSizeMB}MB total)`);
       }
     } catch (error) {
       console.error('Error processing files:', error);
       toast.error('Error processing some files');
     } finally {
       setIsCompressing(false);
+      setCompressionProgress({ current: 0, total: 0 });
     }
-  }, [maxFiles]);
+  }, []);
 
   // Validate images when files change or platform changes
   useEffect(() => {
@@ -231,10 +244,14 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500, selected
               className="font-display font-semibold text-base sm:text-xl"
               animate={{ scale: isDragActive ? 1.05 : 1 }}
             >
-              {isCompressing ? 'Optimizing images...' : isDragActive ? 'Drop files here' : 'Drag & drop files here, or click to select'}
+              {isCompressing 
+                ? `Optimizing... ${compressionProgress.current}/${compressionProgress.total}` 
+                : isDragActive 
+                  ? 'Drop files here' 
+                  : 'Drag & drop files here, or click to select'}
             </motion.p>
             <p className="text-xs sm:text-sm text-muted-foreground px-4">
-              Supports common image, video, SVG, and EPS formats. Max {maxFiles} files.
+              Images auto-compressed for fast upload. Unlimited files supported.
             </p>
           </div>
         </div>
