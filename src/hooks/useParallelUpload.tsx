@@ -5,8 +5,8 @@ import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 
-// Maximum concurrent uploads for maximum speed - 10x optimized  
-const MAX_CONCURRENT = 50;
+// Optimized concurrent uploads - balanced for speed and stability
+const MAX_CONCURRENT = 25;
 
 interface UseParallelUploadOptions {
   userId: string;
