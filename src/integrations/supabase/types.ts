@@ -335,6 +335,54 @@ export type Database = {
         }
         Relationships: []
       }
+      tutorial_videos: {
+        Row: {
+          created_at: string
+          description: string
+          description_key: string
+          display_order: number
+          duration: string
+          icon_name: string
+          id: string
+          is_active: boolean
+          thumbnail_url: string | null
+          title: string
+          title_key: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          description_key: string
+          display_order?: number
+          duration?: string
+          icon_name?: string
+          id?: string
+          is_active?: boolean
+          thumbnail_url?: string | null
+          title: string
+          title_key: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          description_key?: string
+          display_order?: number
+          duration?: string
+          icon_name?: string
+          id?: string
+          is_active?: boolean
+          thumbnail_url?: string | null
+          title?: string
+          title_key?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string

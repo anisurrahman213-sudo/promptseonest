@@ -2,58 +2,35 @@ import { useTranslation } from "react-i18next";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, UserPlus, Settings, Sparkles } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Play, UserPlus, Settings, Sparkles, Video, BookOpen, Zap, Star } from "lucide-react";
+import { useTutorialVideos, TutorialVideo } from "@/hooks/useTutorialVideos";
 
-interface TutorialVideo {
-  id: string;
-  titleKey: string;
-  descriptionKey: string;
-  icon: React.ReactNode;
-  duration: string;
-  videoUrl?: string; // YouTube embed URL or video file URL
-  thumbnailUrl?: string;
-}
-
-const tutorialVideos: TutorialVideo[] = [
-  {
-    id: "signup",
-    titleKey: "tutorials.signupTitle",
-    descriptionKey: "tutorials.signupDesc",
-    icon: <UserPlus className="h-5 w-5" />,
-    duration: "2:30",
-    videoUrl: "", // Add YouTube embed URL here
-    thumbnailUrl: "/placeholder.svg",
-  },
-  {
-    id: "pricing",
-    titleKey: "tutorials.pricingTitle",
-    descriptionKey: "tutorials.pricingDesc",
-    icon: <Settings className="h-5 w-5" />,
-    duration: "4:15",
-    videoUrl: "",
-    thumbnailUrl: "/placeholder.svg",
-  },
-  {
-    id: "metadata",
-    titleKey: "tutorials.metadataTitle",
-    descriptionKey: "tutorials.metadataDesc",
-    icon: <Sparkles className="h-5 w-5" />,
-    duration: "5:00",
-    videoUrl: "",
-    thumbnailUrl: "/placeholder.svg",
-  },
-];
+const iconMap: Record<string, React.ReactNode> = {
+  Play: <Play className="h-5 w-5" />,
+  UserPlus: <UserPlus className="h-5 w-5" />,
+  Settings: <Settings className="h-5 w-5" />,
+  Sparkles: <Sparkles className="h-5 w-5" />,
+  Video: <Video className="h-5 w-5" />,
+  BookOpen: <BookOpen className="h-5 w-5" />,
+  Zap: <Zap className="h-5 w-5" />,
+  Star: <Star className="h-5 w-5" />,
+};
 
 const TutorialCard = ({ tutorial }: { tutorial: TutorialVideo }) => {
   const { t } = useTranslation();
+  
+  // Try to use i18n key, fallback to direct text
+  const title = t(tutorial.title_key, { defaultValue: tutorial.title });
+  const description = t(tutorial.description_key, { defaultValue: tutorial.description });
 
   return (
     <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
       <div className="relative aspect-video bg-muted overflow-hidden">
-        {tutorial.videoUrl ? (
+        {tutorial.video_url ? (
           <iframe
-            src={tutorial.videoUrl}
-            title={t(tutorial.titleKey)}
+            src={tutorial.video_url}
+            title={title}
             className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -75,14 +52,14 @@ const TutorialCard = ({ tutorial }: { tutorial: TutorialVideo }) => {
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-primary/10 text-primary">
-            {tutorial.icon}
+            {iconMap[tutorial.icon_name] || <Play className="h-5 w-5" />}
           </div>
-          <CardTitle className="text-lg">{t(tutorial.titleKey)}</CardTitle>
+          <CardTitle className="text-lg">{title}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
         <CardDescription className="text-sm leading-relaxed">
-          {t(tutorial.descriptionKey)}
+          {description}
         </CardDescription>
       </CardContent>
     </Card>
@@ -91,6 +68,7 @@ const TutorialCard = ({ tutorial }: { tutorial: TutorialVideo }) => {
 
 const Tutorials = () => {
   const { t } = useTranslation();
+  const { data: tutorials, isLoading } = useTutorialVideos();
 
   return (
     <div className="min-h-screen bg-background">
@@ -110,11 +88,33 @@ const Tutorials = () => {
         </div>
 
         {/* Tutorial Videos Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {tutorialVideos.map((tutorial) => (
-            <TutorialCard key={tutorial.id} tutorial={tutorial} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="aspect-video" />
+                <CardHeader className="pb-2">
+                  <Skeleton className="h-6 w-3/4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3 mt-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {tutorials?.map((tutorial) => (
+              <TutorialCard key={tutorial.id} tutorial={tutorial} />
+            ))}
+            {tutorials?.length === 0 && (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                No tutorials available yet.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Help Section */}
         <div className="mt-16 text-center">
