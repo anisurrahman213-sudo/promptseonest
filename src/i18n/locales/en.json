@@ -42,7 +42,8 @@
     "signOut": "Sign Out",
     "paymentHistory": "Payment History",
     "adminPanel": "Admin Panel",
-    "upgradePlan": "Upgrade Plan"
+    "upgradePlan": "Upgrade Plan",
+    "pricing": "Pricing"
   },
   "landing": {
     "badge": "AI-Powered Image Analysis",
