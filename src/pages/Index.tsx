@@ -166,7 +166,7 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-              className="mx-auto mb-6 sm:mb-10 max-w-2xl text-sm sm:text-lg md:text-xl px-2 bg-indigo-800 text-primary-foreground"
+              className="mx-auto mb-6 sm:mb-10 max-w-2xl text-sm sm:text-lg md:text-xl text-muted-foreground leading-relaxed"
               style={{
                 color: heroTextColor ? `${heroTextColor}cc` : undefined,
                 textShadow: heroTextStyle.textShadow
