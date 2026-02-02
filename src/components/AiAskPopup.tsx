@@ -441,8 +441,21 @@ export function AiAskPopup() {
                     <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <Bot className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <span 
+                          className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" 
+                          style={{ animationDelay: "0ms", animationDuration: "600ms" }} 
+                        />
+                        <span 
+                          className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" 
+                          style={{ animationDelay: "150ms", animationDuration: "600ms" }} 
+                        />
+                        <span 
+                          className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" 
+                          style={{ animationDelay: "300ms", animationDuration: "600ms" }} 
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
