@@ -43,7 +43,8 @@
     "paymentHistory": "Payment History",
     "adminPanel": "Admin Panel",
     "upgradePlan": "Upgrade Plan",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "tutorials": "Help"
   },
   "landing": {
     "badge": "AI-Powered Image Analysis",
@@ -278,5 +279,19 @@
     "passwordUpdated": "Password updated successfully!",
     "generationDeleted": "Generation deleted",
     "generationsDeleted": "{{count}} generation(s) deleted"
+  },
+  "tutorials": {
+    "badge": "Video Tutorials",
+    "title": "Learn How to Use PromptNest",
+    "subtitle": "Watch step-by-step video guides to get the most out of our AI-powered metadata generation platform",
+    "signupTitle": "Getting Started",
+    "signupDesc": "Learn how to create your account and set up your profile in just a few minutes",
+    "pricingTitle": "Admin: Pricing Setup",
+    "pricingDesc": "For administrators: Configure pricing plans, credits, and features for your users",
+    "metadataTitle": "Generate Metadata",
+    "metadataDesc": "Upload images/videos and generate SEO-optimized titles, descriptions, and tags with AI",
+    "comingSoon": "Video coming soon",
+    "needHelp": "Still need help?",
+    "contactSupport": "Contact our support team for personalized assistance"
   }
 }
