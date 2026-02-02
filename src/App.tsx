@@ -9,6 +9,7 @@ import { BackgroundProcessorProvider } from "@/contexts/BackgroundProcessorConte
 import { BackgroundProcessingIndicator } from "@/components/BackgroundProcessingIndicator";
 import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { AiAskPopup } from "@/components/AiAskPopup";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -45,6 +46,7 @@ const App = () => (
             <NetworkStatusIndicator />
             <PWAInstallPrompt />
             <BackgroundProcessingIndicator />
+            <AiAskPopup />
             <Toaster />
             <Sonner />
             <BrowserRouter>
