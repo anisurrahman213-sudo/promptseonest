@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles, Trash2 } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles, Trash2, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,6 +10,37 @@ import ReactMarkdown from "react-markdown";
 type Message = {
   role: "user" | "assistant";
   content: string;
+};
+
+// Suggested questions with translations
+const SUGGESTED_QUESTIONS = [
+  { key: "features", fallback: "What features are available?" },
+  { key: "pricing", fallback: "What is the pricing?" },
+  { key: "howToUse", fallback: "How do I use this?" },
+  { key: "credits", fallback: "How do credits work?" },
+];
+
+// Simple notification sound using Web Audio API
+const playNotificationSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = "sine";
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (e) {
+    console.log("Could not play notification sound:", e);
+  }
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-ask`;
@@ -118,8 +149,26 @@ export function AiAskPopup() {
   });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    try {
+      return localStorage.getItem("promptnest-chat-sound") !== "false";
+    } catch {
+      return true;
+    }
+  });
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Toggle sound and save preference
+  const toggleSound = () => {
+    setSoundEnabled((prev) => {
+      const newValue = !prev;
+      try {
+        localStorage.setItem("promptnest-chat-sound", String(newValue));
+      } catch {}
+      return newValue;
+    });
+  };
 
   // Save messages to localStorage whenever they change
   useEffect(() => {
@@ -173,7 +222,12 @@ export function AiAskPopup() {
       messages: [...messages, userMsg],
       language: i18n.language,
       onDelta: upsertAssistant,
-      onDone: () => setIsLoading(false),
+      onDone: () => {
+        setIsLoading(false);
+        if (soundEnabled) {
+          playNotificationSound();
+        }
+      },
       onError: (error) => {
         setMessages((prev) => [
           ...prev,
@@ -181,7 +235,50 @@ export function AiAskPopup() {
         ]);
       },
     });
-  }, [input, isLoading, messages]);
+  }, [input, isLoading, messages, soundEnabled]);
+
+  // Handle suggested question click
+  const handleSuggestedQuestion = (question: string) => {
+    if (isLoading) return;
+    setInput(question);
+    // Auto-send after setting input
+    setTimeout(() => {
+      const userMsg: Message = { role: "user", content: question };
+      setMessages((prev) => [...prev, userMsg]);
+      setIsLoading(true);
+      
+      let assistantContent = "";
+      const upsertAssistant = (chunk: string) => {
+        assistantContent += chunk;
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant") {
+            return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantContent } : m));
+          }
+          return [...prev, { role: "assistant", content: assistantContent }];
+        });
+      };
+
+      streamChat({
+        messages: [...messages, userMsg],
+        language: i18n.language,
+        onDelta: upsertAssistant,
+        onDone: () => {
+          setIsLoading(false);
+          if (soundEnabled) {
+            playNotificationSound();
+          }
+        },
+        onError: (error) => {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: `Sorry, I encountered an error: ${error}. Please try again.` },
+          ]);
+        },
+      });
+      setInput("");
+    }, 0);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -223,6 +320,15 @@ export function AiAskPopup() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-primary-foreground hover:bg-white/20"
+                    onClick={toggleSound}
+                    title={soundEnabled ? t("aiChat.muteSound", "Mute sound") : t("aiChat.enableSound", "Enable sound")}
+                  >
+                    {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                  </Button>
                   {messages.length > 0 && (
                     <Button
                       variant="ghost"
@@ -253,10 +359,42 @@ export function AiAskPopup() {
             <ScrollArea className="h-[350px]" ref={scrollAreaRef}>
               <div className="p-4">
                 {messages.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className="text-center py-6 text-muted-foreground">
                     <Bot className="h-12 w-12 mx-auto mb-3 opacity-50" />
                     <p className="text-sm">{t("aiChat.welcome", "Hi! I'm here to help you with PromptNest.")}</p>
-                    <p className="text-xs mt-1">{t("aiChat.hint", "Ask me about features, pricing, or how to use the platform!")}</p>
+                    <p className="text-xs mt-1 mb-4">{t("aiChat.hint", "Ask me about features, pricing, or how to use the platform!")}</p>
+                    
+                    {/* Suggested Questions */}
+                    <div className="flex flex-wrap gap-2 justify-center mt-4">
+                      <button
+                        onClick={() => handleSuggestedQuestion(t("aiChat.q.features", "What features are available?"))}
+                        className="text-xs px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                        disabled={isLoading}
+                      >
+                        {t("aiChat.q.features", "What features are available?")}
+                      </button>
+                      <button
+                        onClick={() => handleSuggestedQuestion(t("aiChat.q.pricing", "What is the pricing?"))}
+                        className="text-xs px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                        disabled={isLoading}
+                      >
+                        {t("aiChat.q.pricing", "What is the pricing?")}
+                      </button>
+                      <button
+                        onClick={() => handleSuggestedQuestion(t("aiChat.q.howToUse", "How do I use this?"))}
+                        className="text-xs px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                        disabled={isLoading}
+                      >
+                        {t("aiChat.q.howToUse", "How do I use this?")}
+                      </button>
+                      <button
+                        onClick={() => handleSuggestedQuestion(t("aiChat.q.credits", "How do credits work?"))}
+                        className="text-xs px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                        disabled={isLoading}
+                      >
+                        {t("aiChat.q.credits", "How do credits work?")}
+                      </button>
+                    </div>
                   </div>
                 )}
 
