@@ -360,6 +360,7 @@ export default function Auth() {
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}
                       className="h-10 sm:h-11"
+                      autoComplete="email"
                     />
                   </div>
                   <Button 
@@ -398,6 +399,7 @@ export default function Auth() {
                         onChange={(e) => setNewPassword(e.target.value)}
                         disabled={loading}
                         className="h-10 sm:h-11 pr-10"
+                        autoComplete="new-password"
                       />
                       <button
                         type="button"
@@ -419,6 +421,7 @@ export default function Auth() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         disabled={loading}
                         className="h-10 sm:h-11 pr-10"
+                        autoComplete="new-password"
                       />
                       <button
                         type="button"
@@ -482,6 +485,7 @@ export default function Auth() {
                           onChange={(e) => setEmail(e.target.value)}
                           disabled={loading || isAccountLocked}
                           className="h-10 sm:h-11"
+                          autoComplete="email"
                         />
                       </div>
                       <div className="space-y-1.5 sm:space-y-2">
@@ -504,6 +508,7 @@ export default function Auth() {
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={loading || isAccountLocked}
                             className="h-10 sm:h-11 pr-10"
+                            autoComplete="current-password"
                           />
                           <button
                             type="button"
@@ -603,6 +608,7 @@ export default function Auth() {
                           onChange={(e) => setFullName(e.target.value)}
                           disabled={loading}
                           className="h-10 sm:h-11"
+                          autoComplete="name"
                         />
                       </div>
                       <div className="space-y-1.5 sm:space-y-2">
@@ -615,6 +621,7 @@ export default function Auth() {
                           onChange={(e) => setPhoneNumber(e.target.value)}
                           disabled={loading}
                           className="h-10 sm:h-11"
+                          autoComplete="tel"
                         />
                       </div>
                       <div className="space-y-1.5 sm:space-y-2">
@@ -627,6 +634,7 @@ export default function Auth() {
                           onChange={(e) => setEmail(e.target.value)}
                           disabled={loading}
                           className="h-10 sm:h-11"
+                          autoComplete="email"
                         />
                       </div>
                       <div className="space-y-1.5 sm:space-y-2">
@@ -640,6 +648,7 @@ export default function Auth() {
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={loading}
                             className="h-10 sm:h-11 pr-10"
+                            autoComplete="new-password"
                           />
                           <button
                             type="button"

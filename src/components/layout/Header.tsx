@@ -111,6 +111,9 @@ export function Header() {
             </>
           ) : (
             <>
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/pricing')}>
+                {t('header.pricing')}
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/auth')}>
                 {t('header.login')}
               </Button>
@@ -223,6 +226,14 @@ export function Header() {
                 </>
               ) : (
                 <>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/pricing')}
+                  >
+                    <Crown className="mr-2 h-4 w-4" />
+                    {t('header.pricing')}
+                  </Button>
                   <Button 
                     variant="outline" 
                     className="w-full justify-center h-11"
