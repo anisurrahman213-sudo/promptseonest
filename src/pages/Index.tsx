@@ -23,6 +23,7 @@ const Index = () => {
   const { user } = useAuth();
   const { data: featureCards, isLoading: featuresLoading } = useFeatureCards();
   const { data: heroBackgroundSetting } = useSiteSetting('hero_background_url');
+  const { data: heroVideoSetting } = useSiteSetting('hero_video_url');
   const { data: heroSizeSetting } = useSiteSetting('hero_background_size');
   const { data: heroPositionXSetting } = useSiteSetting('hero_background_position_x');
   const { data: heroPositionYSetting } = useSiteSetting('hero_background_position_y');
@@ -31,6 +32,7 @@ const Index = () => {
   const { data: heroTextShadowSetting } = useSiteSetting('hero_text_shadow');
 
   const heroBackgroundUrl = heroBackgroundSetting?.setting_value;
+  const heroVideoUrl = heroVideoSetting?.setting_value;
   const heroSize = heroSizeSetting?.setting_value ? parseInt(heroSizeSetting.setting_value) : 100;
   const heroPositionX = heroPositionXSetting?.setting_value ? parseInt(heroPositionXSetting.setting_value) : 50;
   const heroPositionY = heroPositionYSetting?.setting_value ? parseInt(heroPositionYSetting.setting_value) : 50;
@@ -118,7 +120,23 @@ const Index = () => {
       
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-32">
-        {heroBackgroundUrl ? (
+        {/* Video Background */}
+        {heroVideoUrl ? (
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <video
+              src={heroVideoUrl}
+              className="h-full w-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+            <div 
+              className="absolute inset-0" 
+              style={{ backgroundColor: `hsl(var(--background) / ${heroOverlayOpacity / 100})` }} 
+            />
+          </div>
+        ) : heroBackgroundUrl ? (
           <div 
             className="absolute inset-0 z-0" 
             style={{
