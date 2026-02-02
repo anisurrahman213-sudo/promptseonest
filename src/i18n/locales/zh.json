@@ -42,7 +42,8 @@
     "signOut": "退出",
     "paymentHistory": "付款历史",
     "adminPanel": "管理面板",
-    "upgradePlan": "升级计划"
+    "upgradePlan": "升级计划",
+    "pricing": "价格"
   },
   "landing": {
     "badge": "AI驱动的图像分析",

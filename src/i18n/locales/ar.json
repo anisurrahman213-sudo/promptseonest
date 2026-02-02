@@ -42,7 +42,8 @@
     "signOut": "تسجيل الخروج",
     "paymentHistory": "سجل المدفوعات",
     "adminPanel": "لوحة المشرف",
-    "upgradePlan": "ترقية الخطة"
+    "upgradePlan": "ترقية الخطة",
+    "pricing": "الأسعار"
   },
   "landing": {
     "badge": "تحليل الصور بالذكاء الاصطناعي",

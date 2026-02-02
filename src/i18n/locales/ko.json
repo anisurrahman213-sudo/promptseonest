@@ -42,7 +42,8 @@
     "signOut": "로그아웃",
     "paymentHistory": "결제 내역",
     "adminPanel": "관리자 패널",
-    "upgradePlan": "플랜 업그레이드"
+    "upgradePlan": "플랜 업그레이드",
+    "pricing": "가격"
   },
   "landing": {
     "badge": "AI 기반 이미지 분석",

@@ -42,7 +42,8 @@
     "signOut": "Sair",
     "paymentHistory": "Histórico de Pagamentos",
     "adminPanel": "Painel Admin",
-    "upgradePlan": "Atualizar Plano"
+    "upgradePlan": "Atualizar Plano",
+    "pricing": "Preços"
   },
   "landing": {
     "badge": "Análise de Imagens com IA",

@@ -42,7 +42,8 @@
     "signOut": "ログアウト",
     "paymentHistory": "支払い履歴",
     "adminPanel": "管理パネル",
-    "upgradePlan": "プランをアップグレード"
+    "upgradePlan": "プランをアップグレード",
+    "pricing": "料金"
   },
   "landing": {
     "badge": "AI搭載の画像分析",
