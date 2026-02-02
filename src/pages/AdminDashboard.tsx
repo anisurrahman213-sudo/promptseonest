@@ -32,7 +32,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Mail, Phone, User, MessageCircle, History, Send } from 'lucide-react';
+import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Mail, Phone, User, MessageCircle, History, Send, Video } from 'lucide-react';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { GenerationsManagement } from '@/components/admin/GenerationsManagement';
@@ -40,6 +40,7 @@ import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog'
 import { UserFiltersComponent, filterUsers, UserFilters } from '@/components/admin/UserFilters';
 import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
 import { UserListExport } from '@/components/admin/UserListExport';
+import { TutorialManagement } from '@/components/admin/TutorialManagement';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 
 export default function AdminDashboard() {
@@ -238,7 +239,7 @@ export default function AdminDashboard() {
 
         {/* Tabs for different admin sections */}
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
             <TabsTrigger value="users" className="gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Users</span>
@@ -246,6 +247,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="generations" className="gap-2">
               <Trash2 className="h-4 w-4" />
               <span className="hidden sm:inline">Generations</span>
+            </TabsTrigger>
+            <TabsTrigger value="tutorials" className="gap-2">
+              <Video className="h-4 w-4" />
+              <span className="hidden sm:inline">Tutorials</span>
             </TabsTrigger>
             <TabsTrigger value="hero" className="gap-2">
               <Wallpaper className="h-4 w-4" />
@@ -441,6 +446,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="generations">
             <GenerationsManagement />
+          </TabsContent>
+
+          <TabsContent value="tutorials">
+            <TutorialManagement />
           </TabsContent>
 
           <TabsContent value="hero">
