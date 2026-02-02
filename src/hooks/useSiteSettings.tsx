@@ -142,3 +142,86 @@ export function useDeleteHeroImage() {
     },
   });
 }
+
+export function useUploadHeroVideo() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `hero-background-${Date.now()}.${fileExt}`;
+      const filePath = `hero/${fileName}`;
+      
+      // Upload to videos storage
+      const { error: uploadError } = await supabase.storage
+        .from('videos')
+        .upload(filePath, file, { upsert: true });
+      
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('videos')
+        .getPublicUrl(filePath);
+      
+      // Save to site_settings (video URL)
+      const { error: settingError } = await supabase
+        .from('site_settings')
+        .upsert(
+          { setting_key: 'hero_video_url', setting_value: publicUrl },
+          { onConflict: 'setting_key' }
+        );
+      
+      if (settingError) throw settingError;
+      
+      // Clear image background if video is set
+      await supabase
+        .from('site_settings')
+        .upsert(
+          { setting_key: 'hero_background_url', setting_value: null },
+          { onConflict: 'setting_key' }
+        );
+      
+      return publicUrl;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+      toast.success('Hero video uploaded successfully!');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to upload video');
+    },
+  });
+}
+
+export function useDeleteHeroVideo() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (videoUrl: string) => {
+      // Extract file path from URL
+      const urlParts = videoUrl.split('/videos/');
+      if (urlParts.length > 1) {
+        const filePath = urlParts[1];
+        await supabase.storage
+          .from('videos')
+          .remove([filePath]);
+      }
+      
+      // Remove from site_settings
+      const { error } = await supabase
+        .from('site_settings')
+        .update({ setting_value: null })
+        .eq('setting_key', 'hero_video_url');
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+      toast.success('Hero video deleted successfully!');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to delete video');
+    },
+  });
+}
