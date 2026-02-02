@@ -79,6 +79,11 @@ export function Header() {
                 {t('header.history')}
               </Button>
 
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/tutorials')}>
+                <HelpCircle className="h-4 w-4 mr-1" />
+                {t('header.tutorials')}
+              </Button>
+
               {isAdmin && (
                 <Button 
                   variant="ghost" 
@@ -201,6 +206,14 @@ export function Header() {
                   >
                     <History className="mr-2 h-4 w-4" />
                     {t('header.paymentHistory')}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/tutorials')}
+                  >
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    {t('header.tutorials')}
                   </Button>
                   {isAdmin && (
                     <Button 
