@@ -16,11 +16,13 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-ask`;
 
 async function streamChat({
   messages,
+  language,
   onDelta,
   onDone,
   onError,
 }: {
   messages: Message[];
+  language: string;
   onDelta: (deltaText: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
@@ -32,7 +34,7 @@ async function streamChat({
         "Content-Type": "application/json",
         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, language }),
     });
 
     if (!resp.ok) {
@@ -102,17 +104,21 @@ async function streamChat({
 }
 
 export function AiAskPopup() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
   }, [messages]);
 
@@ -145,6 +151,7 @@ export function AiAskPopup() {
 
     await streamChat({
       messages: [...messages, userMsg],
+      language: i18n.language,
       onDelta: upsertAssistant,
       onDone: () => setIsLoading(false),
       onError: (error) => {
@@ -207,16 +214,17 @@ export function AiAskPopup() {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="h-[350px] p-4" ref={scrollRef}>
-              {messages.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Bot className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-sm">Hi! I'm here to help you with PromptNest.</p>
-                  <p className="text-xs mt-1">Ask me about features, pricing, or how to use the platform!</p>
-                </div>
-              )}
+            <ScrollArea className="h-[350px]" ref={scrollAreaRef}>
+              <div className="p-4">
+                {messages.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Bot className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">{t("aiChat.welcome", "Hi! I'm here to help you with PromptNest.")}</p>
+                    <p className="text-xs mt-1">{t("aiChat.hint", "Ask me about features, pricing, or how to use the platform!")}</p>
+                  </div>
+                )}
 
-              <div className="space-y-4">
+                <div className="space-y-4">
                 {messages.map((msg, i) => (
                   <div
                     key={i}
@@ -264,6 +272,7 @@ export function AiAskPopup() {
                     </div>
                   </div>
                 )}
+                </div>
               </div>
             </ScrollArea>
 
