@@ -42,7 +42,8 @@
     "signOut": "साइन आउट",
     "paymentHistory": "भुगतान इतिहास",
     "adminPanel": "व्यवस्थापक पैनल",
-    "upgradePlan": "प्लान अपग्रेड करें"
+    "upgradePlan": "प्लान अपग्रेड करें",
+    "pricing": "मूल्य निर्धारण"
   },
   "landing": {
     "badge": "AI-संचालित छवि विश्लेषण",

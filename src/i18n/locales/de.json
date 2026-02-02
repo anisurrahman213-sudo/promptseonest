@@ -42,7 +42,8 @@
     "signOut": "Abmelden",
     "paymentHistory": "Zahlungsverlauf",
     "adminPanel": "Admin-Panel",
-    "upgradePlan": "Plan upgraden"
+    "upgradePlan": "Plan upgraden",
+    "pricing": "Preise"
   },
   "landing": {
     "badge": "KI-gestützte Bildanalyse",

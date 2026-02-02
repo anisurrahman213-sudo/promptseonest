@@ -42,7 +42,8 @@
     "signOut": "Cerrar sesión",
     "paymentHistory": "Historial de Pagos",
     "adminPanel": "Panel Admin",
-    "upgradePlan": "Mejorar Plan"
+    "upgradePlan": "Mejorar Plan",
+    "pricing": "Precios"
   },
   "landing": {
     "badge": "Análisis de Imágenes con IA",
