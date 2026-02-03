@@ -60,57 +60,22 @@ IMPORTANT RULES:
 Be friendly, helpful, and guide users to the right features! Remember to respond in ${langName}.`;
 };
 
-// Try Lovable AI first
-async function callLovableAI(messages: any[], systemPrompt: string): Promise<Response | null> {
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  
-  if (!LOVABLE_API_KEY) {
-    console.log("LOVABLE_API_KEY not configured, skipping Lovable AI");
-    return null;
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log("Attempting Lovable AI...");
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-        stream: true,
-      }),
-    });
-
-    if (response.ok) {
-      console.log("Lovable AI responded successfully");
-      return response;
-    }
+    const { messages, language = "en" } = await req.json();
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     
-    console.log("Lovable AI failed with status:", response.status);
-    return null;
-  } catch (error) {
-    console.error("Lovable AI error:", error);
-    return null;
-  }
-}
+    if (!GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is not configured");
+    }
 
-// Fallback to Gemini API
-async function callGeminiAPI(messages: any[], systemPrompt: string): Promise<Response | null> {
-  const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-  
-  if (!GEMINI_API_KEY) {
-    console.log("GEMINI_API_KEY not configured, no fallback available");
-    return null;
-  }
+    console.log("AI Ask request - Language:", language, "Messages count:", messages.length);
 
-  try {
-    console.log("Falling back to Gemini API...");
+    const systemPrompt = getSystemPrompt(language);
     
     // Convert messages to Gemini format
     const geminiContents = [];
@@ -150,106 +115,76 @@ async function callGeminiAPI(messages: any[], systemPrompt: string): Promise<Res
       }
     );
 
-    if (response.ok) {
-      console.log("Gemini API responded successfully");
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Gemini API error:", response.status, errorText);
       
-      // Transform Gemini SSE format to OpenAI-compatible format
-      const reader = response.body?.getReader();
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       
-      const transformedStream = new ReadableStream({
-        async start(controller) {
-          if (!reader) {
+      return new Response(JSON.stringify({ error: "Failed to get AI response" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Transform Gemini SSE format to OpenAI-compatible format
+    const reader = response.body?.getReader();
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    
+    const transformedStream = new ReadableStream({
+      async start(controller) {
+        if (!reader) {
+          controller.close();
+          return;
+        }
+        
+        let buffer = "";
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
             controller.close();
-            return;
+            break;
           }
           
-          let buffer = "";
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
           
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-              controller.close();
-              break;
-            }
-            
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split("\n");
-            buffer = lines.pop() || "";
-            
-            for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const jsonStr = line.slice(6).trim();
-                if (jsonStr && jsonStr !== "[DONE]") {
-                  try {
-                    const geminiData = JSON.parse(jsonStr);
-                    const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                    
-                    if (text) {
-                      const openAIFormat = {
-                        choices: [{
-                          delta: { content: text }
-                        }]
-                      };
-                      controller.enqueue(encoder.encode(`data: ${JSON.stringify(openAIFormat)}\n\n`));
-                    }
-                  } catch (e) {
-                    console.error("Error parsing Gemini response:", e);
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr && jsonStr !== "[DONE]") {
+                try {
+                  const geminiData = JSON.parse(jsonStr);
+                  const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                  
+                  if (text) {
+                    const openAIFormat = {
+                      choices: [{
+                        delta: { content: text }
+                      }]
+                    };
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(openAIFormat)}\n\n`));
                   }
+                } catch (e) {
+                  console.error("Error parsing Gemini response:", e);
                 }
               }
             }
           }
         }
-      });
-      
-      return new Response(transformedStream, {
-        headers: { "Content-Type": "text/event-stream" },
-      });
-    }
-    
-    console.log("Gemini API failed with status:", response.status);
-    return null;
-  } catch (error) {
-    console.error("Gemini API error:", error);
-    return null;
-  }
-}
+      }
+    });
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const { messages, language = "en" } = await req.json();
-    const systemPrompt = getSystemPrompt(language);
-
-    console.log("AI Ask request - Language:", language, "Messages count:", messages.length);
-
-    // Try Lovable AI first (primary)
-    let response = await callLovableAI(messages, systemPrompt);
-    
-    // Fallback to Gemini API if Lovable AI fails
-    if (!response) {
-      console.log("Primary (Lovable AI) failed, trying fallback (Gemini)...");
-      response = await callGeminiAPI(messages, systemPrompt);
-    }
-    
-    // If both fail, return error
-    if (!response) {
-      return new Response(
-        JSON.stringify({ error: "Both AI providers are currently unavailable. Please try again later." }), 
-        {
-          status: 503,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    return new Response(response.body, {
+    return new Response(transformedStream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
