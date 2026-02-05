@@ -41,6 +41,8 @@ export interface MetadataSettings {
   descriptionLengthFixed: boolean;
   keywordsCount: number;
   imageType: ImageType;
+  category: string;
+  editorialStatus: 'none' | 'editorial' | 'commercial';
   prefix: string;
   suffix: string;
   negativeTitleWords: string;
@@ -107,6 +109,220 @@ const imageTypeOptions = [
   { value: '3d_render', label: '3D Render' },
   { value: 'ai_generated', label: 'AI Generated' },
 ];
+
+// Platform-specific category options
+const platformCategories: Record<ExportPlatform, { value: string; label: string }[]> = {
+  adobe_stock: [
+    { value: '', label: 'None' },
+    { value: '1', label: '1 - Animals' },
+    { value: '2', label: '2 - Buildings and Architecture' },
+    { value: '3', label: '3 - Business' },
+    { value: '4', label: '4 - Drinks' },
+    { value: '5', label: '5 - The Environment' },
+    { value: '6', label: '6 - States of Mind' },
+    { value: '7', label: '7 - Food' },
+    { value: '8', label: '8 - Graphic Resources' },
+    { value: '9', label: '9 - Hobbies and Leisure' },
+    { value: '10', label: '10 - Industry' },
+    { value: '11', label: '11 - Landscapes' },
+    { value: '12', label: '12 - Lifestyle' },
+    { value: '13', label: '13 - People' },
+    { value: '14', label: '14 - Plants and Flowers' },
+    { value: '15', label: '15 - Culture and Religion' },
+    { value: '16', label: '16 - Science' },
+    { value: '17', label: '17 - Social Issues' },
+    { value: '18', label: '18 - Sports' },
+    { value: '19', label: '19 - Technology' },
+    { value: '20', label: '20 - Transport' },
+    { value: '21', label: '21 - Travel' },
+  ],
+  shutterstock: [
+    { value: '', label: 'None' },
+    { value: 'Abstract', label: 'Abstract' },
+    { value: 'Animals/Wildlife', label: 'Animals/Wildlife' },
+    { value: 'Arts', label: 'Arts' },
+    { value: 'Backgrounds/Textures', label: 'Backgrounds/Textures' },
+    { value: 'Beauty/Fashion', label: 'Beauty/Fashion' },
+    { value: 'Buildings/Landmarks', label: 'Buildings/Landmarks' },
+    { value: 'Business/Finance', label: 'Business/Finance' },
+    { value: 'Celebrities', label: 'Celebrities' },
+    { value: 'Editorial', label: 'Editorial' },
+    { value: 'Education', label: 'Education' },
+    { value: 'Food and Drink', label: 'Food and Drink' },
+    { value: 'Healthcare/Medical', label: 'Healthcare/Medical' },
+    { value: 'Holidays', label: 'Holidays' },
+    { value: 'Industrial', label: 'Industrial' },
+    { value: 'Interiors', label: 'Interiors' },
+    { value: 'Miscellaneous', label: 'Miscellaneous' },
+    { value: 'Nature', label: 'Nature' },
+    { value: 'Objects', label: 'Objects' },
+    { value: 'Parks/Outdoor', label: 'Parks/Outdoor' },
+    { value: 'People', label: 'People' },
+    { value: 'Religion', label: 'Religion' },
+    { value: 'Science', label: 'Science' },
+    { value: 'Signs/Symbols', label: 'Signs/Symbols' },
+    { value: 'Sports/Recreation', label: 'Sports/Recreation' },
+    { value: 'Technology', label: 'Technology' },
+    { value: 'Transportation', label: 'Transportation' },
+    { value: 'Vintage', label: 'Vintage' },
+  ],
+  istock: [
+    { value: '', label: 'None' },
+    { value: 'abstract', label: 'Abstract' },
+    { value: 'animals', label: 'Animals' },
+    { value: 'arts', label: 'Arts & Entertainment' },
+    { value: 'business', label: 'Business' },
+    { value: 'education', label: 'Education' },
+    { value: 'food', label: 'Food & Drink' },
+    { value: 'healthcare', label: 'Healthcare' },
+    { value: 'holidays', label: 'Holidays' },
+    { value: 'nature', label: 'Nature' },
+    { value: 'objects', label: 'Objects' },
+    { value: 'people', label: 'People' },
+    { value: 'science', label: 'Science' },
+    { value: 'sports', label: 'Sports' },
+    { value: 'technology', label: 'Technology' },
+    { value: 'travel', label: 'Travel' },
+  ],
+  getty: [
+    { value: '', label: 'None' },
+    { value: 'creative', label: 'Creative' },
+    { value: 'editorial', label: 'Editorial' },
+  ],
+  alamy: [
+    { value: '', label: 'None' },
+    { value: 'news', label: 'News & Current Affairs' },
+    { value: 'entertainment', label: 'Entertainment' },
+    { value: 'sport', label: 'Sport' },
+    { value: 'stock', label: 'Stock' },
+  ],
+  dreamstime: [
+    { value: '', label: 'None' },
+    { value: '1', label: 'Abstract' },
+    { value: '2', label: 'Animals' },
+    { value: '3', label: 'Architecture' },
+    { value: '4', label: 'Business' },
+    { value: '5', label: 'Editorial' },
+    { value: '6', label: 'Food & Drink' },
+    { value: '7', label: 'Healthcare' },
+    { value: '8', label: 'Holidays' },
+    { value: '9', label: 'Industrial' },
+    { value: '10', label: 'Landscapes' },
+    { value: '11', label: 'Lifestyle' },
+    { value: '12', label: 'Nature' },
+    { value: '13', label: 'Objects' },
+    { value: '14', label: 'People' },
+    { value: '15', label: 'Science' },
+    { value: '16', label: 'Sports' },
+    { value: '17', label: 'Technology' },
+    { value: '18', label: 'Transportation' },
+    { value: '19', label: 'Travel' },
+  ],
+  '123rf': [
+    { value: '', label: 'None' },
+    { value: 'abstract', label: 'Abstract' },
+    { value: 'animals', label: 'Animals' },
+    { value: 'business', label: 'Business' },
+    { value: 'food', label: 'Food & Drink' },
+    { value: 'nature', label: 'Nature' },
+    { value: 'people', label: 'People' },
+    { value: 'sports', label: 'Sports' },
+    { value: 'technology', label: 'Technology' },
+    { value: 'travel', label: 'Travel' },
+  ],
+  depositphotos: [
+    { value: '', label: 'None' },
+    { value: 'abstract', label: 'Abstract' },
+    { value: 'animals', label: 'Animals' },
+    { value: 'architecture', label: 'Architecture' },
+    { value: 'business', label: 'Business' },
+    { value: 'food', label: 'Food & Drink' },
+    { value: 'nature', label: 'Nature' },
+    { value: 'people', label: 'People' },
+    { value: 'sports', label: 'Sports' },
+    { value: 'technology', label: 'Technology' },
+    { value: 'travel', label: 'Travel' },
+  ],
+  canva: [{ value: '', label: 'None' }],
+  freepik: [
+    { value: '', label: 'None' },
+    { value: 'photo', label: 'Photo' },
+    { value: 'vector', label: 'Vector' },
+    { value: 'psd', label: 'PSD' },
+    { value: 'icon', label: 'Icon' },
+  ],
+  vecteezy: [
+    { value: '', label: 'None' },
+    { value: 'vector', label: 'Vector' },
+    { value: 'photo', label: 'Photo' },
+    { value: 'video', label: 'Video' },
+  ],
+  picfair: [{ value: '', label: 'None' }],
+  eyeem: [{ value: '', label: 'None' }],
+  rawpixel: [{ value: '', label: 'None' }],
+  stocksy: [
+    { value: '', label: 'None' },
+    { value: 'lifestyle', label: 'Lifestyle' },
+    { value: 'business', label: 'Business' },
+    { value: 'nature', label: 'Nature' },
+    { value: 'travel', label: 'Travel' },
+  ],
+  twenty20: [{ value: '', label: 'None' }],
+  wirestock: [{ value: '', label: 'None' }],
+  pond5: [
+    { value: '', label: 'None' },
+    { value: 'abstract', label: 'Abstract' },
+    { value: 'animals', label: 'Animals' },
+    { value: 'business', label: 'Business' },
+    { value: 'education', label: 'Education' },
+    { value: 'food', label: 'Food & Drink' },
+    { value: 'nature', label: 'Nature' },
+    { value: 'people', label: 'People' },
+    { value: 'sports', label: 'Sports' },
+    { value: 'technology', label: 'Technology' },
+    { value: 'travel', label: 'Travel' },
+  ],
+  storyblocks: [
+    { value: '', label: 'None' },
+    { value: 'abstract', label: 'Abstract' },
+    { value: 'animals', label: 'Animals' },
+    { value: 'business', label: 'Business' },
+    { value: 'nature', label: 'Nature' },
+    { value: 'people', label: 'People' },
+    { value: 'technology', label: 'Technology' },
+  ],
+  custom: [{ value: '', label: 'None' }],
+};
+
+const editorialOptions = [
+  { value: 'none', label: 'Not Specified' },
+  { value: 'editorial', label: 'Editorial Use Only' },
+  { value: 'commercial', label: 'Commercial Use' },
+];
+
+// Platforms that support editorial flag
+const platformSupportsEditorial: Record<ExportPlatform, boolean> = {
+  adobe_stock: true,
+  shutterstock: true,
+  istock: true,
+  getty: true,
+  alamy: true,
+  dreamstime: true,
+  '123rf': true,
+  depositphotos: true,
+  canva: false,
+  freepik: false,
+  vecteezy: false,
+  picfair: true,
+  eyeem: false,
+  rawpixel: false,
+  stocksy: true,
+  twenty20: false,
+  wirestock: true,
+  pond5: true,
+  storyblocks: true,
+  custom: true,
+};
 
 export function AdvancedMetadataControls({ settings, onSettingsChange }: AdvancedMetadataControlsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -353,6 +569,71 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
                 </Select>
               </div>
 
+              {/* Category & Editorial Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Category */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm font-medium">Category</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="max-w-[250px]">
+                          <p className="text-xs">Platform-specific category for better discoverability. Categories vary by platform.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <Select 
+                    value={settings.category} 
+                    onValueChange={(value) => updateSetting('category', value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[250px]">
+                      {platformCategories[settings.exportPlatform]?.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Editorial Status */}
+                {platformSupportsEditorial[settings.exportPlatform] && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm font-medium">Editorial Status</Label>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="max-w-[250px]">
+                            <p className="text-xs">Editorial: newsworthy content, cannot be used for ads. Commercial: requires model/property releases.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <Select 
+                      value={settings.editorialStatus} 
+                      onValueChange={(value) => updateSetting('editorialStatus', value as 'none' | 'editorial' | 'commercial')}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {editorialOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
               {/* Prefix & Suffix */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -420,6 +701,8 @@ export const defaultMetadataSettings: MetadataSettings = {
   descriptionLengthFixed: false,
    keywordsCount: 50,
   imageType: 'none',
+  category: '',
+  editorialStatus: 'none',
   prefix: '',
   suffix: '',
   negativeTitleWords: '',
