@@ -113,7 +113,7 @@ const imageTypeOptions = [
 // Platform-specific category options
 const platformCategories: Record<ExportPlatform, { value: string; label: string }[]> = {
   adobe_stock: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: '1', label: '1 - Animals' },
     { value: '2', label: '2 - Buildings and Architecture' },
     { value: '3', label: '3 - Business' },
@@ -137,7 +137,7 @@ const platformCategories: Record<ExportPlatform, { value: string; label: string 
     { value: '21', label: '21 - Travel' },
   ],
   shutterstock: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'Abstract', label: 'Abstract' },
     { value: 'Animals/Wildlife', label: 'Animals/Wildlife' },
     { value: 'Arts', label: 'Arts' },
@@ -167,7 +167,7 @@ const platformCategories: Record<ExportPlatform, { value: string; label: string 
     { value: 'Vintage', label: 'Vintage' },
   ],
   istock: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'abstract', label: 'Abstract' },
     { value: 'animals', label: 'Animals' },
     { value: 'arts', label: 'Arts & Entertainment' },
@@ -185,19 +185,19 @@ const platformCategories: Record<ExportPlatform, { value: string; label: string 
     { value: 'travel', label: 'Travel' },
   ],
   getty: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'creative', label: 'Creative' },
     { value: 'editorial', label: 'Editorial' },
   ],
   alamy: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'news', label: 'News & Current Affairs' },
     { value: 'entertainment', label: 'Entertainment' },
     { value: 'sport', label: 'Sport' },
     { value: 'stock', label: 'Stock' },
   ],
   dreamstime: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: '1', label: 'Abstract' },
     { value: '2', label: 'Animals' },
     { value: '3', label: 'Architecture' },
@@ -219,7 +219,7 @@ const platformCategories: Record<ExportPlatform, { value: string; label: string 
     { value: '19', label: 'Travel' },
   ],
   '123rf': [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'abstract', label: 'Abstract' },
     { value: 'animals', label: 'Animals' },
     { value: 'business', label: 'Business' },
@@ -231,7 +231,7 @@ const platformCategories: Record<ExportPlatform, { value: string; label: string 
     { value: 'travel', label: 'Travel' },
   ],
   depositphotos: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'abstract', label: 'Abstract' },
     { value: 'animals', label: 'Animals' },
     { value: 'architecture', label: 'Architecture' },
@@ -243,34 +243,34 @@ const platformCategories: Record<ExportPlatform, { value: string; label: string 
     { value: 'technology', label: 'Technology' },
     { value: 'travel', label: 'Travel' },
   ],
-  canva: [{ value: '', label: 'None' }],
+  canva: [{ value: 'none', label: 'None' }],
   freepik: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'photo', label: 'Photo' },
     { value: 'vector', label: 'Vector' },
     { value: 'psd', label: 'PSD' },
     { value: 'icon', label: 'Icon' },
   ],
   vecteezy: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'vector', label: 'Vector' },
     { value: 'photo', label: 'Photo' },
     { value: 'video', label: 'Video' },
   ],
-  picfair: [{ value: '', label: 'None' }],
-  eyeem: [{ value: '', label: 'None' }],
-  rawpixel: [{ value: '', label: 'None' }],
+  picfair: [{ value: 'none', label: 'None' }],
+  eyeem: [{ value: 'none', label: 'None' }],
+  rawpixel: [{ value: 'none', label: 'None' }],
   stocksy: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'lifestyle', label: 'Lifestyle' },
     { value: 'business', label: 'Business' },
     { value: 'nature', label: 'Nature' },
     { value: 'travel', label: 'Travel' },
   ],
-  twenty20: [{ value: '', label: 'None' }],
-  wirestock: [{ value: '', label: 'None' }],
+  twenty20: [{ value: 'none', label: 'None' }],
+  wirestock: [{ value: 'none', label: 'None' }],
   pond5: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'abstract', label: 'Abstract' },
     { value: 'animals', label: 'Animals' },
     { value: 'business', label: 'Business' },
@@ -283,7 +283,7 @@ const platformCategories: Record<ExportPlatform, { value: string; label: string 
     { value: 'travel', label: 'Travel' },
   ],
   storyblocks: [
-    { value: '', label: 'None' },
+    { value: 'none', label: 'None' },
     { value: 'abstract', label: 'Abstract' },
     { value: 'animals', label: 'Animals' },
     { value: 'business', label: 'Business' },
@@ -291,7 +291,7 @@ const platformCategories: Record<ExportPlatform, { value: string; label: string 
     { value: 'people', label: 'People' },
     { value: 'technology', label: 'Technology' },
   ],
-  custom: [{ value: '', label: 'None' }],
+  custom: [{ value: 'none', label: 'None' }],
 };
 
 const editorialOptions = [
@@ -701,7 +701,7 @@ export const defaultMetadataSettings: MetadataSettings = {
   descriptionLengthFixed: false,
    keywordsCount: 50,
   imageType: 'none',
-  category: '',
+  category: 'none',
   editorialStatus: 'none',
   prefix: '',
   suffix: '',
