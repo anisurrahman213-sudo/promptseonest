@@ -290,8 +290,8 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           <span className="hidden sm:inline">Export CSV</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5 text-primary" />
             Export to Stock Platforms
@@ -302,7 +302,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'platforms' | 'preview')}>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'platforms' | 'preview')} className="flex-1 flex flex-col min-h-0">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="platforms" className="gap-2">
               <List className="h-4 w-4" />
@@ -319,7 +319,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="platforms" className="mt-4">
+          <TabsContent value="platforms" className="mt-4 flex-1 min-h-0">
             {/* Search */}
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -331,7 +331,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
               />
             </div>
 
-            <ScrollArea className="h-[300px] pr-4">
+            <ScrollArea className="h-[250px] pr-4">
               <RadioGroup
                 value={selectedFormat}
                 onValueChange={(value) => handleFormatSelect(value as ExportFormat)}
