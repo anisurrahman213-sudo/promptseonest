@@ -446,6 +446,53 @@ interface GenerationCardProps {
                     </div>
                   </motion.div>
 
+                   {/* Category */}
+                   <motion.div variants={itemVariants} className="space-y-1.5">
+                     <div className="flex items-center justify-between">
+                       <Badge className="bg-accent/10 text-accent border-0 text-[10px] sm:text-xs font-medium">
+                         Category
+                       </Badge>
+                       <CopyButton text={generation.category || 'Not set'} field="Category" size="sm" />
+                     </div>
+                     <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-lg">
+                       <Folder className="h-4 w-4 text-accent" />
+                       <span className="text-xs sm:text-sm font-medium">
+                         {generation.category || 'Not set'}
+                       </span>
+                       {onUpdateCategory && (
+                         <Popover>
+                           <PopoverTrigger asChild>
+                             <Button variant="ghost" size="sm" className="h-6 px-2 text-xs ml-auto">
+                               <Pencil className="h-3 w-3 mr-1" />
+                               Change
+                             </Button>
+                           </PopoverTrigger>
+                           <PopoverContent className="w-64 p-2" align="end">
+                             <div className="space-y-2">
+                               <p className="text-xs font-medium text-muted-foreground px-1">Select Category</p>
+                               <Select 
+                                 value={generation.category || ''} 
+                                 onValueChange={handleCategoryChange}
+                                 disabled={updatingCategory}
+                               >
+                                 <SelectTrigger className="h-9 text-xs">
+                                   <SelectValue placeholder="Select category" />
+                                 </SelectTrigger>
+                                 <SelectContent className="max-h-60">
+                                   {STOCK_CATEGORIES.map((cat) => (
+                                     <SelectItem key={cat} value={cat} className="text-xs">
+                                       {cat}
+                                     </SelectItem>
+                                   ))}
+                                 </SelectContent>
+                               </Select>
+                             </div>
+                           </PopoverContent>
+                         </Popover>
+                       )}
+                     </div>
+                   </motion.div>
+ 
                   {/* Copy All Button */}
                   <motion.div variants={itemVariants}>
                     <Button
