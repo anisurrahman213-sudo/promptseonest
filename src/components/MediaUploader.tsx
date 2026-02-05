@@ -32,7 +32,7 @@ interface MediaUploaderProps {
   selectedPlatform?: ExportPlatform;
 }
 
-export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selectedPlatform = 'adobe_stock' }: MediaUploaderProps) {
+ export function MediaUploader({ onUpload, isProcessing, maxFiles = 500, selectedPlatform = 'adobe_stock' }: MediaUploaderProps) {
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -341,7 +341,7 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
                   : 'Drag & drop files here, or click to select'}
             </motion.p>
              <div className="text-xs sm:text-sm text-muted-foreground px-4 space-y-1">
-               <p>Images auto-compressed for fast upload. Unlimited files supported.</p>
+               <p>Supports common image, video, SVG, and EPS formats. Max {maxFiles} files.</p>
                <p className="flex items-center justify-center gap-1.5 text-primary/70">
                  <Clipboard className="w-3 h-3" />
                  <span>Ctrl+V to paste from clipboard</span>
