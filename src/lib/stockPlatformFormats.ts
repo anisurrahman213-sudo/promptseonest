@@ -39,13 +39,13 @@ export const stockPlatforms: StockPlatform[] = [
   {
     id: 'adobe_stock',
     name: 'Adobe Stock',
-     description: 'Filename, Title (max 70), Keywords (max 50), Category',
+    description: 'Filename, Title (max 200), Keywords (max 49), Category (numeric)',
     icon: '🅰️',
-     maxKeywords: 50,
-     maxTitleLength: 70,
-     maxDescriptionLength: 0,
-     csvColumns: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
-     guidelines: 'Adobe Stock requires: Filename (30 chars max with extension), Title (70 chars, no commas), Keywords (max 50, comma-separated by relevance). Category number optional. CSV must be UTF-8 encoded.',
+    maxKeywords: 49,
+    maxTitleLength: 200,
+    maxDescriptionLength: 0,
+    csvColumns: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
+    guidelines: 'Adobe Stock CSV Format:\n• Filename: Full name with extension (image.jpg, video.mov)\n• Title: Short description (max 200 characters)\n• Keywords: Comma-separated, max 49, ordered by relevance\n• Category: Numeric code (1-21)\n• Releases: Model/Property release names\n\nIMPORTANT:\n• Column names must match exactly in English\n• CSV max 5000 rows or 5MB\n• Upload images FIRST, then CSV\n• Filename must match exactly',
   },
   {
     id: 'shutterstock',
@@ -400,19 +400,23 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
 
   switch (format) {
     case 'adobe_stock':
-       // Adobe Stock Official Format: Filename, Title, Keywords, Category, Releases
-       // Title max 70 chars, no commas. Keywords max 50, comma-separated.
-       // Category must be a number (1-21) - see https://helpx.adobe.com/stock/contributor/help/categories.html
+      // Adobe Stock Official CSV Format (2024 Updated)
+      // Reference: https://helpx.adobe.com/stock/contributor/help/keywording.html
+      // Filename: Full name with extension (image.jpg, video.mov)
+      // Title: Short description, max 200 characters
+      // Keywords: Comma-separated, max 49, ordered by relevance
+      // Category: Numeric code (1-21)
+      // Releases: Model/Property release names
       return {
-         headers: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
+        headers: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
-           escapeCSV(limitText(g.title.replace(/,/g, ''), 70)),
-           escapeCSV(limitKeywords(g.tags, 50)),
-            escapeCSV(getAdobeStockCategoryNumber(getCategoryValue(g.category || '', overrideCategory))),
-           escapeCSV(''),
+          escapeCSV(limitText(g.title, 200)),
+          escapeCSV(limitKeywords(g.tags, 49)),
+          escapeCSV(getAdobeStockCategoryNumber(getCategoryValue(g.category || '', overrideCategory))),
+          escapeCSV(''),
         ]),
-        filename: 'adobe-stock-export',
+        filename: 'adobe-stock-metadata',
       };
 
     case 'shutterstock':
