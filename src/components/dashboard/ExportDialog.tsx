@@ -26,6 +26,7 @@ import {
   type StockPlatform,
   type ExportOptions
 } from '@/lib/stockPlatformFormats';
+import { platformCategories, type ExportPlatform } from './AdvancedMetadataControls';
 
 interface ExportDialogProps {
   generations: Generation[];
@@ -81,11 +82,13 @@ PlatformItem.displayName = 'PlatformItem';
 const PreviewRow = memo(({ 
   row, 
   headers, 
-  index 
+   index,
+   selectedFormat
 }: { 
   row: string[]; 
   headers: string[]; 
   index: number;
+   selectedFormat: ExportFormat;
 }) => {
   const cleanValue = (val: string) => {
     if (!val) return '-';
@@ -96,6 +99,40 @@ const PreviewRow = memo(({
    const titleIndex = headers.findIndex(h => h.toLowerCase() === 'title' || h.toLowerCase() === 'headline' || h.toLowerCase() === 'description' || h.toLowerCase() === 'caption');
    const categoryIndex = headers.findIndex(h => h.toLowerCase() === 'category' || h.toLowerCase() === 'categories');
    const keywordsIndex = headers.findIndex(h => h.toLowerCase() === 'keywords' || h.toLowerCase() === 'tags');
+ 
+   // Get platform-specific category label
+   const getCategoryLabel = (categoryValue: string): string => {
+     if (!categoryValue || categoryValue === '-') return '-';
+     
+     // Map ExportFormat to ExportPlatform
+     const platformMap: Record<string, ExportPlatform> = {
+       'adobe_stock': 'adobe_stock',
+       'shutterstock': 'shutterstock',
+       'istock': 'istock',
+       'getty_images': 'getty',
+       'alamy': 'alamy',
+       'dreamstime': 'dreamstime',
+       '123rf': '123rf',
+       'depositphotos': 'depositphotos',
+       'canva_creators': 'canva',
+       'freepik': 'freepik',
+       'vecteezy': 'vecteezy',
+       'picfair': 'picfair',
+       'eyeem': 'eyeem',
+       'rawpixel': 'rawpixel',
+       'stocksy': 'stocksy',
+       'twenty20': 'twenty20',
+       'pond5': 'pond5',
+       'wirestock': 'wirestock',
+       'storyblocks': 'storyblocks',
+       'generic': 'custom',
+     };
+     
+     const platform = platformMap[selectedFormat] || 'custom';
+     const categories = platformCategories[platform] || [];
+     const match = categories.find(c => c.value === categoryValue);
+     return match ? match.label : categoryValue;
+   };
  
   return (
     <motion.div
@@ -109,7 +146,7 @@ const PreviewRow = memo(({
         <span className="text-sm font-medium truncate">{cleanValue(row[0])}</span>
          {categoryIndex > -1 && cleanValue(row[categoryIndex]) !== '-' && (
            <Badge variant="secondary" className="text-[10px] ml-auto">
-             Cat: {cleanValue(row[categoryIndex])}
+             Cat: {getCategoryLabel(cleanValue(row[categoryIndex]))}
            </Badge>
          )}
       </div>
@@ -383,6 +420,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                           row={row} 
                           headers={previewData.headers} 
                           index={rowIndex} 
+                           selectedFormat={selectedFormat}
                         />
                       ))}
                       {previewData.rows.length > 3 && (
