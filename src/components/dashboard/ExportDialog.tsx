@@ -92,6 +92,11 @@ const PreviewRow = memo(({
     return val.replace(/^"|"$/g, '').replace(/""/g, '"');
   };
 
+   // Find important fields indices
+   const titleIndex = headers.findIndex(h => h.toLowerCase() === 'title' || h.toLowerCase() === 'headline' || h.toLowerCase() === 'description' || h.toLowerCase() === 'caption');
+   const categoryIndex = headers.findIndex(h => h.toLowerCase() === 'category' || h.toLowerCase() === 'categories');
+   const keywordsIndex = headers.findIndex(h => h.toLowerCase() === 'keywords' || h.toLowerCase() === 'tags');
+ 
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -102,14 +107,26 @@ const PreviewRow = memo(({
       <div className="flex items-center gap-2 mb-2">
         <span className="text-xs font-mono text-muted-foreground">#{index + 1}</span>
         <span className="text-sm font-medium truncate">{cleanValue(row[0])}</span>
+         {categoryIndex > -1 && cleanValue(row[categoryIndex]) !== '-' && (
+           <Badge variant="secondary" className="text-[10px] ml-auto">
+             Cat: {cleanValue(row[categoryIndex])}
+           </Badge>
+         )}
       </div>
       <div className="grid gap-1.5">
-        {headers.slice(1).map((header, colIndex) => (
-          <div key={colIndex} className="flex gap-2 text-xs">
+         {headers.slice(1).map((header, colIndex) => {
+           const actualColIndex = colIndex + 1;
+           // Skip showing Category separately in grid since we show it as badge
+           if (header.toLowerCase() === 'category' || header.toLowerCase() === 'categories') {
+             return null;
+           }
+           return (
+           <div key={colIndex} className="flex gap-2 text-xs">
             <span className="text-muted-foreground min-w-[80px] flex-shrink-0">{header}:</span>
-            <span className="text-foreground break-all line-clamp-2">{cleanValue(row[colIndex + 1])}</span>
+             <span className="text-foreground break-all line-clamp-2">{cleanValue(row[actualColIndex])}</span>
           </div>
-        ))}
+           );
+         })}
       </div>
     </motion.div>
   );
