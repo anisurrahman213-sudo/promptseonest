@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image, CheckCircle2 } from 'lucide-react';
+import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -401,7 +401,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                         <span><strong>Excel/Sheets:</strong> Save as → CSV UTF-8 (Comma delimited)</span>
                       </div>
                       <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <Image className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                        <ImageIcon className="h-3 w-3 text-primary mt-0.5 shrink-0" />
                         <span><strong>Upload Order:</strong> ছবি আগে আপলোড করুন, তারপর CSV</span>
                       </div>
                       <div className="flex items-start gap-2 text-xs text-muted-foreground">
