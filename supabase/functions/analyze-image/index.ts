@@ -254,7 +254,37 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Clean and validate base64 data
+    let cleanedBase64 = imageBase64.trim();
+    
+    // Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
+    if (cleanedBase64.includes(",") && cleanedBase64.startsWith("data:")) {
+      cleanedBase64 = cleanedBase64.split(",")[1];
+    }
+    
+    // Remove any whitespace/newlines that might have been introduced
+    cleanedBase64 = cleanedBase64.replace(/\s/g, "");
+    
+    // Basic validation - check if it looks like valid base64
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(cleanedBase64)) {
+      console.error("Invalid base64 string detected");
+      return new Response(
+        JSON.stringify({ error: "Invalid image data format" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Check minimum size (a valid image should be at least a few KB)
+    if (cleanedBase64.length < 100) {
+      console.error("Base64 data too small:", cleanedBase64.length);
+      return new Response(
+        JSON.stringify({ error: "Image data is too small or corrupted" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     console.log(`Rate limit OK - Remaining: ${rateLimit.remaining}`);
+    console.log(`Base64 data length: ${cleanedBase64.length} chars`);
 
     console.log(`Processing ${mediaType}: ${imageName}`);
     console.log("Settings received:", JSON.stringify(settings));
@@ -313,7 +343,7 @@ Deno.serve(async (req) => {
                 {
                   type: "image_url",
                   image_url: {
-                    url: `data:image/jpeg;base64,${imageBase64}`,
+                    url: `data:image/jpeg;base64,${cleanedBase64}`,
                   },
                 },
               ],
