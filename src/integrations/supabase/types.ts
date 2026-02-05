@@ -85,11 +85,13 @@ export type Database = {
       }
       generations: {
         Row: {
+          category: string | null
           created_at: string
           description: string
           id: string
           image_name: string
           image_url: string
+          is_editorial: boolean | null
           media_type: string
           prompt: string
           tags: string
@@ -97,11 +99,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description: string
           id?: string
           image_name: string
           image_url: string
+          is_editorial?: boolean | null
           media_type?: string
           prompt: string
           tags: string
@@ -109,11 +113,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string
           id?: string
           image_name?: string
           image_url?: string
+          is_editorial?: boolean | null
           media_type?: string
           prompt?: string
           tags?: string

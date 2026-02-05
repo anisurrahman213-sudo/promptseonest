@@ -334,7 +334,7 @@ export default function Dashboard() {
                           fetchAllForExport={fetchAllForExport}
                           searchQuery={searchQuery}
                           exportOptions={{
-                            category: metadataSettings.category,
+                            overrideCategory: metadataSettings.category,
                             editorialStatus: metadataSettings.editorialStatus,
                           }}
                         />
