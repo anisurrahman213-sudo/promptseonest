@@ -27,6 +27,8 @@ export type ExportPlatform =
   | 'stocksy' 
   | 'twenty20' 
   | 'wirestock'
+   | 'pond5'
+   | 'storyblocks'
   | 'custom';
 
 export type ImageType = 'none' | 'photo' | 'illustration' | 'vector' | '3d_render' | 'ai_generated';
@@ -68,12 +70,14 @@ const platformOptions = [
   { value: 'stocksy', label: '💎 Stocksy' },
   { value: 'twenty20', label: '🔷 Twenty20' },
   { value: 'wirestock', label: '🌐 Wirestock' },
+   { value: 'pond5', label: '🎬 Pond5' },
+   { value: 'storyblocks', label: '📹 Storyblocks' },
   { value: 'custom', label: '⚙️ Custom' },
 ];
 
 // Platform-specific limits
 const platformLimits: Record<ExportPlatform, { title: number; description: number; keywords: number }> = {
-  adobe_stock: { title: 60, description: 200, keywords: 25 },
+   adobe_stock: { title: 70, description: 0, keywords: 50 },
   shutterstock: { title: 200, description: 200, keywords: 50 },
   istock: { title: 100, description: 200, keywords: 50 },
   getty: { title: 250, description: 2000, keywords: 50 },
@@ -90,6 +94,8 @@ const platformLimits: Record<ExportPlatform, { title: number; description: numbe
   stocksy: { title: 100, description: 200, keywords: 50 },
   twenty20: { title: 100, description: 200, keywords: 25 },
   wirestock: { title: 200, description: 500, keywords: 50 },
+   pond5: { title: 100, description: 500, keywords: 50 },
+   storyblocks: { title: 100, description: 300, keywords: 50 },
   custom: { title: 200, description: 500, keywords: 50 },
 };
 
@@ -408,11 +414,11 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
 
 export const defaultMetadataSettings: MetadataSettings = {
   exportPlatform: 'adobe_stock',
-  titleLength: 70,
+   titleLength: 70,
   titleLengthMix: true,
-  descriptionLength: 200,
+   descriptionLength: 0,
   descriptionLengthFixed: false,
-  keywordsCount: 49,
+   keywordsCount: 50,
   imageType: 'none',
   prefix: '',
   suffix: '',

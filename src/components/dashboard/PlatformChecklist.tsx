@@ -361,6 +361,46 @@ const platformRequirements: Record<ExportPlatform, PlatformRequirement> = {
     propertyRelease: true,
     aiContentAllowed: true
   },
+   pond5: {
+     name: 'Pond5',
+     icon: '🎬',
+     minResolution: '1920x1080 (HD)',
+     maxResolution: '4K+',
+     minFileSize: '1MB',
+     maxFileSize: '100GB',
+     formats: ['MOV', 'MP4', 'JPEG', 'PNG', 'AE'],
+     titleLimit: 100,
+     descriptionLimit: 500,
+     keywordsLimit: 50,
+     additionalNotes: [
+       'Best for video content',
+       'Set your own prices',
+       'After Effects templates accepted'
+     ],
+     modelRelease: true,
+     propertyRelease: true,
+     aiContentAllowed: true
+   },
+   storyblocks: {
+     name: 'Storyblocks',
+     icon: '📹',
+     minResolution: '1920x1080 (HD)',
+     maxResolution: '4K+',
+     minFileSize: '500KB',
+     maxFileSize: '4GB',
+     formats: ['MOV', 'MP4', 'JPEG', 'PNG', 'WAV', 'MP3'],
+     titleLimit: 100,
+     descriptionLimit: 300,
+     keywordsLimit: 50,
+     additionalNotes: [
+       'Video, audio, and images',
+       'Subscription-based platform',
+       'Royalty-free licensing'
+     ],
+     modelRelease: true,
+     propertyRelease: true,
+     aiContentAllowed: true
+   },
   custom: {
     name: 'Custom',
     icon: '⚙️',

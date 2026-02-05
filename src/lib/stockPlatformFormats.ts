@@ -1,4 +1,5 @@
-// Stock platform export format configurations
+ // Stock platform export format configurations with official CSV guidelines
+ // Each platform follows their specific column names and requirements
 
 export type ExportFormat = 
   | 'adobe_stock' 
@@ -17,8 +18,10 @@ export type ExportFormat =
   | 'rawpixel' 
   | 'stocksy' 
   | 'twenty20' 
-  | 'wirestock'
-  | 'generic';
+   | 'pond5'
+   | 'wirestock'
+   | 'generic'
+   | 'storyblocks';
 
 export interface StockPlatform {
   id: ExportFormat;
@@ -28,170 +31,230 @@ export interface StockPlatform {
   maxKeywords: number;
   maxTitleLength: number;
   maxDescriptionLength: number;
+   csvColumns: string[];
+   guidelines: string;
 }
 
 export const stockPlatforms: StockPlatform[] = [
   {
     id: 'adobe_stock',
     name: 'Adobe Stock',
-     description: 'Filename, Title (max 60), Description (max 200), Keywords (max 25)',
+     description: 'Filename, Title (max 70), Keywords (max 50), Category',
     icon: '🅰️',
-    maxKeywords: 25,
-    maxTitleLength: 60,
-    maxDescriptionLength: 200,
+     maxKeywords: 50,
+     maxTitleLength: 70,
+     maxDescriptionLength: 0,
+     csvColumns: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
+     guidelines: 'Adobe Stock requires: Filename (30 chars max with extension), Title (70 chars, no commas), Keywords (max 50, comma-separated by relevance). Category number optional. CSV must be UTF-8 encoded.',
   },
   {
     id: 'shutterstock',
     name: 'Shutterstock',
-    description: 'Filename, Description (max 200), Keywords (max 50)',
+     description: 'Filename, Description (max 200), Keywords (max 50), Categories, Editorial',
     icon: '📷',
     maxKeywords: 50,
     maxTitleLength: 200,
     maxDescriptionLength: 200,
+     csvColumns: ['Filename', 'Description', 'Keywords', 'Categories', 'Editorial', 'Mature Content', 'Illustration'],
+     guidelines: 'Shutterstock uses Description (not Title). Keywords comma-separated. Categories 1-2 numbers. Editorial: yes/no. Max 50 keywords.',
   },
   {
     id: 'istock',
     name: 'iStock / Getty',
-    description: 'Filename, Title, Description, Keywords (max 50)',
+     description: 'Filename, Title, Description, Keywords (max 50), Brief Code, Country, Created Date',
     icon: '📸',
     maxKeywords: 50,
     maxTitleLength: 100,
     maxDescriptionLength: 200,
+     csvColumns: ['Filename', 'Title', 'Description', 'Keywords', 'Brief Code', 'Country', 'Created Date'],
+     guidelines: 'Use with DeepMeta software. Brief Code for assignment submissions. Created Date in YYYY-MM-DD format. Keywords comma-separated.',
   },
   {
     id: 'getty_images',
     name: 'Getty Images',
-    description: 'Filename, Headline, Caption, Keywords (max 50)',
+     description: 'Filename, Headline, Caption, Keywords (max 50), PersonInImage, DateCreated',
     icon: '🖼️',
     maxKeywords: 50,
     maxTitleLength: 250,
     maxDescriptionLength: 2000,
+     csvColumns: ['Filename', 'Headline', 'Caption', 'Keywords', 'PersonInImage', 'DateCreated', 'City', 'Country'],
+     guidelines: 'Getty uses Headline (not Title) and Caption (not Description). DateCreated in YYYY-MM-DD format. PersonInImage for model names. Supports location metadata.',
   },
   {
     id: 'alamy',
     name: 'Alamy',
-    description: 'Filename, Caption, Tags (max 50), Category',
+     description: 'Filename, Caption, Tags (comma-separated), Supertags, Pseudonym, Date Taken',
     icon: '🌍',
     maxKeywords: 50,
     maxTitleLength: 255,
     maxDescriptionLength: 255,
+     csvColumns: ['Filename', 'Caption', 'Tags', 'Supertags', 'Pseudonym', 'Date Taken', 'Exclusive', 'Model Release', 'Property Release'],
+     guidelines: 'Alamy requires contacting support for CSV template. Caption is main description. Supertags are primary 2-3 keywords. Tags comma-separated. Exclusive: Yes/No.',
   },
   {
     id: 'dreamstime',
     name: 'Dreamstime',
-    description: 'Filename, Title, Description, Keywords (max 50)',
+     description: 'Filename, Title, Description, Keywords, Categories, Submission Type, Model Release ID',
     icon: '💭',
     maxKeywords: 50,
     maxTitleLength: 100,
     maxDescriptionLength: 200,
+     csvColumns: ['Filename', 'Title', 'Description', 'Keywords', 'Categories', 'W-EL', 'P-EL', 'SR-EL', 'Submission Type', 'MR-ID'],
+     guidelines: 'Dreamstime FTP upload. W-EL/P-EL/SR-EL are extended license flags (0/1). Categories: numeric code. MR-ID: Model Release ID from MR Library. Submission Type: RF/Editorial.',
   },
   {
     id: '123rf',
     name: '123RF',
-    description: 'Filename, Description, Keywords (max 50)',
+     description: 'Filename, Description, Keywords (max 50), Category',
     icon: '🔢',
     maxKeywords: 50,
     maxTitleLength: 100,
     maxDescriptionLength: 200,
+     csvColumns: ['Filename', 'Description', 'Keywords', 'Category'],
+     guidelines: '123RF accepts embedded IPTC metadata. CSV optional. Description serves as title. Keywords comma-separated.',
   },
   {
     id: 'depositphotos',
     name: 'Depositphotos',
-    description: 'Filename, Title, Description, Keywords (max 50)',
+     description: 'Filename, Title, Description, Keywords (max 50), Category, Nudity',
     icon: '💎',
     maxKeywords: 50,
     maxTitleLength: 200,
     maxDescriptionLength: 200,
+     csvColumns: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'Nudity'],
+     guidelines: 'Depositphotos reads IPTC metadata. CSV optional. Nudity flag for adult content. Keywords comma-separated.',
   },
   {
     id: 'canva_creators',
     name: 'Canva Creators',
-    description: 'Filename, Title, Tags (max 25), Category',
+     description: 'Filename, Title, Tags (max 25), Category, Content Type',
     icon: '🎨',
     maxKeywords: 25,
     maxTitleLength: 100,
     maxDescriptionLength: 200,
+     csvColumns: ['Filename', 'Title', 'Tags', 'Category', 'Content Type'],
+     guidelines: 'Canva Creators portal. Tags max 25. Content Type: Photo/Illustration/Video. Category from Canva list.',
   },
   {
     id: 'freepik',
     name: 'Freepik Contributor',
-    description: 'Filename, Title, Tags, Type',
+     description: 'Filename, Title, Tags, Type, License',
     icon: '🎭',
     maxKeywords: 50,
     maxTitleLength: 100,
     maxDescriptionLength: 200,
+     csvColumns: ['Filename', 'Title', 'Tags', 'Type', 'License'],
+     guidelines: 'Freepik accepts photos and vectors. Type: photo/vector/psd. License: free/premium. Tags space-separated.',
   },
   {
     id: 'vecteezy',
     name: 'Vecteezy',
-    description: 'Filename, Title, Description, Tags (max 40)',
+     description: 'Filename, Title, Description, Tags (max 40), Category, Type',
     icon: '✏️',
     maxKeywords: 40,
     maxTitleLength: 100,
     maxDescriptionLength: 500,
+     csvColumns: ['Filename', 'Title', 'Description', 'Tags', 'Category', 'Type'],
+     guidelines: 'Vecteezy supports CSV upload from Add Data page. Tags comma-separated max 40. Type: Vector/Photo/Video.',
   },
   {
     id: 'picfair',
     name: 'Picfair',
-    description: 'Filename, Title, Description, Tags (max 30)',
+     description: 'Filename, Title, Description, Tags (max 30), Location, Price',
     icon: '📱',
     maxKeywords: 30,
     maxTitleLength: 140,
     maxDescriptionLength: 500,
+     csvColumns: ['Filename', 'Title', 'Description', 'Tags', 'Location', 'Price'],
+     guidelines: 'Picfair allows custom pricing. Location optional. Tags max 30 comma-separated.',
   },
   {
     id: 'eyeem',
     name: 'EyeEm',
-    description: 'Filename, Caption, Tags (max 30)',
+     description: 'Filename, Caption, Tags (max 30), Location',
     icon: '👁️',
     maxKeywords: 30,
     maxTitleLength: 140,
     maxDescriptionLength: 300,
+     csvColumns: ['Filename', 'Caption', 'Tags', 'Location'],
+     guidelines: 'EyeEm uses Caption (not Title/Description). Tags max 30. Location optional.',
   },
   {
     id: 'rawpixel',
     name: 'Rawpixel',
-    description: 'Filename, Title, Description, Keywords (max 50)',
+     description: 'Filename, Title, Description, Keywords (max 50), Category, License Type',
     icon: '🌈',
     maxKeywords: 50,
     maxTitleLength: 100,
     maxDescriptionLength: 300,
+     csvColumns: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'License Type'],
+     guidelines: 'Rawpixel supports free and premium content. License Type: free/premium. Keywords comma-separated.',
   },
   {
     id: 'stocksy',
     name: 'Stocksy',
-    description: 'Filename, Title, Caption, Keywords (max 50)',
+     description: 'Filename, Title, Caption, Keywords (max 50), Model Release, Property Release',
     icon: '⭐',
     maxKeywords: 50,
     maxTitleLength: 100,
     maxDescriptionLength: 200,
+     csvColumns: ['Filename', 'Title', 'Caption', 'Keywords', 'Model Release', 'Property Release'],
+     guidelines: 'Stocksy curated marketplace. Caption max 200 chars. Keywords max 50. Release status: None/Attached.',
   },
   {
     id: 'twenty20',
     name: 'Twenty20',
-    description: 'Filename, Description, Tags (max 25)',
+     description: 'Filename, Description, Tags (max 25), Category',
     icon: '2️⃣',
     maxKeywords: 25,
     maxTitleLength: 100,
     maxDescriptionLength: 200,
+     csvColumns: ['Filename', 'Description', 'Tags', 'Category'],
+     guidelines: 'Twenty20 (now Envato Elements). Tags max 25 comma-separated.',
+   },
+   {
+     id: 'pond5',
+     name: 'Pond5',
+     description: 'Filename, Title, Description, Keywords, Category, Editorial, FPS, Codec',
+     icon: '🎬',
+     maxKeywords: 50,
+     maxTitleLength: 100,
+     maxDescriptionLength: 500,
+     csvColumns: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'Editorial', 'FPS', 'Codec', 'Price'],
+     guidelines: 'Pond5 specializes in video. Supports custom pricing. FPS and Codec for video metadata. Editorial: yes/no.',
   },
   {
     id: 'wirestock',
     name: 'Wirestock',
-    description: 'Filename, Title, Description, Keywords (max 50)',
+     description: 'Filename, Title, Description, Keywords (max 50), Category, Content Type',
     icon: '🔌',
     maxKeywords: 50,
     maxTitleLength: 200,
     maxDescriptionLength: 500,
+     csvColumns: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'Content Type'],
+     guidelines: 'Wirestock distributes to multiple platforms. Content Type: Photo/Video/Vector/Illustration.',
   },
+   {
+     id: 'storyblocks',
+     name: 'Storyblocks',
+     description: 'Filename, Title, Description, Keywords, Category, Editorial',
+     icon: '📹',
+     maxKeywords: 50,
+     maxTitleLength: 100,
+     maxDescriptionLength: 300,
+     csvColumns: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'Editorial'],
+     guidelines: 'Storyblocks focuses on video and audio. Keywords comma-separated. Editorial: yes/no.',
+   },
   {
     id: 'generic',
     name: 'Generic (All Fields)',
-    description: 'All metadata fields for custom use',
+     description: 'All metadata fields for universal compatibility',
     icon: '📋',
     maxKeywords: 100,
     maxTitleLength: 200,
     maxDescriptionLength: 500,
+     csvColumns: ['Filename', 'Title', 'Description', 'Keywords', 'AI Prompt', 'Created At', 'Category'],
+     guidelines: 'Generic format with all common fields. Use for custom workflows or unsupported platforms.',
   },
 ];
 
@@ -230,18 +293,23 @@ export interface ExportResult {
 export const generateExport = (format: ExportFormat, generations: Generation[]): ExportResult => {
   switch (format) {
     case 'adobe_stock':
+       // Adobe Stock Official Format: Filename, Title, Keywords, Category, Releases
+       // Title max 70 chars, no commas. Keywords max 50, comma-separated.
       return {
-         headers: ['Filename', 'Title', 'Description', 'Keywords'],
+         headers: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
-          escapeCSV(limitText(g.title, 60)),
-           escapeCSV(limitText(g.description, 200)),
-          escapeCSV(limitKeywords(g.tags, 25)),
+           escapeCSV(limitText(g.title.replace(/,/g, ''), 70)),
+           escapeCSV(limitKeywords(g.tags, 50)),
+           escapeCSV(''),
+           escapeCSV(''),
         ]),
         filename: 'adobe-stock-export',
       };
 
     case 'shutterstock':
+       // Shutterstock Official Format: Filename, Description, Keywords, Categories, Editorial
+       // Description max 200, Keywords max 50 comma-separated
       return {
         headers: ['Filename', 'Description', 'Keywords', 'Categories', 'Editorial'],
         rows: generations.map(g => [
@@ -255,20 +323,27 @@ export const generateExport = (format: ExportFormat, generations: Generation[]):
       };
 
     case 'istock':
+       // iStock/Getty Official Format via DeepMeta
+       // Includes Brief Code, Country, Created Date
       return {
-        headers: ['Filename', 'Title', 'Description', 'Keywords'],
+         headers: ['Filename', 'Title', 'Description', 'Keywords', 'Brief Code', 'Country', 'Created Date'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 100)),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 50)),
+           escapeCSV(''),
+           escapeCSV(''),
+           escapeCSV(new Date(g.created_at).toISOString().split('T')[0]),
         ]),
         filename: 'istock-export',
       };
 
     case 'getty_images':
+       // Getty Images Official Format
+       // Uses Headline and Caption terminology
       return {
-        headers: ['Filename', 'Headline', 'Caption', 'Keywords', 'PersonInImage', 'DateCreated'],
+         headers: ['Filename', 'Headline', 'Caption', 'Keywords', 'PersonInImage', 'DateCreated', 'City', 'Country'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 250)),
@@ -276,19 +351,25 @@ export const generateExport = (format: ExportFormat, generations: Generation[]):
           escapeCSV(limitKeywords(g.tags, 50)),
           escapeCSV(''),
           escapeCSV(new Date(g.created_at).toISOString().split('T')[0]),
+           escapeCSV(''),
+           escapeCSV(''),
         ]),
         filename: 'getty-images-export',
       };
 
     case 'alamy':
+       // Alamy Official Format
+       // Includes Supertags (primary 2-3 keywords)
       return {
-        headers: ['Filename', 'Caption', 'Tags', 'Category', 'Exclusive', 'ModelRelease', 'PropertyRelease'],
+         headers: ['Filename', 'Caption', 'Tags', 'Supertags', 'Pseudonym', 'Date Taken', 'Exclusive', 'Model Release', 'Property Release'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.description, 255)),
           escapeCSV(limitKeywords(g.tags, 50)),
+           escapeCSV(limitKeywords(g.tags, 3)),
+           escapeCSV(''),
+           escapeCSV(new Date(g.created_at).toISOString().split('T')[0]),
           escapeCSV(''),
-          escapeCSV('No'),
           escapeCSV('No'),
           escapeCSV('No'),
         ]),
@@ -296,43 +377,55 @@ export const generateExport = (format: ExportFormat, generations: Generation[]):
       };
 
     case 'dreamstime':
+       // Dreamstime Official Format via FTP
+       // W-EL, P-EL, SR-EL are extended license flags
       return {
-        headers: ['Filename', 'Title', 'Description', 'Keywords', 'Categories'],
+         headers: ['Filename', 'Title', 'Description', 'Keywords', 'Categories', 'W-EL', 'P-EL', 'SR-EL', 'Submission Type', 'MR-ID'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 100)),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 50)),
           escapeCSV(''),
+           escapeCSV('1'),
+           escapeCSV('1'),
+           escapeCSV('1'),
+           escapeCSV('RF'),
+           escapeCSV(''),
         ]),
         filename: 'dreamstime-export',
       };
 
     case '123rf':
+       // 123RF Format
       return {
-        headers: ['Filename', 'Description', 'Keywords'],
+         headers: ['Filename', 'Description', 'Keywords', 'Category'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 50)),
+           escapeCSV(''),
         ]),
         filename: '123rf-export',
       };
 
     case 'depositphotos':
+       // Depositphotos Format
       return {
-        headers: ['Filename', 'Title', 'Description', 'Keywords', 'Category'],
+         headers: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'Nudity'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 200)),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 50)),
           escapeCSV(''),
+           escapeCSV('no'),
         ]),
         filename: 'depositphotos-export',
       };
 
     case 'canva_creators':
+       // Canva Creators Format
       return {
         headers: ['Filename', 'Title', 'Tags', 'Category', 'ContentType'],
         rows: generations.map(g => [
@@ -346,69 +439,81 @@ export const generateExport = (format: ExportFormat, generations: Generation[]):
       };
 
     case 'freepik':
+       // Freepik Format - Tags are space-separated
       return {
-        headers: ['Filename', 'Title', 'Tags', 'Type'],
+         headers: ['Filename', 'Title', 'Tags', 'Type', 'License'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 100)),
-          escapeCSV(g.tags),
+           escapeCSV(g.tags.split(',').map(t => t.trim()).join(' ')),
           escapeCSV('photo'),
+           escapeCSV('premium'),
         ]),
         filename: 'freepik-export',
       };
 
     case 'vecteezy':
+       // Vecteezy Format
       return {
-        headers: ['Filename', 'Title', 'Description', 'Tags'],
+         headers: ['Filename', 'Title', 'Description', 'Tags', 'Category', 'Type'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 100)),
           escapeCSV(limitText(g.description, 500)),
           escapeCSV(limitKeywords(g.tags, 40)),
+           escapeCSV(''),
+           escapeCSV('Photo'),
         ]),
         filename: 'vecteezy-export',
       };
 
     case 'picfair':
+       // Picfair Format
       return {
-        headers: ['Filename', 'Title', 'Description', 'Tags', 'Location'],
+         headers: ['Filename', 'Title', 'Description', 'Tags', 'Location', 'Price'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 140)),
           escapeCSV(limitText(g.description, 500)),
           escapeCSV(limitKeywords(g.tags, 30)),
           escapeCSV(''),
+           escapeCSV(''),
         ]),
         filename: 'picfair-export',
       };
 
     case 'eyeem':
+       // EyeEm Format - Uses Caption
       return {
-        headers: ['Filename', 'Caption', 'Tags'],
+         headers: ['Filename', 'Caption', 'Tags', 'Location'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.description, 300)),
           escapeCSV(limitKeywords(g.tags, 30)),
+           escapeCSV(''),
         ]),
         filename: 'eyeem-export',
       };
 
     case 'rawpixel':
+       // Rawpixel Format
       return {
-        headers: ['Filename', 'Title', 'Description', 'Keywords', 'Category'],
+         headers: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'License Type'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 100)),
           escapeCSV(limitText(g.description, 300)),
           escapeCSV(limitKeywords(g.tags, 50)),
           escapeCSV(''),
+           escapeCSV('premium'),
         ]),
         filename: 'rawpixel-export',
       };
 
     case 'stocksy':
+       // Stocksy Format
       return {
-        headers: ['Filename', 'Title', 'Caption', 'Keywords', 'ModelRelease', 'PropertyRelease'],
+         headers: ['Filename', 'Title', 'Caption', 'Keywords', 'Model Release', 'Property Release'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 100)),
@@ -421,17 +526,38 @@ export const generateExport = (format: ExportFormat, generations: Generation[]):
       };
 
     case 'twenty20':
+       // Twenty20/Envato Format
       return {
-        headers: ['Filename', 'Description', 'Tags'],
+         headers: ['Filename', 'Description', 'Tags', 'Category'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 25)),
+           escapeCSV(''),
         ]),
         filename: 'twenty20-export',
       };
 
+     case 'pond5':
+       // Pond5 Official Format - Video-focused
+       return {
+         headers: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'Editorial', 'FPS', 'Codec', 'Price'],
+         rows: generations.map(g => [
+           escapeCSV(g.image_name),
+           escapeCSV(limitText(g.title, 100)),
+           escapeCSV(limitText(g.description, 500)),
+           escapeCSV(limitKeywords(g.tags, 50)),
+           escapeCSV(''),
+           escapeCSV('no'),
+           escapeCSV(''),
+           escapeCSV(''),
+           escapeCSV(''),
+         ]),
+         filename: 'pond5-export',
+       };
+ 
     case 'wirestock':
+       // Wirestock Format
       return {
         headers: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'ContentType'],
         rows: generations.map(g => [
@@ -445,10 +571,26 @@ export const generateExport = (format: ExportFormat, generations: Generation[]):
         filename: 'wirestock-export',
       };
 
+     case 'storyblocks':
+       // Storyblocks Format
+       return {
+         headers: ['Filename', 'Title', 'Description', 'Keywords', 'Category', 'Editorial'],
+         rows: generations.map(g => [
+           escapeCSV(g.image_name),
+           escapeCSV(limitText(g.title, 100)),
+           escapeCSV(limitText(g.description, 300)),
+           escapeCSV(limitKeywords(g.tags, 50)),
+           escapeCSV(''),
+           escapeCSV('no'),
+         ]),
+         filename: 'storyblocks-export',
+       };
+ 
     case 'generic':
     default:
+       // Generic Format with all common fields
       return {
-        headers: ['Filename', 'Title', 'Description', 'Keywords', 'AI Prompt', 'Created At'],
+         headers: ['Filename', 'Title', 'Description', 'Keywords', 'AI Prompt', 'Created At', 'Category'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(g.title),
@@ -456,6 +598,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[]):
           escapeCSV(g.tags),
           escapeCSV(g.prompt),
           escapeCSV(new Date(g.created_at).toISOString()),
+           escapeCSV(''),
         ]),
         filename: 'metadata-export',
       };
