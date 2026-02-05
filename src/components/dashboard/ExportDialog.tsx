@@ -455,27 +455,42 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           </motion.div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t">
-          <div className="text-sm text-muted-foreground">
-            {filterSearchQuery?.trim() ? (
-              <span>{generations.length} filtered item{generations.length !== 1 ? 's' : ''}</span>
-            ) : (
-              <span className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-primary" />
-                All items will be exported
-              </span>
+        {/* Export Action Section */}
+        <div className="flex flex-col gap-3 pt-4 border-t mt-2">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {filterSearchQuery?.trim() ? (
+                <span>{generations.length} filtered item{generations.length !== 1 ? 's' : ''}</span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <Zap className="h-3 w-3 text-primary" />
+                  All items will be exported
+                </span>
+              )}
+            </div>
+            {selectedPlatform && (
+              <Badge variant="outline" className="gap-1">
+                {selectedPlatform.icon} {selectedPlatform.name}
+              </Badge>
             )}
           </div>
-          <Button onClick={handleExport} disabled={isExporting || isLoadingAll} className="gap-2">
+          
+          {/* Large prominent Download button */}
+          <Button 
+            onClick={handleExport} 
+            disabled={isExporting || isLoadingAll} 
+            size="lg"
+            className="w-full gap-3 h-12 text-base font-semibold bg-primary hover:bg-primary/90 shadow-lg"
+          >
             {isExporting || isLoadingAll ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {isLoadingAll ? 'Loading...' : 'Exporting...'}
+                <Loader2 className="h-5 w-5 animate-spin" />
+                {isLoadingAll ? 'Loading all data...' : 'Exporting CSV...'}
               </>
             ) : (
               <>
-                <Download className="h-4 w-4" />
-                Export CSV
+                <Download className="h-5 w-5" />
+                Download / Export CSV
               </>
             )}
           </Button>
