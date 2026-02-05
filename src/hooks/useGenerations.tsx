@@ -12,6 +12,8 @@ export interface Generation {
   tags: string;
   created_at: string;
   media_type: 'image' | 'video';
+  category?: string;
+  is_editorial?: boolean;
 }
 
 export function useGenerations() {

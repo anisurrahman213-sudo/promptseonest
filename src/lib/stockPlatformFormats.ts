@@ -267,6 +267,8 @@ export interface Generation {
   description: string;
   tags: string;
   created_at: string;
+  category?: string;
+  is_editorial?: boolean;
 }
 
 const escapeCSV = (text: string): string => {
@@ -291,7 +293,7 @@ export interface ExportResult {
 }
 
 export interface ExportOptions {
-  category?: string;
+  overrideCategory?: string;
   editorialStatus?: 'none' | 'editorial' | 'commercial';
 }
 
@@ -309,13 +311,19 @@ const getEditorialValue = (status: string, format: 'yesno' | 'rf' | 'creative'):
   return '';
 };
 
-const getCategoryValue = (category: string): string => {
-  if (!category || category === 'none') return '';
-  return category;
+const getCategoryValue = (generationCategory: string, overrideCategory?: string): string => {
+  // If override is provided and not 'none', use it; otherwise use AI-generated category
+  if (overrideCategory && overrideCategory !== 'none') {
+    return overrideCategory;
+  }
+  if (!generationCategory || generationCategory === 'none' || generationCategory === '') {
+    return '';
+  }
+  return generationCategory;
 };
 
 export const generateExport = (format: ExportFormat, generations: Generation[], options?: ExportOptions): ExportResult => {
-  const category = getCategoryValue(options?.category || '');
+  const overrideCategory = options?.overrideCategory;
   const editorialStatus = options?.editorialStatus || 'none';
 
   switch (format) {
@@ -328,7 +336,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(g.image_name),
            escapeCSV(limitText(g.title.replace(/,/g, ''), 70)),
            escapeCSV(limitKeywords(g.tags, 50)),
-           escapeCSV(category),
+           escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
            escapeCSV(''),
         ]),
         filename: 'adobe-stock-export',
@@ -343,7 +351,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 50)),
-          escapeCSV(category),
+          escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
           escapeCSV(getEditorialValue(editorialStatus, 'yesno')),
         ]),
         filename: 'shutterstock-export',
@@ -413,7 +421,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(limitText(g.title, 100)),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 50)),
-          escapeCSV(category),
+          escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
            escapeCSV('1'),
            escapeCSV('1'),
            escapeCSV('1'),
@@ -431,7 +439,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 50)),
-           escapeCSV(category),
+           escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
         ]),
         filename: '123rf-export',
       };
@@ -445,7 +453,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(limitText(g.title, 200)),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 50)),
-          escapeCSV(category),
+          escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
            escapeCSV('no'),
         ]),
         filename: 'depositphotos-export',
@@ -459,7 +467,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 100)),
           escapeCSV(limitKeywords(g.tags, 25)),
-          escapeCSV(category),
+          escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
           escapeCSV('Photo'),
         ]),
         filename: 'canva-creators-export',
@@ -488,7 +496,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(limitText(g.title, 100)),
           escapeCSV(limitText(g.description, 500)),
           escapeCSV(limitKeywords(g.tags, 40)),
-           escapeCSV(category),
+           escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
            escapeCSV('Photo'),
         ]),
         filename: 'vecteezy-export',
@@ -531,7 +539,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(limitText(g.title, 100)),
           escapeCSV(limitText(g.description, 300)),
           escapeCSV(limitKeywords(g.tags, 50)),
-          escapeCSV(category),
+          escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
            escapeCSV('premium'),
         ]),
         filename: 'rawpixel-export',
@@ -560,7 +568,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 25)),
-           escapeCSV(category),
+           escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
         ]),
         filename: 'twenty20-export',
       };
@@ -574,7 +582,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
            escapeCSV(limitText(g.title, 100)),
            escapeCSV(limitText(g.description, 500)),
            escapeCSV(limitKeywords(g.tags, 50)),
-           escapeCSV(category),
+           escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
            escapeCSV(getEditorialValue(editorialStatus, 'yesno')),
            escapeCSV(''),
            escapeCSV(''),
@@ -592,7 +600,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(limitText(g.title, 200)),
           escapeCSV(limitText(g.description, 500)),
           escapeCSV(limitKeywords(g.tags, 50)),
-          escapeCSV(category),
+          escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
           escapeCSV('Photo'),
         ]),
         filename: 'wirestock-export',
@@ -607,7 +615,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
            escapeCSV(limitText(g.title, 100)),
            escapeCSV(limitText(g.description, 300)),
            escapeCSV(limitKeywords(g.tags, 50)),
-           escapeCSV(category),
+           escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
            escapeCSV(getEditorialValue(editorialStatus, 'yesno')),
          ]),
          filename: 'storyblocks-export',
@@ -625,7 +633,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
           escapeCSV(g.tags),
           escapeCSV(g.prompt),
           escapeCSV(new Date(g.created_at).toISOString()),
-           escapeCSV(category),
+           escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
         ]),
         filename: 'metadata-export',
       };

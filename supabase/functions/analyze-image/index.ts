@@ -42,6 +42,7 @@ interface AnalysisResult {
   title: string;
   description: string;
   tags: string;
+  category: string;
 }
 
 interface MetadataSettings {
@@ -56,6 +57,7 @@ interface MetadataSettings {
   suffix: string;
   negativeTitleWords: string;
   negativeKeywords: string;
+  categoryLanguage?: string;
 }
 
 const platformNames: Record<string, string> = {
@@ -65,6 +67,16 @@ const platformNames: Record<string, string> = {
   getty: "Getty Images",
   custom: "Stock Marketplaces",
 };
+
+// Stock photo categories based on major platforms (Adobe Stock, Shutterstock, etc.)
+const stockCategories = [
+  "Abstract", "Animals/Wildlife", "Architecture", "Arts", "Backgrounds/Textures",
+  "Beauty/Fashion", "Business", "Celebrities", "Editorial", "Education",
+  "Food and Drink", "Healthcare/Medical", "Holidays", "Industrial", "Interiors",
+  "Landmarks", "Lifestyle", "Nature", "Objects", "Parks/Outdoor",
+  "People", "Religion", "Science", "Signs/Symbols", "Sports/Recreation",
+  "Technology", "Transportation", "Travel", "Vintage"
+];
 
 const imageTypePrefixes: Record<string, string> = {
   none: "",
@@ -180,12 +192,18 @@ Generate the following:
    - Arrange from MOST to LEAST specific
    - Use single words AND 2-3 word phrases
 
+5. **Category** (exactly one from list):
+   Choose the MOST APPROPRIATE category from: ${stockCategories.join(', ')}
+   - Select based on the PRIMARY subject matter
+   - If multiple apply, choose the most specific one
+
 Respond ONLY with this exact JSON:
 {
   "prompt": "your unique AI generation prompt",
   "title": "Your Unique SEO Title Under ${titleMax} Chars",
   "description": "Your detailed, keyword-rich description...",
-  "tags": "specific-term-1, unique-keyword-2, style-term-3, ..."
+  "tags": "specific-term-1, unique-keyword-2, style-term-3, ...",
+  "category": "CategoryName"
 }`;
 
   return { systemPrompt, userPrompt };
@@ -372,6 +390,7 @@ Deno.serve(async (req) => {
         const titleMatch = textContent.match(/"title"\s*:\s*"([^"]+)"/);
         const descMatch = textContent.match(/"description"\s*:\s*"([^"]+)"/);
         const tagsMatch = textContent.match(/"tags"\s*:\s*"([^"]+)"/);
+        const categoryMatch = textContent.match(/"category"\s*:\s*"([^"]+)"/);
         
         if (promptMatch && titleMatch && descMatch && tagsMatch) {
           analysisResult = {
@@ -379,6 +398,7 @@ Deno.serve(async (req) => {
             title: titleMatch[1],
             description: descMatch[1],
             tags: tagsMatch[1],
+            category: categoryMatch ? categoryMatch[1] : "Objects",
           };
           console.log("Recovered data via regex extraction");
         } else {
@@ -400,6 +420,7 @@ Deno.serve(async (req) => {
           title: analysisResult.title,
           description: analysisResult.description,
           tags: analysisResult.tags,
+          category: stockCategories.includes(analysisResult.category) ? analysisResult.category : "Objects",
           imageName: imageName || `uploaded-${mediaType}`,
           mediaType: mediaType,
         },

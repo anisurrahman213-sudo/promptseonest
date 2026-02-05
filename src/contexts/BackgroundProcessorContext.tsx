@@ -206,7 +206,8 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
             title: data.data.title,
             description: data.data.description,
             tags: data.data.tags,
-            media_type: mediaFile.type
+            media_type: mediaFile.type,
+            category: data.data.category || ''
           })
           .select()
           .single()
