@@ -29,13 +29,16 @@ const platformRequirements: Record<ExportPlatform, PlatformRequirement> = {
     minFileSize: '300KB',
     maxFileSize: '45MB',
     formats: ['JPEG', 'PNG', 'EPS', 'AI', 'SVG'],
-    titleLimit: 60,
-    descriptionLimit: 200,
-    keywordsLimit: 25,
+    titleLimit: 200,
+    descriptionLimit: 0,
+    keywordsLimit: 49,
     additionalNotes: [
-      'sRGB color space required',
-      'No watermarks or logos',
-      'No visible noise or artifacts'
+      'CSV column names must match exactly in English',
+      'If column name not recognized, it will be ignored',
+      'All values except Filename are optional',
+      'CSV max 5000 rows or 5MB',
+      'Upload images FIRST, then CSV file',
+      'Filename must match exactly with uploaded asset'
     ],
     modelRelease: true,
     propertyRelease: true,
