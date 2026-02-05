@@ -111,7 +111,7 @@ const imageTypeOptions = [
 ];
 
 // Platform-specific category options
-const platformCategories: Record<ExportPlatform, { value: string; label: string }[]> = {
+export const platformCategories: Record<ExportPlatform, { value: string; label: string }[]> = {
   adobe_stock: [
     { value: 'none', label: 'None' },
     { value: '1', label: '1 - Animals' },
@@ -302,6 +302,7 @@ const editorialOptions = [
 
 // Platforms that support editorial flag
 const platformSupportsEditorial: Record<ExportPlatform, boolean> = {
+
   adobe_stock: true,
   shutterstock: true,
   istock: true,
