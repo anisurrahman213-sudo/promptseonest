@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap } from 'lucide-react';
+import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image, CheckCircle2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -331,8 +331,34 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                     </div>
                   </div>
 
+                  {/* Important Instructions */}
+                  <div className="mb-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <div className="flex items-start gap-2 mb-2">
+                      <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                      <p className="text-xs font-medium text-amber-600 dark:text-amber-400">গুরুত্বপূর্ণ নির্দেশনা</p>
+                    </div>
+                    <div className="space-y-1.5 ml-6">
+                      <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <CheckCircle2 className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                        <span><strong>UTF-8 Encoding:</strong> CSV ফাইল অবশ্যই UTF-8 encoded</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <FileText className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                        <span><strong>Excel/Sheets:</strong> Save as → CSV UTF-8 (Comma delimited)</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <Image className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                        <span><strong>Upload Order:</strong> ছবি আগে আপলোড করুন, তারপর CSV</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <AlertCircle className="h-3 w-3 text-destructive mt-0.5 shrink-0" />
+                        <span><strong>Filename:</strong> Filename না মিললে metadata apply হবে না</span>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Preview Items - Show only first 3 for performance */}
-                  <ScrollArea className="h-[220px]">
+                  <ScrollArea className="h-[160px]">
                     <div className="space-y-3">
                       {previewData.rows.slice(0, 3).map((row, rowIndex) => (
                         <PreviewRow 
