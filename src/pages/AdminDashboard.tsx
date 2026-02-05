@@ -42,6 +42,7 @@ import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
 import { UserListExport } from '@/components/admin/UserListExport';
 import { TutorialManagement } from '@/components/admin/TutorialManagement';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
+ import { CreditSettings } from '@/components/admin/CreditSettings';
 
 export default function AdminDashboard() {
   // Security: Auto-logout on inactivity
@@ -239,11 +240,15 @@ export default function AdminDashboard() {
 
         {/* Tabs for different admin sections */}
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-5">
+           <TabsList className="grid w-full max-w-4xl grid-cols-6">
             <TabsTrigger value="users" className="gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Users</span>
             </TabsTrigger>
+             <TabsTrigger value="credits" className="gap-2">
+               <CreditCard className="h-4 w-4" />
+               <span className="hidden sm:inline">Credits</span>
+             </TabsTrigger>
             <TabsTrigger value="generations" className="gap-2">
               <Trash2 className="h-4 w-4" />
               <span className="hidden sm:inline">Generations</span>
@@ -445,9 +450,13 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="generations">
-            <GenerationsManagement />
-          </TabsContent>
-
+             <GenerationsManagement />
+           </TabsContent>
+ 
+           <TabsContent value="credits">
+             <CreditSettings />
+           </TabsContent>
+ 
           <TabsContent value="tutorials">
             <TutorialManagement />
           </TabsContent>
