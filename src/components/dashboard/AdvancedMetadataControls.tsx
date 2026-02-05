@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Settings2, Info } from 'lucide-react';
+import { ChevronDown, Settings2, Info, RotateCcw } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { PlatformChecklist } from './PlatformChecklist';
 export type ExportPlatform = 
   | 'adobe_stock' 
@@ -70,6 +71,28 @@ const platformOptions = [
   { value: 'custom', label: '⚙️ Custom' },
 ];
 
+// Platform-specific limits
+const platformLimits: Record<ExportPlatform, { title: number; description: number; keywords: number }> = {
+  adobe_stock: { title: 60, description: 200, keywords: 25 },
+  shutterstock: { title: 200, description: 200, keywords: 50 },
+  istock: { title: 100, description: 200, keywords: 50 },
+  getty: { title: 250, description: 2000, keywords: 50 },
+  alamy: { title: 255, description: 255, keywords: 50 },
+  dreamstime: { title: 100, description: 200, keywords: 50 },
+  '123rf': { title: 100, description: 200, keywords: 50 },
+  depositphotos: { title: 200, description: 200, keywords: 50 },
+  canva: { title: 100, description: 200, keywords: 25 },
+  freepik: { title: 100, description: 200, keywords: 50 },
+  vecteezy: { title: 100, description: 500, keywords: 40 },
+  picfair: { title: 140, description: 500, keywords: 30 },
+  eyeem: { title: 140, description: 300, keywords: 30 },
+  rawpixel: { title: 100, description: 300, keywords: 50 },
+  stocksy: { title: 100, description: 200, keywords: 50 },
+  twenty20: { title: 100, description: 200, keywords: 25 },
+  wirestock: { title: 200, description: 500, keywords: 50 },
+  custom: { title: 200, description: 500, keywords: 50 },
+};
+
 const imageTypeOptions = [
   { value: 'none', label: 'None' },
   { value: 'photo', label: 'Photo' },
@@ -81,10 +104,39 @@ const imageTypeOptions = [
 
 export function AdvancedMetadataControls({ settings, onSettingsChange }: AdvancedMetadataControlsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isAutoLimits, setIsAutoLimits] = useState(true);
+  const prevPlatformRef = useRef(settings.exportPlatform);
 
   const updateSetting = <K extends keyof MetadataSettings>(key: K, value: MetadataSettings[K]) => {
     onSettingsChange({ ...settings, [key]: value });
   };
+
+  // Auto-apply platform limits when platform changes
+  useEffect(() => {
+    if (isAutoLimits && settings.exportPlatform !== prevPlatformRef.current) {
+      const limits = platformLimits[settings.exportPlatform];
+      onSettingsChange({
+        ...settings,
+        titleLength: limits.title,
+        descriptionLength: limits.description,
+        keywordsCount: limits.keywords,
+      });
+      prevPlatformRef.current = settings.exportPlatform;
+    }
+  }, [settings.exportPlatform, isAutoLimits]);
+
+  // Reset to platform defaults
+  const resetToDefaults = () => {
+    const limits = platformLimits[settings.exportPlatform];
+    onSettingsChange({
+      ...settings,
+      titleLength: limits.title,
+      descriptionLength: limits.description,
+      keywordsCount: limits.keywords,
+    });
+  };
+
+  const currentLimits = platformLimits[settings.exportPlatform];
 
   return (
     <motion.div 
@@ -154,7 +206,12 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
               {/* Title Length */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Title Length</Label>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm font-medium">Title Length</Label>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                      max {currentLimits.title}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
                       {settings.titleLength} Characters
@@ -173,7 +230,7 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
                   value={[settings.titleLength]}
                   onValueChange={([value]) => updateSetting('titleLength', value)}
                   min={30}
-                  max={200}
+                  max={Math.max(200, currentLimits.title)}
                   step={5}
                   className="w-full"
                 />
@@ -182,7 +239,12 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
               {/* Description Character Length */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Description Character Length</Label>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm font-medium">Description Length</Label>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                      max {currentLimits.description}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
                       {settings.descriptionLength} Characters
@@ -201,7 +263,7 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
                   value={[settings.descriptionLength]}
                   onValueChange={([value]) => updateSetting('descriptionLength', value)}
                   min={50}
-                  max={500}
+                  max={Math.max(500, currentLimits.description)}
                   step={10}
                   className="w-full"
                 />
@@ -210,7 +272,12 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
               {/* Keywords Count */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Keywords Count</Label>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm font-medium">Keywords Count</Label>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                      max {currentLimits.keywords}
+                    </span>
+                  </div>
                   <span className="text-sm text-muted-foreground">
                     {settings.keywordsCount} Keywords
                   </span>
@@ -219,10 +286,35 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
                   value={[settings.keywordsCount]}
                   onValueChange={([value]) => updateSetting('keywordsCount', value)}
                   min={10}
-                  max={50}
+                  max={Math.max(50, currentLimits.keywords)}
                   step={1}
                   className="w-full"
                 />
+              </div>
+
+              {/* Auto Limits Toggle & Reset */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                <div className="flex items-center gap-3">
+                  <Switch 
+                    checked={isAutoLimits}
+                    onCheckedChange={setIsAutoLimits}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">Auto Platform Limits</p>
+                    <p className="text-xs text-muted-foreground">
+                      Automatically set limits when platform changes
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetToDefaults}
+                  className="h-8 px-2 text-xs"
+                >
+                  <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                  Reset
+                </Button>
               </div>
 
               {/* Image Type */}
