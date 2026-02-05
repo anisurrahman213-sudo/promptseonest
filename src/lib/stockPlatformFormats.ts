@@ -34,7 +34,7 @@ export const stockPlatforms: StockPlatform[] = [
   {
     id: 'adobe_stock',
     name: 'Adobe Stock',
-    description: 'Filename, Title (max 60), Keywords (max 25)',
+     description: 'Filename, Title (max 60), Description (max 200), Keywords (max 25)',
     icon: '🅰️',
     maxKeywords: 25,
     maxTitleLength: 60,
@@ -231,10 +231,11 @@ export const generateExport = (format: ExportFormat, generations: Generation[]):
   switch (format) {
     case 'adobe_stock':
       return {
-        headers: ['Filename', 'Title', 'Keywords'],
+         headers: ['Filename', 'Title', 'Description', 'Keywords'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 60)),
+           escapeCSV(limitText(g.description, 200)),
           escapeCSV(limitKeywords(g.tags, 25)),
         ]),
         filename: 'adobe-stock-export',
