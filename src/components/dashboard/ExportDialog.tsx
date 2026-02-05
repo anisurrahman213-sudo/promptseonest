@@ -23,7 +23,8 @@ import {
   generateExport, 
   type ExportFormat, 
   type Generation,
-  type StockPlatform
+  type StockPlatform,
+  type ExportOptions
 } from '@/lib/stockPlatformFormats';
 
 interface ExportDialogProps {
@@ -31,6 +32,7 @@ interface ExportDialogProps {
   disabled?: boolean;
   fetchAllForExport?: () => Promise<Generation[]>;
   searchQuery?: string;
+  exportOptions?: ExportOptions;
 }
 
 // Memoized platform item component for better performance
@@ -114,7 +116,7 @@ const PreviewRow = memo(({
 });
 PreviewRow.displayName = 'PreviewRow';
 
-export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery }: ExportDialogProps) {
+export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery, exportOptions }: ExportDialogProps) {
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('adobe_stock');
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -138,8 +140,8 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
 
   // Memoized preview data - only compute when needed
   const previewData = useMemo(() => 
-    generations.length > 0 ? generateExport(selectedFormat, generations) : null,
-    [selectedFormat, generations]
+    generations.length > 0 ? generateExport(selectedFormat, generations, exportOptions) : null,
+    [selectedFormat, generations, exportOptions]
   );
 
   // Optimized export handler with progress tracking
@@ -173,7 +175,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       }
       
       setExportProgress(60);
-      const exportData = generateExport(selectedFormat, dataToExport);
+      const exportData = generateExport(selectedFormat, dataToExport, exportOptions);
 
       setExportProgress(80);
       const csv = [
@@ -204,7 +206,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       setIsLoadingAll(false);
       setExportProgress(0);
     }
-  }, [generations, filterSearchQuery, fetchAllForExport, selectedFormat]);
+  }, [generations, filterSearchQuery, fetchAllForExport, selectedFormat, exportOptions]);
 
   // Handle format selection
   const handleFormatSelect = useCallback((format: ExportFormat) => {
