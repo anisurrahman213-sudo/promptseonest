@@ -276,6 +276,78 @@ const escapeCSV = (text: string): string => {
   return `"${text.replace(/"/g, '""')}"`;
 };
 
+ // Adobe Stock category number mapping
+ // Official categories from: https://helpx.adobe.com/stock/contributor/help/categories.html
+ const adobeStockCategoryMap: Record<string, string> = {
+   'Animals': '1',
+   'Animals/Wildlife': '1',
+   'Buildings and Architecture': '2',
+   'Architecture': '2',
+   'Buildings/Landmarks': '2',
+   'Business': '3',
+   'Drinks': '4',
+   'Food and Drink': '4',
+   'Environment': '5',
+   'The Environment': '5',
+   'Nature': '5',
+   'States of Mind': '6',
+   'Feelings and Emotions': '6',
+   'Food': '7',
+   'Graphic Resources': '8',
+   'Backgrounds/Textures': '8',
+   'Abstract': '8',
+   'Hobbies and Leisure': '9',
+   'Parks/Outdoor': '9',
+   'Industry': '10',
+   'Industrial': '10',
+   'Landscape': '11',
+   'Lifestyle': '12',
+   'People': '13',
+   'Plants and Flowers': '14',
+   'Culture and Religion': '15',
+   'Religion': '15',
+   'Science': '16',
+   'Healthcare/Medical': '16',
+   'Social Issues': '17',
+   'Editorial': '17',
+   'Sports': '18',
+   'Sports/Recreation': '18',
+   'Technology': '19',
+   'Transport': '20',
+   'Transportation': '20',
+   'Travel': '21',
+   'Beauty/Fashion': '12',
+   'Arts': '8',
+   'Celebrities': '17',
+   'Education': '3',
+   'Holidays': '9',
+   'Interiors': '2',
+   'Landmarks': '2',
+   'Miscellaneous': '8',
+   'Objects': '8',
+   'Signs/Symbols': '8',
+   'Vintage': '8',
+   'Illustrations/Clip-Art': '8',
+   'Vectors': '8',
+ };
+ 
+ const getAdobeStockCategoryNumber = (category: string): string => {
+   if (!category) return '';
+   // Check direct mapping
+   if (adobeStockCategoryMap[category]) {
+     return adobeStockCategoryMap[category];
+   }
+   // Try partial match
+   const lowerCategory = category.toLowerCase();
+   for (const [key, value] of Object.entries(adobeStockCategoryMap)) {
+     if (key.toLowerCase().includes(lowerCategory) || lowerCategory.includes(key.toLowerCase())) {
+       return value;
+     }
+   }
+   // Default to Graphic Resources (8) if no match
+   return '8';
+ };
+ 
 const limitKeywords = (tags: string, limit: number): string => {
   const keywords = tags.split(',').map(t => t.trim()).filter(Boolean);
   return keywords.slice(0, limit).join(', ');
@@ -330,13 +402,14 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
     case 'adobe_stock':
        // Adobe Stock Official Format: Filename, Title, Keywords, Category, Releases
        // Title max 70 chars, no commas. Keywords max 50, comma-separated.
+       // Category must be a number (1-21) - see https://helpx.adobe.com/stock/contributor/help/categories.html
       return {
          headers: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
            escapeCSV(limitText(g.title.replace(/,/g, ''), 70)),
            escapeCSV(limitKeywords(g.tags, 50)),
-           escapeCSV(getCategoryValue(g.category || '', overrideCategory)),
+            escapeCSV(getAdobeStockCategoryNumber(getCategoryValue(g.category || '', overrideCategory))),
            escapeCSV(''),
         ]),
         filename: 'adobe-stock-export',
