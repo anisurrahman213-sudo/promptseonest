@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, Image as ImageIcon, Video, Loader2, Sparkles, Expand } from 'lucide-react';
+ import { Upload, X, Image as ImageIcon, Video, Loader2, Sparkles, Expand, Clipboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Lightbox } from '@/components/ui/lightbox';
 import { cn } from '@/lib/utils';
@@ -139,6 +139,49 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
       setTimeout(() => setCompressionFiles([]), 2000);
     }
   }, []);
+
+   // Handle paste from clipboard
+   const handlePaste = useCallback((event: ClipboardEvent) => {
+     if (isProcessing || isCompressing) return;
+     
+     const items = event.clipboardData?.items;
+     if (!items) return;
+     
+     const pastedFiles: File[] = [];
+     
+     for (let i = 0; i < items.length; i++) {
+       const item = items[i];
+       if (item.type.startsWith('image/') || item.type.startsWith('video/')) {
+         const file = item.getAsFile();
+         if (file) {
+           // Create a proper filename for pasted files
+           const extension = item.type.split('/')[1] || 'png';
+           const prefix = item.type.startsWith('video/') ? 'pasted-video' : 'pasted-image';
+           const newFile = new File([file], `${prefix}-${Date.now()}.${extension}`, {
+             type: file.type,
+           });
+           pastedFiles.push(newFile);
+         }
+       }
+     }
+     
+     if (pastedFiles.length > 0) {
+       event.preventDefault();
+       onDrop(pastedFiles);
+     }
+   }, [isProcessing, isCompressing, onDrop]);
+
+   // Add paste event listener
+   useEffect(() => {
+     const handleGlobalPaste = (event: ClipboardEvent) => {
+       handlePaste(event);
+     };
+     
+     document.addEventListener('paste', handleGlobalPaste);
+     return () => {
+       document.removeEventListener('paste', handleGlobalPaste);
+     };
+   }, [handlePaste]);
 
   // Validate images when files change or platform changes
   useEffect(() => {
@@ -297,9 +340,13 @@ export function MediaUploader({ onUpload, isProcessing, maxFiles = 1000, selecte
                   ? 'Drop files here' 
                   : 'Drag & drop files here, or click to select'}
             </motion.p>
-            <p className="text-xs sm:text-sm text-muted-foreground px-4">
-              Images auto-compressed for fast upload. Unlimited files supported.
-            </p>
+             <div className="text-xs sm:text-sm text-muted-foreground px-4 space-y-1">
+               <p>Images auto-compressed for fast upload. Unlimited files supported.</p>
+               <p className="flex items-center justify-center gap-1.5 text-primary/70">
+                 <Clipboard className="w-3 h-3" />
+                 <span>Ctrl+V to paste from clipboard</span>
+               </p>
+             </div>
           </div>
         </div>
       </motion.div>
