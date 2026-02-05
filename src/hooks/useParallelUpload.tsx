@@ -141,19 +141,21 @@ export function useParallelUpload({
       }
 
       // Step 4: Deduct credit and save to database in parallel
+      // IMPORTANT: Use original file.name for Filename column (Adobe Stock requires exact match)
       const [creditResult, saveResult] = await Promise.all([
         supabase.rpc('deduct_credit'),
         supabase
           .from('generations')
           .insert({
             user_id: userId,
-            image_name: data.data.imageName,
+            image_name: file.name, // Use ORIGINAL filename, not AI-generated name
             image_url: publicUrl,
             prompt: data.data.prompt,
             title: data.data.title,
             description: data.data.description,
             tags: data.data.tags,
-            media_type: mediaFile.type
+            media_type: mediaFile.type,
+            category: data.data.category || ''
           })
           .select()
           .single()
