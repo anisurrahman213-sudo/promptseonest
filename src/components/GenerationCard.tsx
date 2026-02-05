@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2, Video, Image as ImageIcon } from 'lucide-react';
+import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2, Video, Image as ImageIcon, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -158,6 +158,14 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
                   </>
                 )}
               </div>
+              
+              {/* Category Badge */}
+              {generation.category && (
+                <div className="absolute top-2 left-16 px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-1 bg-accent/90 text-accent-foreground">
+                  <Folder className="h-3 w-3" />
+                  {generation.category}
+                </div>
+              )}
               
               {/* Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity pointer-events-none" />
