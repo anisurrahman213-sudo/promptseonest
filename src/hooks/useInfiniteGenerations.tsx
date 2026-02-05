@@ -12,6 +12,8 @@ export interface Generation {
   tags: string;
   created_at: string;
   media_type: 'image' | 'video';
+   category?: string;
+   is_editorial?: boolean;
 }
 
 interface UseInfiniteGenerationsOptions {
@@ -137,6 +139,21 @@ export function useInfiniteGenerations(options: UseInfiniteGenerationsOptions = 
     return { success: ids.length, failed: 0 };
   }, []);
 
+   const updateGeneration = useCallback(async (id: string, updates: Partial<Pick<Generation, 'category' | 'is_editorial'>>) => {
+     const { error } = await supabase
+       .from('generations')
+       .update(updates)
+       .eq('id', id);
+ 
+     if (error) {
+       console.error('Error updating generation:', error);
+       return false;
+     }
+ 
+     setGenerations(prev => prev.map(g => g.id === id ? { ...g, ...updates } : g));
+     return true;
+   }, []);
+ 
   const refreshGenerations = useCallback(() => {
     pageRef.current = 1;
     setHasMore(true);
@@ -176,6 +193,7 @@ export function useInfiniteGenerations(options: UseInfiniteGenerationsOptions = 
     addGeneration,
     deleteGeneration,
     deleteMultipleGenerations,
+     updateGeneration,
     refreshGenerations,
     fetchAllForExport,
   };

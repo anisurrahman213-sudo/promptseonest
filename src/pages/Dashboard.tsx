@@ -39,6 +39,7 @@ export default function Dashboard() {
     deleteMultipleGenerations,
     refreshGenerations,
     fetchAllForExport,
+     updateGeneration,
     loading: generationsLoading 
   } = useInfiniteGenerations({ pageSize: 12 });
   const { startProcessing, isProcessing } = useBackgroundProcessor();
@@ -142,6 +143,10 @@ export default function Dashboard() {
     return result;
   };
 
+   const handleUpdateCategory = async (id: string, category: string) => {
+     return await updateGeneration(id, { category });
+   };
+ 
   return (
     <motion.div 
       className="min-h-screen bg-background"
@@ -374,6 +379,7 @@ export default function Dashboard() {
                           generations={filteredGenerations}
                           onDelete={handleDelete}
                           onBulkDelete={handleBulkDelete}
+                           onUpdateCategory={handleUpdateCategory}
                           hasMore={hasMore}
                           loadMore={loadMore}
                           loadingMore={loadingMore}

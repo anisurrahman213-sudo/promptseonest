@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2, Video, Image as ImageIcon, Folder } from 'lucide-react';
+ import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2, Video, Image as ImageIcon, Folder, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,16 +8,65 @@ import { Generation } from '@/hooks/useGenerations';
 import { toast } from 'sonner';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Lightbox } from '@/components/ui/lightbox';
+ import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+ } from '@/components/ui/select';
+ import {
+   Popover,
+   PopoverContent,
+   PopoverTrigger,
+ } from '@/components/ui/popover';
+ 
+ // Standard stock categories
+ const STOCK_CATEGORIES = [
+   "Abstract",
+   "Animals/Wildlife",
+   "Arts",
+   "Backgrounds/Textures",
+   "Beauty/Fashion",
+   "Buildings/Landmarks",
+   "Business",
+   "Celebrities",
+   "Education",
+   "Food and Drink",
+   "Healthcare/Medical",
+   "Holidays",
+   "Industrial",
+   "Interiors",
+   "Miscellaneous",
+   "Nature",
+   "Objects",
+   "Parks/Outdoor",
+   "People",
+   "Religion",
+   "Science",
+   "Signs/Symbols",
+   "Sports/Recreation",
+   "Technology",
+   "Transportation",
+   "Travel",
+   "Vintage",
+   "Editorial",
+   "Illustrations/Clip-Art",
+   "Vectors"
+ ];
 
 interface GenerationCardProps {
   generation: Generation;
   onDelete: (id: string) => void;
+   onUpdateCategory?: (id: string, category: string) => Promise<boolean>;
 }
 
-export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
+ export function GenerationCard({ generation, onDelete, onUpdateCategory }: GenerationCardProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+   const [categoryPopoverOpen, setCategoryPopoverOpen] = useState(false);
+   const [updatingCategory, setUpdatingCategory] = useState(false);
 
   const copyToClipboard = async (text: string, field: string) => {
     await navigator.clipboard.writeText(text);
@@ -32,6 +81,21 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
     }
   };
 
+   const handleCategoryChange = async (newCategory: string) => {
+     if (!onUpdateCategory || newCategory === generation.category) return;
+     
+     setUpdatingCategory(true);
+     const success = await onUpdateCategory(generation.id, newCategory);
+     setUpdatingCategory(false);
+     
+     if (success) {
+       toast.success(`Category updated to "${newCategory}"`);
+       setCategoryPopoverOpen(false);
+     } else {
+       toast.error('Failed to update category');
+     }
+   };
+ 
   const CopyButton = ({ text, field, size = 'default' }: { text: string; field: string; size?: 'default' | 'sm' }) => (
     <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
       <Button
@@ -161,10 +225,43 @@ export function GenerationCard({ generation, onDelete }: GenerationCardProps) {
               
               {/* Category Badge */}
               {generation.category && (
-                <div className="absolute top-2 left-16 px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-1 bg-accent/90 text-accent-foreground">
-                  <Folder className="h-3 w-3" />
-                  {generation.category}
-                </div>
+                 <Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
+                   <PopoverTrigger asChild>
+                     <button 
+                       className="absolute top-2 left-16 px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-1 bg-accent/90 text-accent-foreground hover:bg-accent transition-colors cursor-pointer"
+                       onClick={(e) => e.stopPropagation()}
+                     >
+                       <Folder className="h-3 w-3" />
+                       {generation.category}
+                       <Pencil className="h-2.5 w-2.5 opacity-60" />
+                     </button>
+                   </PopoverTrigger>
+                   <PopoverContent 
+                     className="w-64 p-2" 
+                     align="start"
+                     onClick={(e) => e.stopPropagation()}
+                   >
+                     <div className="space-y-2">
+                       <p className="text-xs font-medium text-muted-foreground px-1">Change Category</p>
+                       <Select 
+                         value={generation.category} 
+                         onValueChange={handleCategoryChange}
+                         disabled={updatingCategory}
+                       >
+                         <SelectTrigger className="h-9 text-xs">
+                           <SelectValue placeholder="Select category" />
+                         </SelectTrigger>
+                         <SelectContent className="max-h-60">
+                           {STOCK_CATEGORIES.map((cat) => (
+                             <SelectItem key={cat} value={cat} className="text-xs">
+                               {cat}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </PopoverContent>
+                 </Popover>
               )}
               
               {/* Gradient Overlay */}
