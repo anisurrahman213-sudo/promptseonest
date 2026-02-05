@@ -333,6 +333,10 @@ export default function Dashboard() {
                           generations={filteredGenerations} 
                           fetchAllForExport={fetchAllForExport}
                           searchQuery={searchQuery}
+                          exportOptions={{
+                            category: metadataSettings.category,
+                            editorialStatus: metadataSettings.editorialStatus,
+                          }}
                         />
                       </motion.div>
                     )}
