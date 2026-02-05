@@ -13,6 +13,7 @@ interface VirtualGenerationListProps {
   generations: Generation[];
   onDelete: (id: string) => void;
   onBulkDelete: (ids: string[]) => Promise<{ success: number; failed: number }>;
+   onUpdateCategory?: (id: string, category: string) => Promise<boolean>;
   hasMore: boolean;
   loadMore: () => void;
   loadingMore: boolean;
@@ -25,6 +26,7 @@ export function VirtualGenerationList({
   generations,
   onDelete,
   onBulkDelete,
+   onUpdateCategory,
   hasMore,
   loadMore,
   loadingMore,
@@ -264,6 +266,7 @@ export function VirtualGenerationList({
                 <MemoizedGenerationCard
                   generation={generation}
                   onDelete={onDelete}
+                   onUpdateCategory={onUpdateCategory}
                 />
               </div>
             </motion.div>
