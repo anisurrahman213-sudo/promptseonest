@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
+ import { useEffect, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, Image as ImageIcon, Loader2, Sparkles } from 'lucide-react';
+ import { Upload, X, Image as ImageIcon, Loader2, Sparkles, Clipboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -18,6 +19,7 @@ interface ImageUploaderProps {
 
 export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUploaderProps) {
   const [files, setFiles] = useState<ImageFile[]>([]);
+   const containerRef = useRef<HTMLDivElement>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map(file => ({
@@ -30,6 +32,48 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
       return combined;
     });
   }, [maxFiles]);
+
+   // Handle paste from clipboard
+   const handlePaste = useCallback((event: ClipboardEvent) => {
+     if (isProcessing) return;
+     
+     const items = event.clipboardData?.items;
+     if (!items) return;
+     
+     const imageFiles: File[] = [];
+     
+     for (let i = 0; i < items.length; i++) {
+       const item = items[i];
+       if (item.type.startsWith('image/')) {
+         const file = item.getAsFile();
+         if (file) {
+           // Create a proper filename for pasted images
+           const extension = item.type.split('/')[1] || 'png';
+           const newFile = new File([file], `pasted-image-${Date.now()}.${extension}`, {
+             type: file.type,
+           });
+           imageFiles.push(newFile);
+         }
+       }
+     }
+     
+     if (imageFiles.length > 0) {
+       event.preventDefault();
+       onDrop(imageFiles);
+     }
+   }, [isProcessing, onDrop]);
+
+   // Add paste event listener
+   useEffect(() => {
+     const handleGlobalPaste = (event: ClipboardEvent) => {
+       handlePaste(event);
+     };
+     
+     document.addEventListener('paste', handleGlobalPaste);
+     return () => {
+       document.removeEventListener('paste', handleGlobalPaste);
+     };
+   }, [handlePaste]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -84,7 +128,7 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
   const dropzoneProps = getRootProps();
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+     <div className="space-y-4 sm:space-y-6" ref={containerRef}>
       <motion.div
         className={cn(
           "relative border-2 border-dashed rounded-xl sm:rounded-2xl p-6 sm:p-10 transition-all duration-300 cursor-pointer group touch-manipulation",
@@ -138,10 +182,16 @@ export function ImageUploader({ onUpload, isProcessing, maxFiles = 10 }: ImageUp
             >
               {isDragActive ? 'Drop images here' : 'Tap to upload images'}
             </motion.p>
-            <p className="text-xs sm:text-sm text-muted-foreground px-4">
-              <span className="hidden sm:inline">or drag & drop • </span>
-              JPG, PNG up to {maxFiles} files
-            </p>
+             <div className="text-xs sm:text-sm text-muted-foreground px-4 space-y-1">
+               <p>
+                 <span className="hidden sm:inline">Drag & drop • </span>
+                 JPG, PNG up to {maxFiles} files
+               </p>
+               <p className="flex items-center justify-center gap-1.5 text-primary/70">
+                 <Clipboard className="w-3 h-3" />
+                 <span>Ctrl+V to paste from clipboard</span>
+               </p>
+             </div>
           </div>
         </div>
       </motion.div>
