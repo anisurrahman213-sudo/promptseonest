@@ -461,6 +461,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_credit_cost: { Args: never; Returns: number }
       get_lock_remaining_seconds: { Args: { p_email: string }; Returns: number }
       get_user_email: { Args: { user_uuid: string }; Returns: string }
       has_role: {
