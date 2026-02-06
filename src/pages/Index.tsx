@@ -171,11 +171,11 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-              className="mb-4 sm:mb-6 text-3xl sm:text-5xl lg:text-7xl font-bold leading-tight tracking-tight md:text-[sidebar-accent-foreground] text-primary-foreground"
+              className="mb-4 sm:mb-6 text-3xl sm:text-5xl lg:text-7xl font-bold leading-tight tracking-tight"
               style={heroTextStyle}
             >
-              {t('landing.title')}
-              <span className={heroTextColor ? '' : 'block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent'}>
+              <span className="text-foreground">{t('landing.title')}</span>
+              <span className={heroTextColor ? '' : 'block text-gradient animate-pulse'}>
                 {t('landing.titleHighlight')}
               </span>
             </motion.h1>
