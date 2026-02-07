@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateExport, stockPlatforms, type Generation } from './stockPlatformFormats';
+import { generateExport, stockPlatforms, validateAdobeStockExport, type Generation } from './stockPlatformFormats';
 
 describe('Adobe Stock CSV Export', () => {
   const mockGenerations: Generation[] = [
@@ -144,5 +144,98 @@ describe('Adobe Stock CSV Export', () => {
     const result = generateExport('adobe_stock', mockGenerations);
     
     expect(result.filename).toBe('adobe-stock-metadata');
+  });
+
+  // New tests for title cleaning
+  it('should remove colons from title', () => {
+    const generation: Generation = {
+      ...mockGenerations[0],
+      title: 'Sunset: A Beautiful View: Nature Photography',
+    };
+    
+    const result = generateExport('adobe_stock', [generation]);
+    const titleCell = result.rows[0][1];
+    
+    expect(titleCell).not.toContain(':');
+    expect(titleCell).toBe('"Sunset - A Beautiful View - Nature Photography"');
+  });
+
+  it('should clean extra whitespace in title', () => {
+    const generation: Generation = {
+      ...mockGenerations[0],
+      title: 'Beautiful   Sunset   Over   Mountains',
+    };
+    
+    const result = generateExport('adobe_stock', [generation]);
+    const titleCell = result.rows[0][1];
+    
+    expect(titleCell).toBe('"Beautiful Sunset Over Mountains"');
+  });
+
+  // Validation tests
+  it('should validate and return error for empty title', () => {
+    const generationsWithEmptyTitle: Generation[] = [
+      {
+        ...mockGenerations[0],
+        title: '',
+      },
+    ];
+    
+    const validation = validateAdobeStockExport(generationsWithEmptyTitle);
+    
+    expect(validation.isValid).toBe(false);
+    expect(validation.errors.length).toBeGreaterThan(0);
+    expect(validation.errors[0].field).toBe('Title');
+  });
+
+  it('should validate and return error for empty keywords', () => {
+    const generationsWithEmptyTags: Generation[] = [
+      {
+        ...mockGenerations[0],
+        tags: '',
+      },
+    ];
+    
+    const validation = validateAdobeStockExport(generationsWithEmptyTags);
+    
+    expect(validation.isValid).toBe(false);
+    expect(validation.errors.length).toBeGreaterThan(0);
+    expect(validation.errors[0].field).toBe('Keywords');
+  });
+
+  it('should validate and return errors for both empty title and keywords', () => {
+    const generationsWithBothEmpty: Generation[] = [
+      {
+        ...mockGenerations[0],
+        title: '',
+        tags: '',
+      },
+    ];
+    
+    const validation = validateAdobeStockExport(generationsWithBothEmpty);
+    
+    expect(validation.isValid).toBe(false);
+    expect(validation.errors.length).toBe(2);
+  });
+
+  it('should pass validation when title and keywords are present', () => {
+    const validation = validateAdobeStockExport(mockGenerations);
+    
+    expect(validation.isValid).toBe(true);
+    expect(validation.errors.length).toBe(0);
+  });
+
+  it('should validate whitespace-only title as empty', () => {
+    const generationsWithWhitespaceTitle: Generation[] = [
+      {
+        ...mockGenerations[0],
+        title: '   ',
+      },
+    ];
+    
+    const validation = validateAdobeStockExport(generationsWithWhitespaceTitle);
+    
+    expect(validation.isValid).toBe(false);
+    expect(validation.errors[0].field).toBe('Title');
   });
 });

@@ -358,6 +358,51 @@ const limitText = (text: string, limit: number): string => {
   return text.slice(0, limit);
 };
 
+// Clean title for Adobe Stock: remove colons, ensure natural sentence
+const cleanAdobeStockTitle = (title: string): string => {
+  if (!title) return '';
+  // Remove colons and clean up
+  let cleaned = title.replace(/:/g, ' -').replace(/\s+/g, ' ').trim();
+  // Limit to 200 characters
+  return cleaned.slice(0, 200);
+};
+
+// Validation result interface
+export interface ExportValidation {
+  isValid: boolean;
+  errors: { row: number; field: string; message: string }[];
+}
+
+// Validate generations for Adobe Stock export
+export const validateAdobeStockExport = (generations: Generation[]): ExportValidation => {
+  const errors: { row: number; field: string; message: string }[] = [];
+  
+  generations.forEach((g, index) => {
+    // Check for empty title
+    if (!g.title || g.title.trim() === '') {
+      errors.push({
+        row: index + 1,
+        field: 'Title',
+        message: `Row ${index + 1}: Title is required for "${g.image_name}"`,
+      });
+    }
+    
+    // Check for empty keywords
+    if (!g.tags || g.tags.trim() === '') {
+      errors.push({
+        row: index + 1,
+        field: 'Keywords',
+        message: `Row ${index + 1}: Keywords are required for "${g.image_name}"`,
+      });
+    }
+  });
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+};
+
 export interface ExportResult {
   headers: string[];
   rows: string[][];
@@ -400,26 +445,29 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
 
   switch (format) {
     case 'adobe_stock':
-      // Adobe Stock Official CSV Format (2024 Updated)
+      // Adobe Stock Contributor CSV Format (2024 Updated)
       // Reference: https://helpx.adobe.com/stock/contributor/help/keywording.html
       // Header: Filename,Title,Keywords,Category,Editorial,Mature content,Releases
-      // - Filename: Full name with extension (must match asset exactly)
-      // - Title: Short description, max 200 characters
-      // - Keywords: Comma-separated in one cell, max 49, ordered by relevance
+      // Rules:
+      // - Filename: Must match uploaded asset name exactly (no path)
+      // - Title: Clean natural sentence, max 200 chars, no keyword stuffing, avoid colons
+      // - Keywords: Comma-separated in ONE CELL, max 49, first 10 are priority
       // - Category: Numeric code (1-21)
-      // - Editorial: No (default) or Yes
-      // - Mature content: No (default) or Yes
-      // - Releases: Model/Property release names (optional)
+      // - Editorial: "No" (default) or "Yes"
+      // - Mature content: "No" (default) or "Yes"
+      // - Releases: Optional (blank if none)
+      // - UTF-8 encoding required
+      // - If Title or Keywords empty → prevent export (handled by validateAdobeStockExport)
       return {
         headers: ['Filename', 'Title', 'Keywords', 'Category', 'Editorial', 'Mature content', 'Releases'],
         rows: generations.map(g => [
-          escapeCSV(g.image_name),
-          escapeCSV(limitText(g.title, 200)),
-          escapeCSV(limitKeywords(g.tags, 49)),
+          escapeCSV(g.image_name), // Exact filename, no path
+          escapeCSV(cleanAdobeStockTitle(g.title)), // Clean title, no colons
+          escapeCSV(limitKeywords(g.tags, 49)), // Max 49 keywords, comma-separated
           escapeCSV(getAdobeStockCategoryNumber(getCategoryValue(g.category || '', overrideCategory))),
           escapeCSV(editorialStatus === 'editorial' ? 'Yes' : 'No'),
-          escapeCSV('No'),
-          escapeCSV(''),
+          escapeCSV('No'), // Mature content default
+          escapeCSV(''), // Releases optional
         ]),
         filename: 'adobe-stock-metadata',
       };

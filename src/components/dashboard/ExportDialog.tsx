@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { 
   stockPlatforms, 
   generateExport, 
+  validateAdobeStockExport,
   type ExportFormat, 
   type Generation,
   type StockPlatform,
@@ -198,7 +199,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
     [selectedFormat, generations, exportOptions]
   );
 
-  // Optimized export handler with progress tracking
+  // Optimized export handler with progress tracking and validation
   const handleExport = useCallback(async () => {
     if (generations.length === 0) {
       toast.error('No generations to export');
@@ -229,6 +230,22 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       }
       
       setExportProgress(60);
+
+      // Validate Adobe Stock export - prevent export if Title or Keywords are empty
+      if (selectedFormat === 'adobe_stock') {
+        const validation = validateAdobeStockExport(dataToExport);
+        if (!validation.isValid) {
+          const errorMessages = validation.errors.slice(0, 3).map(e => e.message).join('\n');
+          const moreErrors = validation.errors.length > 3 ? `\n...and ${validation.errors.length - 3} more errors` : '';
+          toast.error(`Export blocked: Missing required fields\n${errorMessages}${moreErrors}`, {
+            duration: 6000,
+          });
+          setIsExporting(false);
+          setExportProgress(0);
+          return;
+        }
+      }
+
       const exportData = generateExport(selectedFormat, dataToExport, exportOptions);
 
       setExportProgress(80);
