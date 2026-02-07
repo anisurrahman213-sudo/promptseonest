@@ -8,6 +8,7 @@ import { useFeatureCards } from "@/hooks/useFeatureCards";
 import { useSiteSetting } from "@/hooks/useSiteSettings";
 import { motion } from "framer-motion";
 import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2, Calendar, LucideIcon } from "lucide-react";
+import DemoVideoSection from "@/components/landing/DemoVideoSection";
 
 const iconMap: Record<string, LucideIcon> = {
   Sparkles,
@@ -250,6 +251,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Demo Video Section */}
+      <DemoVideoSection />
 
       {/* Features Section */}
       <section className="py-12 sm:py-24 bg-muted/30">
