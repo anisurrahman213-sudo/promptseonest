@@ -39,13 +39,13 @@ export const stockPlatforms: StockPlatform[] = [
   {
     id: 'adobe_stock',
     name: 'Adobe Stock',
-    description: 'Filename, Title, Keywords (max 49), Category, Releases',
+    description: 'Filename, Title, Keywords (max 49), Category, Editorial, Mature content, Releases',
     icon: '🅰️',
     maxKeywords: 49,
     maxTitleLength: 200,
     maxDescriptionLength: 0,
-    csvColumns: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
-    guidelines: 'Adobe Stock CSV Format:\n• Filename: Full name with extension (image.jpg, video.mov)\n• Title: Short description (max 200 characters)\n• Keywords: Comma-separated, max 49, ordered by relevance\n• Category: Numeric code (1-21)\n• Releases: Model/Property release names\n\nIMPORTANT:\n• Column names must match exactly in English\n• CSV max 5000 rows or 5MB\n• Upload images FIRST, then CSV\n• Filename must match exactly',
+    csvColumns: ['Filename', 'Title', 'Keywords', 'Category', 'Editorial', 'Mature content', 'Releases'],
+    guidelines: 'Adobe Stock CSV Format:\n• Filename: Full name with extension (must match asset exactly)\n• Title: Short description (max 200 characters)\n• Keywords: Comma-separated in one cell, max 49, ordered by relevance\n• Category: Numeric code (1-21)\n• Editorial: No (default) or Yes\n• Mature content: No (default) or Yes\n• Releases: Model/Property release names (optional)\n\nIMPORTANT:\n• Column names must match exactly in English\n• CSV must be UTF-8 encoded\n• CSV max 5000 rows or 5MB\n• Upload images FIRST, then CSV\n• Filename must match exactly or metadata won\'t apply',
   },
   {
     id: 'shutterstock',
@@ -402,18 +402,23 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
     case 'adobe_stock':
       // Adobe Stock Official CSV Format (2024 Updated)
       // Reference: https://helpx.adobe.com/stock/contributor/help/keywording.html
-      // Filename: Full name with extension (image.jpg, video.mov)
-      // Title: Short description, max 200 characters
-      // Keywords: Comma-separated, max 49, ordered by relevance
-      // Category: Numeric code (1-21)
-      // Releases: Model/Property release names
+      // Header: Filename,Title,Keywords,Category,Editorial,Mature content,Releases
+      // - Filename: Full name with extension (must match asset exactly)
+      // - Title: Short description, max 200 characters
+      // - Keywords: Comma-separated in one cell, max 49, ordered by relevance
+      // - Category: Numeric code (1-21)
+      // - Editorial: No (default) or Yes
+      // - Mature content: No (default) or Yes
+      // - Releases: Model/Property release names (optional)
       return {
-        headers: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
+        headers: ['Filename', 'Title', 'Keywords', 'Category', 'Editorial', 'Mature content', 'Releases'],
         rows: generations.map(g => [
           escapeCSV(g.image_name),
           escapeCSV(limitText(g.title, 200)),
           escapeCSV(limitKeywords(g.tags, 49)),
           escapeCSV(getAdobeStockCategoryNumber(getCategoryValue(g.category || '', overrideCategory))),
+          escapeCSV(editorialStatus === 'editorial' ? 'Yes' : 'No'),
+          escapeCSV('No'),
           escapeCSV(''),
         ]),
         filename: 'adobe-stock-metadata',
