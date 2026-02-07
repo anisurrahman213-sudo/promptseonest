@@ -32,9 +32,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Mail, Phone, User, MessageCircle, History, Send, Video } from 'lucide-react';
+import { Loader2, Plus, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Mail, Phone, User, MessageCircle, History, Send, Video, Play } from 'lucide-react';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
+import { DemoVideoManagement } from '@/components/admin/DemoVideoManagement';
 import { GenerationsManagement } from '@/components/admin/GenerationsManagement';
 import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog';
 import { UserFiltersComponent, filterUsers, UserFilters } from '@/components/admin/UserFilters';
@@ -240,7 +241,7 @@ export default function AdminDashboard() {
 
         {/* Tabs for different admin sections */}
         <Tabs defaultValue="users" className="space-y-6">
-           <TabsList className="grid w-full max-w-4xl grid-cols-6">
+           <TabsList className="grid w-full max-w-5xl grid-cols-7">
             <TabsTrigger value="users" className="gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Users</span>
@@ -256,6 +257,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="tutorials" className="gap-2">
               <Video className="h-4 w-4" />
               <span className="hidden sm:inline">Tutorials</span>
+            </TabsTrigger>
+            <TabsTrigger value="demo" className="gap-2">
+              <Play className="h-4 w-4" />
+              <span className="hidden sm:inline">Demo</span>
             </TabsTrigger>
             <TabsTrigger value="hero" className="gap-2">
               <Wallpaper className="h-4 w-4" />
@@ -459,6 +464,10 @@ export default function AdminDashboard() {
  
           <TabsContent value="tutorials">
             <TutorialManagement />
+          </TabsContent>
+
+          <TabsContent value="demo">
+            <DemoVideoManagement />
           </TabsContent>
 
           <TabsContent value="hero">
