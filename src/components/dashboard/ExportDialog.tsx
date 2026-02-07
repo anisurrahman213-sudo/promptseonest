@@ -290,7 +290,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           <span className="hidden sm:inline">Export CSV</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5 text-primary" />
@@ -302,8 +302,8 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'platforms' | 'preview')} className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'platforms' | 'preview')} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
             <TabsTrigger value="platforms" className="gap-2">
               <List className="h-4 w-4" />
               Platforms ({filteredPlatforms.length})
@@ -319,9 +319,9 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="platforms" className="mt-4 flex-1 min-h-0">
+          <TabsContent value="platforms" className="mt-4 flex-1 min-h-0 overflow-hidden flex flex-col">
             {/* Search */}
-            <div className="relative mb-3">
+            <div className="relative mb-3 flex-shrink-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search platforms..."
@@ -331,11 +331,11 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
               />
             </div>
 
-            <ScrollArea className="h-[250px] pr-4">
+            <ScrollArea className="flex-1 pr-4">
               <RadioGroup
                 value={selectedFormat}
                 onValueChange={(value) => handleFormatSelect(value as ExportFormat)}
-                className="space-y-2"
+                className="space-y-2 pb-2"
               >
                 {filteredPlatforms.map((platform) => (
                   <PlatformItem
