@@ -39,7 +39,7 @@ export const stockPlatforms: StockPlatform[] = [
   {
     id: 'adobe_stock',
     name: 'Adobe Stock',
-    description: 'Filename, Title (max 200), Keywords (max 49), Category (numeric)',
+    description: 'Filename, Title, Keywords (max 49), Category, Releases',
     icon: '🅰️',
     maxKeywords: 49,
     maxTitleLength: 200,
@@ -50,13 +50,13 @@ export const stockPlatforms: StockPlatform[] = [
   {
     id: 'shutterstock',
     name: 'Shutterstock',
-     description: 'Filename, Description (max 200), Keywords (max 50), Categories, Editorial',
+    description: 'Filename, Description, Keywords (max 50), Category, Editorial',
     icon: '📷',
     maxKeywords: 50,
     maxTitleLength: 200,
     maxDescriptionLength: 200,
-     csvColumns: ['Filename', 'Description', 'Keywords', 'Categories', 'Editorial', 'Mature Content', 'Illustration'],
-     guidelines: 'Shutterstock uses Description (not Title). Keywords comma-separated. Categories 1-2 numbers. Editorial: yes/no. Max 50 keywords.',
+    csvColumns: ['Filename', 'Description', 'Keywords', 'Categories', 'Editorial', 'Mature Content', 'Illustration'],
+    guidelines: 'Shutterstock uses Description (not Title). Keywords comma-separated. Categories 1-2 numbers. Editorial: yes/no. Max 50 keywords.',
   },
   {
     id: 'istock',
