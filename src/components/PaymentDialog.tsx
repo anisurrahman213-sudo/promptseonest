@@ -226,11 +226,11 @@ export function PaymentDialog({ open, onOpenChange, plan }: PaymentDialogProps) 
                   WhatsApp: +880 1711-464759
                 </a>
                 <a
-                  href="mailto:support@promptseonest.com?subject=Credit%20Purchase%20Request"
+                  href="mailto:anisurrahman213@gmail.com?subject=Credit%20Purchase%20Request"
                   className="flex items-center gap-2 text-sm text-primary hover:underline"
                 >
                   <Mail className="h-4 w-4" />
-                  Email: support@promptseonest.com
+                  Email: anisurrahman213@gmail.com
                 </a>
               </div>
             </div>
