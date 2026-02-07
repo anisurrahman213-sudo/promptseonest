@@ -8,7 +8,7 @@ import { Header } from '@/components/layout/Header';
 import { PaymentDialog } from '@/components/PaymentDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { usePricingPlans, PricingPlan } from '@/hooks/usePricingPlans';
-import { Check, Sparkles, CreditCard, Crown, Loader2 } from 'lucide-react';
+import { Check, Sparkles, CreditCard, Crown, MessageSquare, Mail } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Pricing() {
@@ -132,13 +132,36 @@ export default function Pricing() {
           ))}
         </div>
 
-        <div className="text-center mt-8 sm:mt-12">
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Need more credits or custom plans?{' '}
-            <a href="mailto:support@promptnest.ai" className="text-primary hover:underline">
-              Contact us
-            </a>
-          </p>
+        {/* Contact Section */}
+        <div className="mt-12 sm:mt-16 max-w-2xl mx-auto">
+          <Card className="bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 border-primary/20">
+            <CardContent className="p-6 sm:p-8 text-center">
+              <h3 className="font-display text-lg sm:text-xl font-semibold mb-2">
+                Need more credits or custom plans?
+              </h3>
+              <p className="text-muted-foreground text-sm sm:text-base mb-6">
+                Contact us for bulk pricing, enterprise solutions, or any questions
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                <a
+                  href="https://wa.me/8801711464759?text=Hi%2C%20I%20want%20to%20inquire%20about%20custom%20plans%20for%20Prompt%20SEO%20Nest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" className="w-full sm:w-auto gap-2 border-emerald-500/50 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-600">
+                    <MessageSquare className="h-4 w-4" />
+                    WhatsApp
+                  </Button>
+                </a>
+                <a href="mailto:anisurrahman213@gmail.com?subject=Custom%20Plan%20Inquiry%20-%20Prompt%20SEO%20Nest">
+                  <Button variant="outline" className="w-full sm:w-auto gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email Us
+                  </Button>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
 
