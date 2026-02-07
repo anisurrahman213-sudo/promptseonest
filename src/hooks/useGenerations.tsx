@@ -66,10 +66,43 @@ export function useGenerations() {
     return true;
   };
 
+  const updateGeneration = async (id: string, data: Partial<Generation>): Promise<boolean> => {
+    const { error } = await supabase
+      .from('generations')
+      .update(data)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating generation:', error);
+      return false;
+    }
+
+    setGenerations(prev => prev.map(g => 
+      g.id === id ? { ...g, ...data } : g
+    ));
+    return true;
+  };
+
+  const updateCategory = async (id: string, category: string): Promise<boolean> => {
+    return updateGeneration(id, { category });
+  };
+
+  const updateMetadata = async (id: string, data: Partial<Generation>): Promise<boolean> => {
+    return updateGeneration(id, data);
+  };
+
   const refreshGenerations = () => {
     setLoading(true);
     fetchGenerations();
   };
 
-  return { generations, loading, addGeneration, deleteGeneration, refreshGenerations };
+  return { 
+    generations, 
+    loading, 
+    addGeneration, 
+    deleteGeneration, 
+    updateCategory,
+    updateMetadata,
+    refreshGenerations 
+  };
 }
