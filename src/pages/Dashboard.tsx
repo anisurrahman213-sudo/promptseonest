@@ -146,7 +146,11 @@ export default function Dashboard() {
    const handleUpdateCategory = async (id: string, category: string) => {
      return await updateGeneration(id, { category });
    };
- 
+
+   const handleUpdateMetadata = async (id: string, data: Partial<typeof generations[0]>) => {
+     return await updateGeneration(id, data);
+   };
+
   return (
     <motion.div 
       className="min-h-screen bg-background"
@@ -380,6 +384,7 @@ export default function Dashboard() {
                           onDelete={handleDelete}
                           onBulkDelete={handleBulkDelete}
                            onUpdateCategory={handleUpdateCategory}
+                          onUpdateMetadata={handleUpdateMetadata}
                           hasMore={hasMore}
                           loadMore={loadMore}
                           loadingMore={loadingMore}

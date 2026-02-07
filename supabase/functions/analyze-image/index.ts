@@ -60,6 +60,64 @@ interface MetadataSettings {
   categoryLanguage?: string;
 }
 
+// Forbidden words that should NEVER appear in stock metadata
+const FORBIDDEN_WORDS = [
+  'watermark', 'watermarked', 'logo', 'signature', 'copyright', 'copyrighted',
+  'text overlay', 'overlay text', 'branded', 'branding', 'stamp', 'stamped',
+  'marked', 'marker', 'insignia', 'emblem', 'seal', 'stock photo', 'stock image',
+  'sample', 'preview', 'demo', 'placeholder', 'licensed', 'royalty'
+];
+
+const FORBIDDEN_PATTERNS = [
+  /\bwater\s*mark(ed|s|ing)?\b/gi,
+  /\blogo(s|'s)?\b/gi,
+  /\bcopyright(ed)?\b/gi,
+  /\bsignature(s)?\b/gi,
+  /\btext\s+overlay(s)?\b/gi,
+  /\bbrand(ed|ing|s)?\b/gi,
+  /\bstamp(ed|s)?\b/gi,
+  /\bstock\s+(photo|image)(s)?\b/gi,
+  /\bsample\s*(image|photo)?\b/gi,
+  /\bplaceholder\b/gi,
+];
+
+function removeForbiddenWords(text: string): string {
+  if (!text) return text;
+  let cleaned = text;
+  
+  for (const word of FORBIDDEN_WORDS) {
+    const regex = new RegExp(`\\b${word.replace(/\s+/g, '\\s+')}\\b`, 'gi');
+    cleaned = cleaned.replace(regex, '');
+  }
+  
+  for (const pattern of FORBIDDEN_PATTERNS) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+  
+  return cleaned.replace(/,\s*,/g, ',').replace(/\s+/g, ' ').replace(/,\s*$/g, '').replace(/^\s*,/g, '').trim();
+}
+
+function cleanTags(tags: string): string {
+  if (!tags) return tags;
+  const tagList = tags.split(',').map(t => t.trim()).filter(Boolean);
+  const cleanedTags = tagList.filter(tag => {
+    const lowerTag = tag.toLowerCase();
+    return !FORBIDDEN_WORDS.some(word => lowerTag.includes(word.toLowerCase()));
+  });
+  return cleanedTags.join(', ');
+}
+
+function findForbiddenWords(text: string): string[] {
+  if (!text) return [];
+  const found: string[] = [];
+  for (const word of FORBIDDEN_WORDS) {
+    const regex = new RegExp(`\\b${word.replace(/\s+/g, '\\s+')}\\b`, 'gi');
+    const matches = text.match(regex);
+    if (matches) found.push(...matches);
+  }
+  return [...new Set(found)];
+}
+
 const platformNames: Record<string, string> = {
   adobe_stock: "Adobe Stock",
   shutterstock: "Shutterstock",
@@ -442,17 +500,38 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Apply content quality filter - remove forbidden words
+    const filteredPrompt = removeForbiddenWords(analysisResult.prompt);
+    const filteredTitle = removeForbiddenWords(analysisResult.title);
+    const filteredDescription = removeForbiddenWords(analysisResult.description);
+    const filteredTags = cleanTags(analysisResult.tags);
+    
+    // Collect any words that were filtered
+    const allFilteredWords = [
+      ...findForbiddenWords(analysisResult.prompt),
+      ...findForbiddenWords(analysisResult.title),
+      ...findForbiddenWords(analysisResult.description),
+      ...findForbiddenWords(analysisResult.tags),
+    ];
+    const uniqueFilteredWords = [...new Set(allFilteredWords)];
+    
+    if (uniqueFilteredWords.length > 0) {
+      console.log(`⚠️ Filtered forbidden words: ${uniqueFilteredWords.join(', ')}`);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         data: {
-          prompt: analysisResult.prompt,
-          title: analysisResult.title,
-          description: analysisResult.description,
-          tags: analysisResult.tags,
+          prompt: filteredPrompt,
+          title: filteredTitle,
+          description: filteredDescription,
+          tags: filteredTags,
           category: stockCategories.includes(analysisResult.category) ? analysisResult.category : "Objects",
           imageName: imageName || `uploaded-${mediaType}`,
           mediaType: mediaType,
+          wasFiltered: uniqueFilteredWords.length > 0,
+          filteredWords: uniqueFilteredWords,
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -1,5 +1,5 @@
-import { useState } from 'react';
- import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2, Video, Image as ImageIcon, Folder, Pencil } from 'lucide-react';
+import { useState, useCallback } from 'react';
+ import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2, Video, Image as ImageIcon, Folder, Pencil, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,9 @@ import { Generation } from '@/hooks/useGenerations';
 import { toast } from 'sonner';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Lightbox } from '@/components/ui/lightbox';
+import { validateAndCleanContent, ContentIssue } from '@/lib/contentQualityFilter';
+import { ContentQualityWarning } from '@/components/dashboard/ContentQualityWarning';
+import { supabase } from '@/integrations/supabase/client';
  import {
    Select,
    SelectContent,
@@ -59,14 +62,117 @@ interface GenerationCardProps {
   generation: Generation;
   onDelete: (id: string) => void;
    onUpdateCategory?: (id: string, category: string) => Promise<boolean>;
+  onUpdateMetadata?: (id: string, data: Partial<Generation>) => Promise<boolean>;
 }
 
- export function GenerationCard({ generation, onDelete, onUpdateCategory }: GenerationCardProps) {
+ export function GenerationCard({ generation, onDelete, onUpdateCategory, onUpdateMetadata }: GenerationCardProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
    const [categoryPopoverOpen, setCategoryPopoverOpen] = useState(false);
    const [updatingCategory, setUpdatingCategory] = useState(false);
+  const [contentIssues, setContentIssues] = useState<ContentIssue[]>([]);
+  const [isFixing, setIsFixing] = useState(false);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const [showWarning, setShowWarning] = useState(true);
+
+  // Check for content quality issues
+  const checkContentQuality = useCallback(() => {
+    const result = validateAndCleanContent({
+      title: generation.title,
+      description: generation.description,
+      tags: generation.tags,
+      prompt: generation.prompt,
+    });
+    setContentIssues(result.issues);
+    return result;
+  }, [generation]);
+
+  // Auto-fix content issues
+  const handleAutoFix = useCallback(async () => {
+    if (!onUpdateMetadata) return;
+    
+    setIsFixing(true);
+    const result = validateAndCleanContent({
+      title: generation.title,
+      description: generation.description,
+      tags: generation.tags,
+      prompt: generation.prompt,
+    });
+
+    const success = await onUpdateMetadata(generation.id, {
+      title: result.autoCleanedData.title,
+      description: result.autoCleanedData.description,
+      tags: result.autoCleanedData.tags,
+      prompt: result.autoCleanedData.prompt,
+    });
+
+    setIsFixing(false);
+    
+    if (success) {
+      setContentIssues([]);
+      toast.success('সমস্যাযুক্ত শব্দগুলো সরিয়ে দেওয়া হয়েছে');
+    }
+  }, [generation, onUpdateMetadata]);
+
+  // Re-analyze the image
+  const handleReanalyze = useCallback(async () => {
+    setIsReanalyzing(true);
+    
+    try {
+      // Fetch the image and convert to base64
+      const response = await fetch(generation.image_url);
+      const blob = await response.blob();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      // Call the analyze-image function
+      const { data, error } = await supabase.functions.invoke('analyze-image', {
+        body: {
+          imageBase64: base64,
+          imageName: generation.image_name,
+          mediaType: generation.media_type,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success && onUpdateMetadata) {
+        const success = await onUpdateMetadata(generation.id, {
+          prompt: data.data.prompt,
+          title: data.data.title,
+          description: data.data.description,
+          tags: data.data.tags,
+          category: data.data.category,
+        });
+
+        if (success) {
+          setContentIssues([]);
+          toast.success('পুনরায় বিশ্লেষণ সম্পন্ন হয়েছে');
+        }
+      }
+    } catch (error) {
+      console.error('Re-analyze error:', error);
+      toast.error('পুনরায় বিশ্লেষণে সমস্যা হয়েছে');
+    } finally {
+      setIsReanalyzing(false);
+    }
+  }, [generation, onUpdateMetadata]);
+
+  // Initial quality check when expanded
+  const handleExpand = useCallback(() => {
+    setExpanded(!expanded);
+    if (!expanded) {
+      checkContentQuality();
+    }
+  }, [expanded, checkContentQuality]);
 
   const copyToClipboard = async (text: string, field: string) => {
     await navigator.clipboard.writeText(text);
@@ -365,7 +471,7 @@ interface GenerationCardProps {
                 variant="ghost"
                 size="sm"
                 className="w-full h-9 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 touch-manipulation"
-                onClick={() => setExpanded(!expanded)}
+                onClick={handleExpand}
               >
                 <Eye className="h-3.5 w-3.5" />
                 {expanded ? 'Hide Details' : 'View Full Metadata'}
@@ -388,6 +494,20 @@ interface GenerationCardProps {
                   exit="hidden"
                   className="space-y-3 pt-2 border-t border-border/50"
                 >
+                  {/* Content Quality Warning */}
+                  {contentIssues.length > 0 && showWarning && (
+                    <motion.div variants={itemVariants}>
+                      <ContentQualityWarning
+                        issues={contentIssues}
+                        onAutoFix={handleAutoFix}
+                        onDismiss={() => setShowWarning(false)}
+                        onReanalyze={onUpdateMetadata ? handleReanalyze : undefined}
+                        isFixing={isFixing}
+                        isReanalyzing={isReanalyzing}
+                      />
+                    </motion.div>
+                  )}
+
                   {/* Prompt */}
                   <motion.div variants={itemVariants} className="space-y-1.5">
                     <div className="flex items-center justify-between">

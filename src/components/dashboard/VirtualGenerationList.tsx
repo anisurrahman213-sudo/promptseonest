@@ -14,6 +14,7 @@ interface VirtualGenerationListProps {
   onDelete: (id: string) => void;
   onBulkDelete: (ids: string[]) => Promise<{ success: number; failed: number }>;
    onUpdateCategory?: (id: string, category: string) => Promise<boolean>;
+  onUpdateMetadata?: (id: string, data: Partial<Generation>) => Promise<boolean>;
   hasMore: boolean;
   loadMore: () => void;
   loadingMore: boolean;
@@ -27,6 +28,7 @@ export function VirtualGenerationList({
   onDelete,
   onBulkDelete,
    onUpdateCategory,
+  onUpdateMetadata,
   hasMore,
   loadMore,
   loadingMore,
@@ -267,6 +269,7 @@ export function VirtualGenerationList({
                   generation={generation}
                   onDelete={onDelete}
                    onUpdateCategory={onUpdateCategory}
+                  onUpdateMetadata={onUpdateMetadata}
                 />
               </div>
             </motion.div>
