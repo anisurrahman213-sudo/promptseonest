@@ -346,6 +346,7 @@ export default function Dashboard() {
                             overrideCategory: metadataSettings.category,
                             editorialStatus: metadataSettings.editorialStatus,
                           }}
+                          onUpdateMetadata={handleUpdateMetadata}
                         />
                       </motion.div>
                     )}

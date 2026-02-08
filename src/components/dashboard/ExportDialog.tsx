@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image as ImageIcon, CheckCircle2, ShieldCheck, XCircle, RefreshCw } from 'lucide-react';
-import { findForbiddenWords, type ContentIssue } from '@/lib/contentQualityFilter';
+import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image as ImageIcon, CheckCircle2, ShieldCheck, XCircle, RefreshCw, Wrench } from 'lucide-react';
+import { findForbiddenWords, removeForbiddenWords, cleanTags, type ContentIssue } from '@/lib/contentQualityFilter';
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,7 @@ interface ExportDialogProps {
   fetchAllForExport?: () => Promise<Generation[]>;
   searchQuery?: string;
   exportOptions?: ExportOptions;
+  onUpdateMetadata?: (id: string, data: Partial<Generation>) => Promise<boolean>;
 }
 
 // Memoized platform item component for better performance
@@ -172,7 +173,7 @@ const PreviewRow = memo(({
 });
 PreviewRow.displayName = 'PreviewRow';
 
-export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery, exportOptions }: ExportDialogProps) {
+export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery, exportOptions, onUpdateMetadata }: ExportDialogProps) {
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('adobe_stock');
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -180,6 +181,8 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
   const [platformSearchQuery, setPlatformSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'platforms' | 'preview' | 'quality'>('platforms');
   const [isScanning, setIsScanning] = useState(false);
+  const [isAutoFixing, setIsAutoFixing] = useState(false);
+  const [autoFixProgress, setAutoFixProgress] = useState(0);
   const [qualityIssues, setQualityIssues] = useState<Array<{
     id: string;
     imageName: string;
@@ -359,6 +362,93 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
     }
   }, [generations, fetchAllForExport]);
 
+  // Auto-fix all quality issues
+  const handleAutoFixAll = useCallback(async () => {
+    if (!qualityIssues || qualityIssues.length === 0 || !onUpdateMetadata) {
+      toast.error('Auto-fix উপলব্ধ নয়');
+      return;
+    }
+
+    setIsAutoFixing(true);
+    setAutoFixProgress(0);
+
+    try {
+      // Group issues by generation ID to batch updates
+      const issuesByGeneration = new Map<string, typeof qualityIssues>();
+      for (const issue of qualityIssues) {
+        const existing = issuesByGeneration.get(issue.id) || [];
+        existing.push(issue);
+        issuesByGeneration.set(issue.id, existing);
+      }
+
+      const totalGenerations = issuesByGeneration.size;
+      let processed = 0;
+      let fixedCount = 0;
+      let failedCount = 0;
+
+      for (const [generationId, issues] of issuesByGeneration) {
+        // Find the generation to get current values
+        let dataToScan = generations;
+        if (fetchAllForExport) {
+          try {
+            dataToScan = await fetchAllForExport();
+          } catch (e) {
+            // Use current generations if fetch fails
+          }
+        }
+        
+        const generation = dataToScan.find(g => g.id === generationId);
+        if (!generation) {
+          failedCount++;
+          processed++;
+          setAutoFixProgress(Math.round((processed / totalGenerations) * 100));
+          continue;
+        }
+
+        // Build update object with cleaned values
+        const updateData: Partial<Generation> = {};
+        
+        for (const issue of issues) {
+          if (issue.field === 'Title') {
+            updateData.title = removeForbiddenWords(generation.title);
+          } else if (issue.field === 'Description') {
+            updateData.description = removeForbiddenWords(generation.description);
+          } else if (issue.field === 'Tags') {
+            updateData.tags = cleanTags(generation.tags);
+          } else if (issue.field === 'Prompt') {
+            updateData.prompt = removeForbiddenWords(generation.prompt);
+          }
+        }
+
+        // Update the generation in database
+        const success = await onUpdateMetadata(generationId, updateData);
+        if (success) {
+          fixedCount++;
+        } else {
+          failedCount++;
+        }
+
+        processed++;
+        setAutoFixProgress(Math.round((processed / totalGenerations) * 100));
+      }
+
+      // Clear issues after fix
+      setQualityIssues([]);
+      
+      if (failedCount === 0) {
+        toast.success(`✅ ${fixedCount}টি আইটেম সফলভাবে ফিক্স করা হয়েছে!`);
+      } else {
+        toast.warning(`${fixedCount}টি ফিক্স হয়েছে, ${failedCount}টি ব্যর্থ হয়েছে`);
+      }
+    } catch (error) {
+      console.error('Auto-fix error:', error);
+      toast.error('Auto-fix করতে সমস্যা হয়েছে');
+    } finally {
+      setIsAutoFixing(false);
+      setAutoFixProgress(0);
+    }
+  }, [qualityIssues, onUpdateMetadata, generations, fetchAllForExport]);
+
   // Reset state on dialog close
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open);
@@ -367,6 +457,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       setActiveTab('platforms');
       setExportProgress(0);
       setQualityIssues(null);
+      setAutoFixProgress(0);
     }
   }, []);
 
@@ -603,12 +694,52 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                       animate={{ opacity: 1 }}
                       className="space-y-2"
                     >
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
-                        <XCircle className="h-4 w-4 text-destructive" />
-                        <p className="text-sm font-medium text-destructive">
-                          {qualityIssues.length}টি সমস্যা পাওয়া গেছে
-                        </p>
+                      {/* Issue Summary with Auto-fix Button */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                        <div className="flex items-center gap-2 flex-1">
+                          <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                          <p className="text-sm font-medium text-destructive">
+                            {qualityIssues.length}টি সমস্যা পাওয়া গেছে
+                          </p>
+                        </div>
+                        {onUpdateMetadata && (
+                          <Button
+                            onClick={handleAutoFixAll}
+                            disabled={isAutoFixing || isScanning}
+                            size="sm"
+                            variant="default"
+                            className="gap-2 w-full sm:w-auto"
+                          >
+                            {isAutoFixing ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Fixing... {autoFixProgress}%
+                              </>
+                            ) : (
+                              <>
+                                <Wrench className="h-4 w-4" />
+                                সব Auto-fix করুন
+                              </>
+                            )}
+                          </Button>
+                        )}
                       </div>
+
+                      {/* Auto-fix Progress */}
+                      {isAutoFixing && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="space-y-1"
+                        >
+                          <Progress value={autoFixProgress} className="h-1.5" />
+                          <p className="text-xs text-muted-foreground text-center">
+                            Forbidden words সরানো হচ্ছে...
+                          </p>
+                        </motion.div>
+                      )}
+
+                      {/* Issue List */}
                       {qualityIssues.map((issue, index) => (
                         <motion.div
                           key={`${issue.id}-${issue.field}-${index}`}
@@ -635,9 +766,6 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                           </div>
                         </motion.div>
                       ))}
-                      <p className="text-xs text-muted-foreground text-center pt-2">
-                        Dashboard-এ গিয়ে এই items গুলো Re-analyze বা Auto-fix করুন
-                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
