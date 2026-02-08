@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
+import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image as ImageIcon, CheckCircle2, ShieldCheck, XCircle, RefreshCw } from 'lucide-react';
+import { findForbiddenWords, type ContentIssue } from '@/lib/contentQualityFilter';
 import {
   Dialog,
   DialogContent,
@@ -177,7 +178,15 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
   const [isExporting, setIsExporting] = useState(false);
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   const [platformSearchQuery, setPlatformSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'platforms' | 'preview'>('platforms');
+  const [activeTab, setActiveTab] = useState<'platforms' | 'preview' | 'quality'>('platforms');
+  const [isScanning, setIsScanning] = useState(false);
+  const [qualityIssues, setQualityIssues] = useState<Array<{
+    id: string;
+    imageName: string;
+    field: string;
+    foundWords: string[];
+    value: string;
+  }> | null>(null);
   const [exportProgress, setExportProgress] = useState(0);
 
   // Memoized filtered platforms
@@ -284,6 +293,72 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
     setSelectedFormat(format);
   }, []);
 
+  // Content quality scan handler
+  const handleQualityScan = useCallback(async () => {
+    setIsScanning(true);
+    setQualityIssues(null);
+    setActiveTab('quality');
+
+    try {
+      let dataToScan = generations;
+      
+      // If we have fetchAllForExport, fetch ALL generations for complete scan
+      if (fetchAllForExport) {
+        try {
+          const allGenerations = await fetchAllForExport();
+          if (allGenerations.length > 0) {
+            dataToScan = allGenerations;
+          }
+        } catch (error) {
+          console.error('Failed to fetch all generations for scan:', error);
+        }
+      }
+
+      const issues: Array<{
+        id: string;
+        imageName: string;
+        field: string;
+        foundWords: string[];
+        value: string;
+      }> = [];
+
+      for (const gen of dataToScan) {
+        const fields: Array<{ name: string; value: string }> = [
+          { name: 'Title', value: gen.title },
+          { name: 'Description', value: gen.description },
+          { name: 'Tags', value: gen.tags },
+          { name: 'Prompt', value: gen.prompt },
+        ];
+
+        for (const field of fields) {
+          const foundWords = findForbiddenWords(field.value);
+          if (foundWords.length > 0) {
+            issues.push({
+              id: gen.id,
+              imageName: gen.image_name,
+              field: field.name,
+              foundWords,
+              value: field.value,
+            });
+          }
+        }
+      }
+
+      setQualityIssues(issues);
+      
+      if (issues.length === 0) {
+        toast.success('✅ কোনো সমস্যা পাওয়া যায়নি! সব মেটাডেটা ক্লিন।');
+      } else {
+        toast.warning(`⚠️ ${issues.length}টি সমস্যা পাওয়া গেছে`);
+      }
+    } catch (error) {
+      console.error('Quality scan error:', error);
+      toast.error('স্ক্যান করতে সমস্যা হয়েছে');
+    } finally {
+      setIsScanning(false);
+    }
+  }, [generations, fetchAllForExport]);
+
   // Reset state on dialog close
   const handleOpenChange = useCallback((open: boolean) => {
     setIsOpen(open);
@@ -291,6 +366,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       setPlatformSearchQuery('');
       setActiveTab('platforms');
       setExportProgress(0);
+      setQualityIssues(null);
     }
   }, []);
 
@@ -319,18 +395,28 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'platforms' | 'preview')} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
-            <TabsTrigger value="platforms" className="gap-2">
-              <List className="h-4 w-4" />
-              Platforms ({filteredPlatforms.length})
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'platforms' | 'preview' | 'quality')} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+            <TabsTrigger value="platforms" className="gap-1.5 text-xs sm:text-sm">
+              <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Platforms</span>
+              <span className="sm:hidden">({filteredPlatforms.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="preview" className="gap-2">
-              <Eye className="h-4 w-4" />
-              Preview
+            <TabsTrigger value="preview" className="gap-1.5 text-xs sm:text-sm">
+              <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Preview</span>
               {selectedPlatform && (
-                <Badge variant="secondary" className="ml-1 text-xs">
+                <Badge variant="secondary" className="ml-1 text-[10px] hidden sm:inline-flex">
                   {selectedPlatform.icon}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="quality" className="gap-1.5 text-xs sm:text-sm">
+              <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Quality</span>
+              {qualityIssues && qualityIssues.length > 0 && (
+                <Badge variant="destructive" className="ml-1 text-[10px]">
+                  {qualityIssues.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -454,6 +540,109 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                 </div>
               )}
             </AnimatePresence>
+          </TabsContent>
+
+          <TabsContent value="quality" className="mt-4 flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="space-y-4">
+              {/* Scan Button */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-lg bg-muted/50">
+                <div className="flex-1">
+                  <p className="font-medium text-sm">Content Quality Check</p>
+                  <p className="text-xs text-muted-foreground">
+                    Export আগে সব metadata স্ক্যান করে forbidden words খুঁজে বের করুন
+                  </p>
+                </div>
+                <Button
+                  onClick={handleQualityScan}
+                  disabled={isScanning}
+                  size="sm"
+                  variant="outline"
+                  className="gap-2 w-full sm:w-auto"
+                >
+                  {isScanning ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Scanning...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4" />
+                      Scan Now
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Results */}
+              <ScrollArea className="flex-1 max-h-[280px]">
+                <AnimatePresence mode="wait">
+                  {qualityIssues === null ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-8 text-muted-foreground"
+                    >
+                      <ShieldCheck className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                      <p className="text-sm">স্ক্যান শুরু করতে "Scan Now" বাটনে ক্লিক করুন</p>
+                    </motion.div>
+                  ) : qualityIssues.length === 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-center py-8"
+                    >
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center">
+                        <CheckCircle2 className="h-8 w-8 text-green-500" />
+                      </div>
+                      <p className="font-medium text-green-600 dark:text-green-400">সব মেটাডেটা ক্লিন!</p>
+                      <p className="text-xs text-muted-foreground mt-1">কোনো forbidden words পাওয়া যায়নি</p>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="space-y-2"
+                    >
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                        <XCircle className="h-4 w-4 text-destructive" />
+                        <p className="text-sm font-medium text-destructive">
+                          {qualityIssues.length}টি সমস্যা পাওয়া গেছে
+                        </p>
+                      </div>
+                      {qualityIssues.map((issue, index) => (
+                        <motion.div
+                          key={`${issue.id}-${issue.field}-${index}`}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.03 }}
+                          className="p-3 rounded-lg border bg-card"
+                        >
+                          <div className="flex items-start gap-2">
+                            <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-mono truncate max-w-[150px]">{issue.imageName}</span>
+                                <Badge variant="outline" className="text-[10px]">{issue.field}</Badge>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {issue.foundWords.map((word, i) => (
+                                  <Badge key={i} variant="destructive" className="text-[10px]">
+                                    "{word}"
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                      <p className="text-xs text-muted-foreground text-center pt-2">
+                        Dashboard-এ গিয়ে এই items গুলো Re-analyze বা Auto-fix করুন
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </ScrollArea>
+            </div>
           </TabsContent>
         </Tabs>
 
