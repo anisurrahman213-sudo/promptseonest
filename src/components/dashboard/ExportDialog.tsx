@@ -634,38 +634,37 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           </TabsContent>
 
           <TabsContent value="quality" className="mt-4 flex-1 min-h-0 overflow-hidden flex flex-col">
-            <div className="space-y-4">
-              {/* Scan Button */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="flex-1">
-                  <p className="font-medium text-sm">Content Quality Check</p>
-                  <p className="text-xs text-muted-foreground">
-                    Export আগে সব metadata স্ক্যান করে forbidden words খুঁজে বের করুন
-                  </p>
-                </div>
-                <Button
-                  onClick={handleQualityScan}
-                  disabled={isScanning}
-                  size="sm"
-                  variant="outline"
-                  className="gap-2 w-full sm:w-auto"
-                >
-                  {isScanning ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Scanning...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-4 w-4" />
-                      Scan Now
-                    </>
-                  )}
-                </Button>
+            {/* Scan Button - Fixed at top */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-lg bg-muted/50 flex-shrink-0">
+              <div className="flex-1">
+                <p className="font-medium text-sm">Content Quality Check</p>
+                <p className="text-xs text-muted-foreground">
+                  Export আগে সব metadata স্ক্যান করে forbidden words খুঁজে বের করুন
+                </p>
               </div>
+              <Button
+                onClick={handleQualityScan}
+                disabled={isScanning}
+                size="sm"
+                variant="outline"
+                className="gap-2 w-full sm:w-auto"
+              >
+                {isScanning ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Scanning...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4" />
+                    Scan Now
+                  </>
+                )}
+              </Button>
+            </div>
 
-              {/* Results */}
-              <ScrollArea className="flex-1 max-h-[280px]">
+            {/* Results - Scrollable area */}
+            <ScrollArea className="flex-1 mt-4" style={{ height: '280px' }}>
                 <AnimatePresence mode="wait">
                   {qualityIssues === null ? (
                     <motion.div
@@ -769,8 +768,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </ScrollArea>
-            </div>
+            </ScrollArea>
           </TabsContent>
         </Tabs>
 
