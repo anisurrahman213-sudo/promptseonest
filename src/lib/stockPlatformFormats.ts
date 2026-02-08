@@ -39,13 +39,13 @@ export const stockPlatforms: StockPlatform[] = [
   {
     id: 'adobe_stock',
     name: 'Adobe Stock',
-    description: 'Filename, Title, Keywords (max 49), Category, Editorial, Mature content, Releases',
+    description: 'Filename, Title, Keywords (max 50), Category, Releases',
     icon: '🅰️',
-    maxKeywords: 49,
-    maxTitleLength: 200,
+    maxKeywords: 50,
+    maxTitleLength: 70,
     maxDescriptionLength: 0,
-    csvColumns: ['Filename', 'Title', 'Keywords', 'Category', 'Editorial', 'Mature content', 'Releases'],
-    guidelines: 'Adobe Stock CSV Format:\n• Filename: Full name with extension (must match asset exactly)\n• Title: Short description (max 200 characters)\n• Keywords: Comma-separated in one cell, max 49, ordered by relevance\n• Category: Numeric code (1-21)\n• Editorial: No (default) or Yes\n• Mature content: No (default) or Yes\n• Releases: Model/Property release names (optional)\n\nIMPORTANT:\n• Column names must match exactly in English\n• CSV must be UTF-8 encoded\n• CSV max 5000 rows or 5MB\n• Upload images FIRST, then CSV\n• Filename must match exactly or metadata won\'t apply',
+    csvColumns: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
+    guidelines: 'Adobe Stock CSV Format (Official 2024):\n• Filename: Exact name with extension (max 30 chars), must match uploaded asset\n• Title: Simple description (max 70 characters), no commas\n• Keywords: Comma-separated in one cell, max 50, ordered by relevance\n• Category: Numeric code (1-21) - optional but recommended\n• Releases: Exact model/property release name from portal (optional)\n\nIMPORTANT:\n• Column names must match exactly in English\n• CSV must be UTF-8 encoded\n• Max 5000 rows, max 1MB file size\n• Upload images FIRST, then CSV\n• Filename must match exactly or metadata won\'t apply\n• Required columns: Filename, Title, Keywords',
   },
   {
     id: 'shutterstock',
@@ -358,13 +358,17 @@ const limitText = (text: string, limit: number): string => {
   return text.slice(0, limit);
 };
 
-// Clean title for Adobe Stock: remove colons, ensure natural sentence
+// Clean title for Adobe Stock: remove colons and commas, max 70 chars
 const cleanAdobeStockTitle = (title: string): string => {
   if (!title) return '';
-  // Remove colons and clean up
-  let cleaned = title.replace(/:/g, ' -').replace(/\s+/g, ' ').trim();
-  // Limit to 200 characters
-  return cleaned.slice(0, 200);
+  // Remove colons and commas, clean up extra spaces
+  let cleaned = title
+    .replace(/:/g, ' -')
+    .replace(/,/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  // Limit to 70 characters (Adobe Stock official limit)
+  return cleaned.slice(0, 70);
 };
 
 // Validation result interface
@@ -445,29 +449,27 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
 
   switch (format) {
     case 'adobe_stock':
-      // Adobe Stock Contributor CSV Format (2024 Updated)
-      // Reference: https://helpx.adobe.com/stock/contributor/help/keywording.html
-      // Header: Filename,Title,Keywords,Category,Editorial,Mature content,Releases
+      // Adobe Stock Contributor CSV Format (Official 2024)
+      // Reference: https://helpx.adobe.com/stock/contributor/help/organize-with-csv-files.html
+      // Sample: https://contributor.stock.adobe.com/static/csv/Sample_Adobe_Stock_CSV_upload.csv
+      // Header: Filename,Title,Keywords,Category,Releases
       // Rules:
-      // - Filename: Must match uploaded asset name exactly (no path)
-      // - Title: Clean natural sentence, max 200 chars, no keyword stuffing, avoid colons
-      // - Keywords: Comma-separated in ONE CELL, max 49, first 10 are priority
-      // - Category: Numeric code (1-21)
-      // - Editorial: "No" (default) or "Yes"
-      // - Mature content: "No" (default) or "Yes"
-      // - Releases: Optional (blank if none)
+      // - Filename: Exact name with extension, must match uploaded asset (max 30 chars)
+      // - Title: Simple description, max 70 chars, NO COMMAS
+      // - Keywords: Comma-separated in ONE CELL, max 50, ordered by relevance
+      // - Category: Numeric code (1-21) - optional but recommended
+      // - Releases: Exact model/property release name from Contributor portal (optional)
+      // - Required columns: Filename, Title, Keywords
       // - UTF-8 encoding required
-      // - If Title or Keywords empty → prevent export (handled by validateAdobeStockExport)
+      // - Max 5000 rows, max 1MB file size
       return {
-        headers: ['Filename', 'Title', 'Keywords', 'Category', 'Editorial', 'Mature content', 'Releases'],
+        headers: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
         rows: generations.map(g => [
           escapeCSV(g.image_name), // Exact filename, no path
-          escapeCSV(cleanAdobeStockTitle(g.title)), // Clean title, no colons
-          escapeCSV(limitKeywords(g.tags, 49)), // Max 49 keywords, comma-separated
+          escapeCSV(cleanAdobeStockTitle(g.title)), // Clean title, max 70 chars, no commas
+          escapeCSV(limitKeywords(g.tags, 50)), // Max 50 keywords, comma-separated
           escapeCSV(getAdobeStockCategoryNumber(getCategoryValue(g.category || '', overrideCategory))),
-          escapeCSV(editorialStatus === 'editorial' ? 'Yes' : 'No'),
-          escapeCSV('No'), // Mature content default
-          escapeCSV(''), // Releases optional
+          escapeCSV(''), // Releases optional - leave blank
         ]),
         filename: 'adobe-stock-metadata',
       };
