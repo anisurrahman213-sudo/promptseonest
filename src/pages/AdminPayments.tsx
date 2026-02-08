@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
-import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard, ImageIcon, Wallpaper, History, Download } from 'lucide-react';
+import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard, ImageIcon, Wallpaper, History, Download, Video } from 'lucide-react';
 import { PlanManagement } from '@/components/admin/PlanManagement';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
@@ -22,6 +22,7 @@ import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog'
 import { UserFiltersComponent, filterUsers, UserFilters } from '@/components/admin/UserFilters';
 import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
 import { UserListExport } from '@/components/admin/UserListExport';
+import { TutorialManagement } from '@/components/admin/TutorialManagement';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 
 const CREDITS_BY_PLAN: Record<string, number> = {
@@ -376,6 +377,10 @@ export default function AdminPayments() {
                 <ImageIcon className="h-4 w-4 mr-1" />
                 Feature Cards
               </TabsTrigger>
+              <TabsTrigger value="tutorials">
+                <Video className="h-4 w-4 mr-1" />
+                Tutorials
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="pending" className="space-y-4">
@@ -577,6 +582,10 @@ export default function AdminPayments() {
 
             <TabsContent value="features">
               <FeatureCardManagement />
+            </TabsContent>
+
+            <TabsContent value="tutorials">
+              <TutorialManagement />
             </TabsContent>
           </Tabs>
         )}
