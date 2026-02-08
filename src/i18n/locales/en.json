@@ -293,5 +293,12 @@
     "comingSoon": "Video coming soon",
     "needHelp": "Still need help?",
     "contactSupport": "Contact our support team for personalized assistance"
+  },
+  "network": {
+    "offline": "You are offline. Some features may not work.",
+    "backOnline": "You're back online! ✨",
+    "serverError": "Having trouble connecting to server. Try turning off VPN.",
+    "slowConnection": "Slow connection ({{seconds}}s). Turning off VPN may help.",
+    "retry": "Retry"
   }
 }

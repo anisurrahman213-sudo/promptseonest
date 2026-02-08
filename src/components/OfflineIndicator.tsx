@@ -2,11 +2,13 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { WifiOff, Wifi } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export function OfflineIndicator() {
   const isOnline = useOnlineStatus();
   const [showBackOnline, setShowBackOnline] = useState(false);
   const [wasOffline, setWasOffline] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!isOnline) {
@@ -32,7 +34,7 @@ export function OfflineIndicator() {
         >
           <div className="flex items-center justify-center gap-2">
             <WifiOff className="h-4 w-4" />
-            <span>আপনি অফলাইন আছেন। কিছু features কাজ নাও করতে পারে।</span>
+            <span>{t('network.offline')}</span>
           </div>
         </motion.div>
       )}
@@ -46,7 +48,7 @@ export function OfflineIndicator() {
         >
           <div className="flex items-center justify-center gap-2">
             <Wifi className="h-4 w-4" />
-            <span>আপনি আবার অনলাইন! ✨</span>
+            <span>{t('network.backOnline')}</span>
           </div>
         </motion.div>
       )}

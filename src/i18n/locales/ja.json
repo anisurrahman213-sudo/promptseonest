@@ -281,5 +281,12 @@
     "passwordUpdated": "パスワードが正常に更新されました！",
     "generationDeleted": "生成が削除されました",
     "generationsDeleted": "{{count}}件の生成が削除されました"
+  },
+  "network": {
+    "offline": "オフラインです。一部の機能が動作しない場合があります。",
+    "backOnline": "オンラインに戻りました！✨",
+    "serverError": "サーバーへの接続に問題があります。VPNをオフにしてみてください。",
+    "slowConnection": "接続が遅いです（{{seconds}}秒）。VPNをオフにすると改善する場合があります。",
+    "retry": "再試行"
   }
 }

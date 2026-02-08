@@ -281,5 +281,12 @@
     "passwordUpdated": "Passwort erfolgreich aktualisiert!",
     "generationDeleted": "Generierung gelöscht",
     "generationsDeleted": "{{count}} Generierung(en) gelöscht"
+  },
+  "network": {
+    "offline": "Sie sind offline. Einige Funktionen funktionieren möglicherweise nicht.",
+    "backOnline": "Sie sind wieder online! ✨",
+    "serverError": "Problem bei der Verbindung zum Server. Versuchen Sie, VPN auszuschalten.",
+    "slowConnection": "Langsame Verbindung ({{seconds}}s). VPN ausschalten könnte helfen.",
+    "retry": "Erneut versuchen"
   }
 }

@@ -281,5 +281,12 @@
     "passwordUpdated": "비밀번호가 성공적으로 업데이트되었습니다!",
     "generationDeleted": "생성물이 삭제되었습니다",
     "generationsDeleted": "{{count}}개의 생성물이 삭제되었습니다"
+  },
+  "network": {
+    "offline": "오프라인 상태입니다. 일부 기능이 작동하지 않을 수 있습니다.",
+    "backOnline": "다시 온라인 상태입니다! ✨",
+    "serverError": "서버에 연결하는 데 문제가 있습니다. VPN을 끄고 시도해 보세요.",
+    "slowConnection": "연결이 느립니다 ({{seconds}}초). VPN을 끄면 도움이 될 수 있습니다.",
+    "retry": "재시도"
   }
 }
