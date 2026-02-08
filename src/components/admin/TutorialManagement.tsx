@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import {
   useAdminTutorialVideos,
   useCreateTutorialVideo,
@@ -16,7 +18,9 @@ import {
   useDeleteTutorialVideo,
   TutorialVideo,
 } from "@/hooks/useTutorialVideos";
-import { Plus, Edit, Trash2, Video, GripVertical, ExternalLink } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Plus, Edit, Trash2, Video, GripVertical, ExternalLink, Upload, Link, Loader2 } from "lucide-react";
 
 const iconOptions = ["Play", "UserPlus", "Settings", "Sparkles", "Video", "BookOpen", "Zap", "Star"];
 
@@ -29,6 +33,10 @@ export function TutorialManagement() {
 
   const [editingTutorial, setEditingTutorial] = useState<TutorialVideo | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [videoSourceType, setVideoSourceType] = useState<"url" | "upload">("url");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: "",
     title_key: "",
@@ -55,6 +63,81 @@ export function TutorialManagement() {
       display_order: tutorials?.length ?? 0,
       is_active: true,
     });
+    setVideoSourceType("url");
+    setUploadProgress(0);
+  };
+
+  const handleVideoUpload = async (file: File) => {
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ["video/mp4", "video/webm", "video/quicktime", "video/x-msvideo"];
+    if (!validTypes.includes(file.type)) {
+      toast.error("অবৈধ ফাইল টাইপ। MP4, WebM, MOV, বা AVI ফাইল আপলোড করুন।");
+      return;
+    }
+
+    // Validate file size (max 50MB for tutorials)
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error("ফাইল সাইজ 50MB এর বেশি হতে পারবে না।");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `tutorial-${Date.now()}.${fileExt}`;
+      const filePath = `tutorials/${fileName}`;
+
+      // Simulate progress (Supabase doesn't provide real progress)
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
+
+      const { data, error } = await supabase.storage
+        .from("videos")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      clearInterval(progressInterval);
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from("videos")
+        .getPublicUrl(filePath);
+
+      setUploadProgress(100);
+      setFormData({ ...formData, video_url: publicUrlData.publicUrl });
+      toast.success("ভিডিও আপলোড সম্পন্ন!");
+
+      // Extract video duration
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        const minutes = Math.floor(video.duration / 60);
+        const seconds = Math.floor(video.duration % 60);
+        setFormData(prev => ({
+          ...prev,
+          duration: `${minutes}:${seconds.toString().padStart(2, "0")}`,
+        }));
+        URL.revokeObjectURL(video.src);
+      };
+      video.src = URL.createObjectURL(file);
+
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "ভিডিও আপলোড ব্যর্থ হয়েছে");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleCreate = async () => {
@@ -173,16 +256,97 @@ export function TutorialManagement() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>Video URL (YouTube Embed)</Label>
-        <Input
-          value={formData.video_url}
-          onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-          placeholder="https://www.youtube.com/embed/VIDEO_ID"
-        />
-        <p className="text-xs text-muted-foreground">
-          Use YouTube embed URL format: https://www.youtube.com/embed/VIDEO_ID
-        </p>
+      <div className="space-y-3">
+        <Label>Video Source</Label>
+        <Tabs value={videoSourceType} onValueChange={(v) => setVideoSourceType(v as "url" | "upload")}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="url" className="flex items-center gap-2">
+              <Link className="h-4 w-4" />
+              YouTube URL
+            </TabsTrigger>
+            <TabsTrigger value="upload" className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Upload Video
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="url" className="space-y-2 mt-3">
+            <Input
+              value={formData.video_url}
+              onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+              placeholder="https://www.youtube.com/embed/VIDEO_ID"
+            />
+            <p className="text-xs text-muted-foreground">
+              YouTube embed URL অথবা সরাসরি video URL দিন
+            </p>
+          </TabsContent>
+          
+          <TabsContent value="upload" className="space-y-3 mt-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+              onChange={(e) => e.target.files?.[0] && handleVideoUpload(e.target.files[0])}
+              className="hidden"
+            />
+            
+            {formData.video_url && videoSourceType === "upload" ? (
+              <div className="space-y-2">
+                <div className="rounded-lg border bg-muted/50 p-3">
+                  <div className="flex items-center gap-2">
+                    <Video className="h-5 w-5 text-primary" />
+                    <span className="text-sm truncate flex-1">
+                      {formData.video_url.split('/').pop()}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setFormData({ ...formData, video_url: "" });
+                        setUploadProgress(0);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  অন্য ভিডিও আপলোড করুন
+                </Button>
+              </div>
+            ) : (
+              <div
+                onClick={() => !isUploading && fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                  isUploading ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
+                }`}
+              >
+                {isUploading ? (
+                  <div className="space-y-3">
+                    <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">আপলোড হচ্ছে...</p>
+                    <Progress value={uploadProgress} className="h-2" />
+                    <p className="text-xs text-muted-foreground">{uploadProgress}%</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                    <p className="text-sm font-medium">ভিডিও আপলোড করুন</p>
+                    <p className="text-xs text-muted-foreground">
+                      MP4, WebM, MOV, AVI (সর্বোচ্চ 50MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div className="space-y-2">
