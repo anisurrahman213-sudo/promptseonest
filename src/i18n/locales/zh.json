@@ -281,5 +281,12 @@
     "passwordUpdated": "密码更新成功！",
     "generationDeleted": "生成内容已删除",
     "generationsDeleted": "{{count}}个生成内容已删除"
+  },
+  "network": {
+    "offline": "您已离线。某些功能可能无法正常工作。",
+    "backOnline": "您已重新上线！✨",
+    "serverError": "连接服务器时遇到问题。请尝试关闭VPN。",
+    "slowConnection": "连接缓慢（{{seconds}}秒）。关闭VPN可能会有所帮助。",
+    "retry": "重试"
   }
 }

@@ -3,12 +3,14 @@ import { WifiOff, Wifi, AlertTriangle, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 
 export function NetworkStatusIndicator() {
   const { isOnline, isConnectedToBackend, latency, checkBackendConnection } = useNetworkStatus();
   const [showBackOnline, setShowBackOnline] = useState(false);
   const [wasOffline, setWasOffline] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const { t } = useTranslation();
 
   const isSlowConnection = latency !== null && latency > 3000;
 
@@ -43,7 +45,7 @@ export function NetworkStatusIndicator() {
         >
           <div className="flex items-center justify-center gap-2">
             <WifiOff className="h-4 w-4" />
-            <span>আপনি অফলাইন আছেন। ইন্টারনেট সংযোগ চেক করুন।</span>
+            <span>{t('network.offline')}</span>
           </div>
         </motion.div>
       )}
@@ -58,7 +60,7 @@ export function NetworkStatusIndicator() {
         >
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <AlertTriangle className="h-4 w-4" />
-            <span>সার্ভারে সংযোগ করতে সমস্যা হচ্ছে। VPN বন্ধ করে আবার চেষ্টা করুন।</span>
+            <span>{t('network.serverError')}</span>
             <Button
               variant="secondary"
               size="sm"
@@ -71,7 +73,7 @@ export function NetworkStatusIndicator() {
               ) : (
                 <RefreshCw className="h-3 w-3 mr-1" />
               )}
-              Retry
+              {t('network.retry')}
             </Button>
           </div>
         </motion.div>
@@ -87,7 +89,7 @@ export function NetworkStatusIndicator() {
         >
           <div className="flex items-center justify-center gap-2">
             <AlertTriangle className="h-4 w-4" />
-            <span>ধীর সংযোগ ({Math.round(latency / 1000)}s)। VPN বন্ধ করলে দ্রুত হতে পারে।</span>
+            <span>{t('network.slowConnection', { seconds: Math.round(latency / 1000) })}</span>
           </div>
         </motion.div>
       )}
@@ -102,7 +104,7 @@ export function NetworkStatusIndicator() {
         >
           <div className="flex items-center justify-center gap-2">
             <Wifi className="h-4 w-4" />
-            <span>আপনি আবার অনলাইন! ✨</span>
+            <span>{t('network.backOnline')}</span>
           </div>
         </motion.div>
       )}

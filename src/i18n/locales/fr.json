@@ -281,5 +281,12 @@
     "passwordUpdated": "Mot de passe mis à jour avec succès !",
     "generationDeleted": "Génération supprimée",
     "generationsDeleted": "{{count}} génération(s) supprimée(s)"
+  },
+  "network": {
+    "offline": "Vous êtes hors ligne. Certaines fonctions peuvent ne pas fonctionner.",
+    "backOnline": "Vous êtes de retour en ligne ! ✨",
+    "serverError": "Problème de connexion au serveur. Essayez de désactiver le VPN.",
+    "slowConnection": "Connexion lente ({{seconds}}s). Désactiver le VPN peut aider.",
+    "retry": "Réessayer"
   }
 }

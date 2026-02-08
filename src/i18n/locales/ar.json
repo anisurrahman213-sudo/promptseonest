@@ -281,5 +281,12 @@
     "passwordUpdated": "تم تحديث كلمة المرور بنجاح!",
     "generationDeleted": "تم حذف الإنشاء",
     "generationsDeleted": "تم حذف {{count}} إنشاء(ات)"
+  },
+  "network": {
+    "offline": "أنت غير متصل. قد لا تعمل بعض الميزات.",
+    "backOnline": "أنت متصل مرة أخرى! ✨",
+    "serverError": "مشكلة في الاتصال بالخادم. حاول إيقاف VPN.",
+    "slowConnection": "اتصال بطيء ({{seconds}} ثانية). إيقاف VPN قد يساعد.",
+    "retry": "إعادة المحاولة"
   }
 }
