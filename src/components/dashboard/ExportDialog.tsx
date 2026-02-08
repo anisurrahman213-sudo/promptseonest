@@ -81,93 +81,154 @@ const PlatformItem = memo(({
 ));
 PlatformItem.displayName = 'PlatformItem';
 
-// Memoized preview row component
+// Memoized preview row component - Professional table-like view
 const PreviewRow = memo(({ 
   row, 
   headers, 
-   index,
-   selectedFormat
+  index,
+  selectedFormat,
+  isExpanded,
+  onToggle
 }: { 
   row: string[]; 
   headers: string[]; 
   index: number;
-   selectedFormat: ExportFormat;
+  selectedFormat: ExportFormat;
+  isExpanded: boolean;
+  onToggle: () => void;
 }) => {
   const cleanValue = (val: string) => {
     if (!val) return '-';
     return val.replace(/^"|"$/g, '').replace(/""/g, '"');
   };
 
-   // Find important fields indices
-   const titleIndex = headers.findIndex(h => h.toLowerCase() === 'title' || h.toLowerCase() === 'headline' || h.toLowerCase() === 'description' || h.toLowerCase() === 'caption');
-   const categoryIndex = headers.findIndex(h => h.toLowerCase() === 'category' || h.toLowerCase() === 'categories');
-   const keywordsIndex = headers.findIndex(h => h.toLowerCase() === 'keywords' || h.toLowerCase() === 'tags');
- 
-   // Get platform-specific category label
-   const getCategoryLabel = (categoryValue: string): string => {
-     if (!categoryValue || categoryValue === '-') return '-';
-     
-     // Map ExportFormat to ExportPlatform
-     const platformMap: Record<string, ExportPlatform> = {
-       'adobe_stock': 'adobe_stock',
-       'shutterstock': 'shutterstock',
-       'istock': 'istock',
-       'getty_images': 'getty',
-       'alamy': 'alamy',
-       'dreamstime': 'dreamstime',
-       '123rf': '123rf',
-       'depositphotos': 'depositphotos',
-       'canva_creators': 'canva',
-       'freepik': 'freepik',
-       'vecteezy': 'vecteezy',
-       'picfair': 'picfair',
-       'eyeem': 'eyeem',
-       'rawpixel': 'rawpixel',
-       'stocksy': 'stocksy',
-       'twenty20': 'twenty20',
-       'pond5': 'pond5',
-       'wirestock': 'wirestock',
-       'storyblocks': 'storyblocks',
-       'generic': 'custom',
-     };
-     
-     const platform = platformMap[selectedFormat] || 'custom';
-     const categories = platformCategories[platform] || [];
-     const match = categories.find(c => c.value === categoryValue);
-     return match ? match.label : categoryValue;
-   };
- 
+  // Find important fields indices
+  const filenameIndex = 0;
+  const titleIndex = headers.findIndex(h => h.toLowerCase() === 'title' || h.toLowerCase() === 'headline');
+  const categoryIndex = headers.findIndex(h => h.toLowerCase() === 'category' || h.toLowerCase() === 'categories');
+  const keywordsIndex = headers.findIndex(h => h.toLowerCase() === 'keywords' || h.toLowerCase() === 'tags');
+
+  // Get platform-specific category label
+  const getCategoryLabel = (categoryValue: string): string => {
+    if (!categoryValue || categoryValue === '-') return '-';
+    
+    const platformMap: Record<string, ExportPlatform> = {
+      'adobe_stock': 'adobe_stock',
+      'shutterstock': 'shutterstock',
+      'istock': 'istock',
+      'getty_images': 'getty',
+      'alamy': 'alamy',
+      'dreamstime': 'dreamstime',
+      '123rf': '123rf',
+      'depositphotos': 'depositphotos',
+      'canva_creators': 'canva',
+      'freepik': 'freepik',
+      'vecteezy': 'vecteezy',
+      'picfair': 'picfair',
+      'eyeem': 'eyeem',
+      'rawpixel': 'rawpixel',
+      'stocksy': 'stocksy',
+      'twenty20': 'twenty20',
+      'pond5': 'pond5',
+      'wirestock': 'wirestock',
+      'storyblocks': 'storyblocks',
+      'generic': 'custom',
+    };
+    
+    const platform = platformMap[selectedFormat] || 'custom';
+    const categories = platformCategories[platform] || [];
+    const match = categories.find(c => c.value === categoryValue);
+    return match ? match.label : categoryValue;
+  };
+
+  const filename = cleanValue(row[filenameIndex]);
+  const title = titleIndex > -1 ? cleanValue(row[titleIndex]) : '-';
+  const category = categoryIndex > -1 ? getCategoryLabel(cleanValue(row[categoryIndex])) : '-';
+  const keywords = keywordsIndex > -1 ? cleanValue(row[keywordsIndex]) : '-';
+  const keywordCount = keywords !== '-' ? keywords.split(',').length : 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.03 }}
-      className="p-3 rounded-lg border bg-card"
+      transition={{ delay: index * 0.02 }}
+      className="border rounded-lg overflow-hidden bg-card hover:shadow-sm transition-shadow"
     >
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs font-mono text-muted-foreground">#{index + 1}</span>
-        <span className="text-sm font-medium truncate">{cleanValue(row[0])}</span>
-         {categoryIndex > -1 && cleanValue(row[categoryIndex]) !== '-' && (
-           <Badge variant="secondary" className="text-[10px] ml-auto">
-             Cat: {getCategoryLabel(cleanValue(row[categoryIndex]))}
-           </Badge>
-         )}
+      {/* Compact Header Row */}
+      <div 
+        onClick={onToggle}
+        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+      >
+        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
+          {index + 1}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{filename}</p>
+          <p className="text-xs text-muted-foreground truncate">{title}</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {category !== '-' && (
+            <Badge variant="secondary" className="text-[10px]">
+              {category}
+            </Badge>
+          )}
+          <Badge variant="outline" className="text-[10px]">
+            {keywordCount} keywords
+          </Badge>
+          <motion.div
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            className="text-muted-foreground"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </motion.div>
+        </div>
       </div>
-      <div className="grid gap-1.5">
-         {headers.slice(1).map((header, colIndex) => {
-           const actualColIndex = colIndex + 1;
-           // Skip showing Category separately in grid since we show it as badge
-           if (header.toLowerCase() === 'category' || header.toLowerCase() === 'categories') {
-             return null;
-           }
-           return (
-           <div key={colIndex} className="flex gap-2 text-xs">
-            <span className="text-muted-foreground min-w-[80px] flex-shrink-0">{header}:</span>
-             <span className="text-foreground break-all line-clamp-2">{cleanValue(row[actualColIndex])}</span>
-          </div>
-           );
-         })}
-      </div>
+
+      {/* Expanded Details */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="p-3 pt-0 space-y-2 border-t bg-muted/30">
+              {headers.map((header, colIndex) => {
+                const value = cleanValue(row[colIndex]);
+                const isKeywords = header.toLowerCase() === 'keywords' || header.toLowerCase() === 'tags';
+                
+                return (
+                  <div key={colIndex} className="space-y-1">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                      {header}
+                    </p>
+                    {isKeywords ? (
+                      <div className="flex flex-wrap gap-1">
+                        {value.split(',').slice(0, 15).map((keyword, ki) => (
+                          <Badge key={ki} variant="outline" className="text-[10px] font-normal">
+                            {keyword.trim()}
+                          </Badge>
+                        ))}
+                        {value.split(',').length > 15 && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            +{value.split(',').length - 15} more
+                          </Badge>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-foreground break-all">{value}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 });
@@ -191,6 +252,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
     value: string;
   }> | null>(null);
   const [exportProgress, setExportProgress] = useState(0);
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   // Memoized filtered platforms
   const filteredPlatforms = useMemo(() => 
@@ -458,6 +520,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       setExportProgress(0);
       setQualityIssues(null);
       setAutoFixProgress(0);
+      setExpandedRows(new Set());
     }
   }, []);
 
@@ -605,23 +668,28 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                     </div>
                   </div>
 
-                  {/* Preview Items - Show only first 3 for performance */}
-                  <ScrollArea className="h-[160px]">
-                    <div className="space-y-3">
-                      {previewData.rows.slice(0, 3).map((row, rowIndex) => (
+                  {/* Preview Items - Show all items with expandable details */}
+                  <ScrollArea className="h-[220px]">
+                    <div className="space-y-2 pr-2">
+                      {previewData.rows.map((row, rowIndex) => (
                         <PreviewRow 
                           key={rowIndex} 
                           row={row} 
                           headers={previewData.headers} 
                           index={rowIndex} 
-                           selectedFormat={selectedFormat}
+                          selectedFormat={selectedFormat}
+                          isExpanded={expandedRows.has(rowIndex)}
+                          onToggle={() => {
+                            const newExpanded = new Set(expandedRows);
+                            if (newExpanded.has(rowIndex)) {
+                              newExpanded.delete(rowIndex);
+                            } else {
+                              newExpanded.add(rowIndex);
+                            }
+                            setExpandedRows(newExpanded);
+                          }}
                         />
                       ))}
-                      {previewData.rows.length > 3 && (
-                        <div className="text-center py-3 text-xs text-muted-foreground border border-dashed rounded-lg">
-                          +{previewData.rows.length - 3} more items will be exported
-                        </div>
-                      )}
                     </div>
                   </ScrollArea>
                 </motion.div>
