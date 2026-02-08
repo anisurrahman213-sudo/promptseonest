@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { generateExport, stockPlatforms, validateAdobeStockExport, type Generation } from './stockPlatformFormats';
 
-describe('Adobe Stock CSV Export', () => {
+describe('Adobe Stock CSV Export - Official 2024 Format', () => {
   const mockGenerations: Generation[] = [
     {
       id: '1',
@@ -29,37 +29,37 @@ describe('Adobe Stock CSV Export', () => {
     },
   ];
 
-  it('should have correct Adobe Stock platform definition', () => {
+  it('should have correct Adobe Stock platform definition per official guidelines', () => {
     const adobePlatform = stockPlatforms.find(p => p.id === 'adobe_stock');
     
     expect(adobePlatform).toBeDefined();
-    expect(adobePlatform?.maxKeywords).toBe(49);
-    expect(adobePlatform?.maxTitleLength).toBe(200);
+    expect(adobePlatform?.maxKeywords).toBe(50);
+    expect(adobePlatform?.maxTitleLength).toBe(70);
+    // Official Adobe Stock CSV columns: Filename, Title, Keywords, Category, Releases
     expect(adobePlatform?.csvColumns).toEqual([
-      'Filename', 'Title', 'Keywords', 'Category', 'Editorial', 'Mature content', 'Releases'
+      'Filename', 'Title', 'Keywords', 'Category', 'Releases'
     ]);
   });
 
-  it('should generate correct Adobe Stock CSV headers', () => {
+  it('should generate correct Adobe Stock CSV headers matching official format', () => {
     const result = generateExport('adobe_stock', mockGenerations);
     
+    // Official Adobe Stock CSV headers
     expect(result.headers).toEqual([
       'Filename',
       'Title', 
       'Keywords',
       'Category',
-      'Editorial',
-      'Mature content',
       'Releases'
     ]);
   });
 
-  it('should have 7 columns matching the header count', () => {
+  it('should have 5 columns matching Adobe Stock official format', () => {
     const result = generateExport('adobe_stock', mockGenerations);
     
-    expect(result.headers.length).toBe(7);
-    result.rows.forEach((row, index) => {
-      expect(row.length).toBe(7);
+    expect(result.headers.length).toBe(5);
+    result.rows.forEach((row) => {
+      expect(row.length).toBe(5);
     });
   });
 
@@ -71,7 +71,7 @@ describe('Adobe Stock CSV Export', () => {
     expect(result.rows[1][0]).toBe('"business-meeting.png"');
   });
 
-  it('should limit keywords to 49 max', () => {
+  it('should limit keywords to 50 max (official Adobe Stock limit)', () => {
     const manyKeywords = Array(60).fill('keyword').map((k, i) => `${k}${i}`).join(', ');
     const generation: Generation = {
       ...mockGenerations[0],
@@ -83,38 +83,15 @@ describe('Adobe Stock CSV Export', () => {
     // Remove quotes and count keywords
     const keywords = keywordsCell.replace(/^"|"$/g, '').split(', ');
     
-    expect(keywords.length).toBeLessThanOrEqual(49);
-  });
-
-  it('should default Editorial to No', () => {
-    const result = generateExport('adobe_stock', mockGenerations);
-    
-    // Editorial column (index 4) should be "No" by default
-    expect(result.rows[0][4]).toBe('"No"');
-    expect(result.rows[1][4]).toBe('"No"');
-  });
-
-  it('should set Editorial to Yes when editorialStatus is editorial', () => {
-    const result = generateExport('adobe_stock', mockGenerations, { editorialStatus: 'editorial' });
-    
-    expect(result.rows[0][4]).toBe('"Yes"');
-    expect(result.rows[1][4]).toBe('"Yes"');
-  });
-
-  it('should default Mature content to No', () => {
-    const result = generateExport('adobe_stock', mockGenerations);
-    
-    // Mature content column (index 5) should be "No"
-    expect(result.rows[0][5]).toBe('"No"');
-    expect(result.rows[1][5]).toBe('"No"');
+    expect(keywords.length).toBeLessThanOrEqual(50);
   });
 
   it('should have empty Releases by default', () => {
     const result = generateExport('adobe_stock', mockGenerations);
     
-    // Releases column (index 6) should be empty
-    expect(result.rows[0][6]).toBe('""');
-    expect(result.rows[1][6]).toBe('""');
+    // Releases column (index 4) should be empty
+    expect(result.rows[0][4]).toBe('""');
+    expect(result.rows[1][4]).toBe('""');
   });
 
   it('should convert category to numeric code', () => {
@@ -125,8 +102,8 @@ describe('Adobe Stock CSV Export', () => {
     expect(result.rows[1][3]).toBe('"3"'); // Business -> 3
   });
 
-  it('should limit title to 200 characters', () => {
-    const longTitle = 'A'.repeat(250);
+  it('should limit title to 70 characters (official Adobe Stock limit)', () => {
+    const longTitle = 'A'.repeat(100);
     const generation: Generation = {
       ...mockGenerations[0],
       title: longTitle,
@@ -137,7 +114,7 @@ describe('Adobe Stock CSV Export', () => {
     // Remove quotes and check length
     const title = titleCell.replace(/^"|"$/g, '');
     
-    expect(title.length).toBeLessThanOrEqual(200);
+    expect(title.length).toBeLessThanOrEqual(70);
   });
 
   it('should generate correct filename prefix', () => {
@@ -146,18 +123,31 @@ describe('Adobe Stock CSV Export', () => {
     expect(result.filename).toBe('adobe-stock-metadata');
   });
 
-  // New tests for title cleaning
+  // Title cleaning tests
   it('should remove colons from title', () => {
     const generation: Generation = {
       ...mockGenerations[0],
-      title: 'Sunset: A Beautiful View: Nature Photography',
+      title: 'Sunset: A Beautiful View',
     };
     
     const result = generateExport('adobe_stock', [generation]);
     const titleCell = result.rows[0][1];
     
     expect(titleCell).not.toContain(':');
-    expect(titleCell).toBe('"Sunset - A Beautiful View - Nature Photography"');
+    expect(titleCell).toBe('"Sunset - A Beautiful View"');
+  });
+
+  it('should remove commas from title (Adobe Stock requirement)', () => {
+    const generation: Generation = {
+      ...mockGenerations[0],
+      title: 'Sunset, Mountains, and Sky',
+    };
+    
+    const result = generateExport('adobe_stock', [generation]);
+    const titleCell = result.rows[0][1];
+    
+    expect(titleCell).not.toContain(',');
+    expect(titleCell).toBe('"Sunset Mountains and Sky"');
   });
 
   it('should clean extra whitespace in title', () => {
@@ -237,5 +227,16 @@ describe('Adobe Stock CSV Export', () => {
     
     expect(validation.isValid).toBe(false);
     expect(validation.errors[0].field).toBe('Title');
+  });
+
+  // Keywords comma-separated test
+  it('should keep keywords comma-separated in one cell', () => {
+    const result = generateExport('adobe_stock', mockGenerations);
+    const keywordsCell = result.rows[0][2];
+    
+    // Should contain commas inside quotes
+    expect(keywordsCell.startsWith('"')).toBe(true);
+    expect(keywordsCell.endsWith('"')).toBe(true);
+    expect(keywordsCell).toContain(',');
   });
 });
