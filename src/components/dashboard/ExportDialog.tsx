@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image as ImageIcon, CheckCircle2, ShieldCheck, XCircle, RefreshCw, Wrench } from 'lucide-react';
 import { findForbiddenWords, removeForbiddenWords, cleanTags, type ContentIssue } from '@/lib/contentQualityFilter';
@@ -235,6 +236,7 @@ const PreviewRow = memo(({
 PreviewRow.displayName = 'PreviewRow';
 
 export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery, exportOptions, onUpdateMetadata }: ExportDialogProps) {
+  const { t } = useTranslation();
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('adobe_stock');
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -412,13 +414,13 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       setQualityIssues(issues);
       
       if (issues.length === 0) {
-        toast.success('✅ কোনো সমস্যা পাওয়া যায়নি! সব মেটাডেটা ক্লিন।');
+        toast.success(t('export.noIssuesFound'));
       } else {
-        toast.warning(`⚠️ ${issues.length}টি সমস্যা পাওয়া গেছে`);
+        toast.warning(t('export.issuesFoundWarning', { count: issues.length }));
       }
     } catch (error) {
       console.error('Quality scan error:', error);
-      toast.error('স্ক্যান করতে সমস্যা হয়েছে');
+      toast.error(t('export.scanError'));
     } finally {
       setIsScanning(false);
     }
@@ -427,7 +429,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
   // Auto-fix all quality issues
   const handleAutoFixAll = useCallback(async () => {
     if (!qualityIssues || qualityIssues.length === 0 || !onUpdateMetadata) {
-      toast.error('Auto-fix উপলব্ধ নয়');
+      toast.error(t('export.autoFixNotAvailable'));
       return;
     }
 
@@ -498,13 +500,13 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       setQualityIssues([]);
       
       if (failedCount === 0) {
-        toast.success(`✅ ${fixedCount}টি আইটেম সফলভাবে ফিক্স করা হয়েছে!`);
+        toast.success(t('export.fixedSuccess', { count: fixedCount }));
       } else {
-        toast.warning(`${fixedCount}টি ফিক্স হয়েছে, ${failedCount}টি ব্যর্থ হয়েছে`);
+        toast.warning(t('export.fixedPartial', { fixed: fixedCount, failed: failedCount }));
       }
     } catch (error) {
       console.error('Auto-fix error:', error);
-      toast.error('Auto-fix করতে সমস্যা হয়েছে');
+      toast.error(t('export.autoFixFailed'));
     } finally {
       setIsAutoFixing(false);
       setAutoFixProgress(0);
@@ -643,27 +645,27 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                   </div>
 
                   {/* Important Instructions */}
-                  <div className="mb-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                  <div className="mb-3 p-3 rounded-lg bg-warning/10 border border-warning/20">
                     <div className="flex items-start gap-2 mb-2">
-                      <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-                      <p className="text-xs font-medium text-amber-600 dark:text-amber-400">গুরুত্বপূর্ণ নির্দেশনা</p>
+                      <AlertCircle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
+                      <p className="text-xs font-medium text-warning">{t('export.importantInstructions')}</p>
                     </div>
                     <div className="space-y-1.5 ml-6">
                       <div className="flex items-start gap-2 text-xs text-muted-foreground">
                         <CheckCircle2 className="h-3 w-3 text-primary mt-0.5 shrink-0" />
-                        <span><strong>UTF-8 Encoding:</strong> CSV ফাইল অবশ্যই UTF-8 encoded</span>
+                        <span><strong>UTF-8 Encoding:</strong> {t('export.utf8Encoding')}</span>
                       </div>
                       <div className="flex items-start gap-2 text-xs text-muted-foreground">
                         <FileText className="h-3 w-3 text-primary mt-0.5 shrink-0" />
-                        <span><strong>Excel/Sheets:</strong> Save as → CSV UTF-8 (Comma delimited)</span>
+                        <span><strong>Excel/Sheets:</strong> {t('export.excelSheets')}</span>
                       </div>
                       <div className="flex items-start gap-2 text-xs text-muted-foreground">
                         <ImageIcon className="h-3 w-3 text-primary mt-0.5 shrink-0" />
-                        <span><strong>Upload Order:</strong> ছবি আগে আপলোড করুন, তারপর CSV</span>
+                        <span><strong>Upload Order:</strong> {t('export.uploadOrder')}</span>
                       </div>
                       <div className="flex items-start gap-2 text-xs text-muted-foreground">
                         <AlertCircle className="h-3 w-3 text-destructive mt-0.5 shrink-0" />
-                        <span><strong>Filename:</strong> Filename না মিললে metadata apply হবে না</span>
+                        <span><strong>Filename:</strong> {t('export.filenameMatch')}</span>
                       </div>
                     </div>
                   </div>
@@ -705,9 +707,9 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
             {/* Scan Button - Fixed at top */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-lg bg-muted/50 flex-shrink-0">
               <div className="flex-1">
-                <p className="font-medium text-sm">Content Quality Check</p>
+                <p className="font-medium text-sm">{t('export.qualityCheck')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Export আগে সব metadata স্ক্যান করে forbidden words খুঁজে বের করুন
+                  {t('export.qualityCheckDesc')}
                 </p>
               </div>
               <Button
@@ -720,12 +722,12 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                 {isScanning ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Scanning...
+                    {t('export.scanning')}
                   </>
                 ) : (
                   <>
                     <RefreshCw className="h-4 w-4" />
-                    Scan Now
+                    {t('export.scanNow')}
                   </>
                 )}
               </Button>
@@ -741,7 +743,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                       className="text-center py-8 text-muted-foreground"
                     >
                       <ShieldCheck className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p className="text-sm">স্ক্যান শুরু করতে "Scan Now" বাটনে ক্লিক করুন</p>
+                      <p className="text-sm">{t('export.clickToScan')}</p>
                     </motion.div>
                   ) : qualityIssues.length === 0 ? (
                     <motion.div
@@ -749,11 +751,11 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                       animate={{ opacity: 1, scale: 1 }}
                       className="text-center py-8"
                     >
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center">
-                        <CheckCircle2 className="h-8 w-8 text-green-500" />
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success/10 flex items-center justify-center">
+                        <CheckCircle2 className="h-8 w-8 text-success" />
                       </div>
-                      <p className="font-medium text-green-600 dark:text-green-400">সব মেটাডেটা ক্লিন!</p>
-                      <p className="text-xs text-muted-foreground mt-1">কোনো forbidden words পাওয়া যায়নি</p>
+                      <p className="font-medium text-success">{t('export.allClean')}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('export.noForbiddenWords')}</p>
                     </motion.div>
                   ) : (
                     <motion.div
@@ -766,7 +768,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                         <div className="flex items-center gap-2 flex-1">
                           <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
                           <p className="text-sm font-medium text-destructive">
-                            {qualityIssues.length}টি সমস্যা পাওয়া গেছে
+                            {t('export.issuesFound', { count: qualityIssues.length })}
                           </p>
                         </div>
                         {onUpdateMetadata && (
@@ -780,12 +782,12 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                             {isAutoFixing ? (
                               <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Fixing... {autoFixProgress}%
+                                {t('export.fixing')} {autoFixProgress}%
                               </>
                             ) : (
                               <>
                                 <Wrench className="h-4 w-4" />
-                                সব Auto-fix করুন
+                                {t('export.autoFixAll')}
                               </>
                             )}
                           </Button>
@@ -801,7 +803,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                         >
                           <Progress value={autoFixProgress} className="h-1.5" />
                           <p className="text-xs text-muted-foreground text-center">
-                            Forbidden words সরানো হচ্ছে...
+                            {t('export.removingWords')}
                           </p>
                         </motion.div>
                       )}
