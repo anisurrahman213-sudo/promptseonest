@@ -3,7 +3,8 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Play, UserPlus, Settings, Sparkles, Video, BookOpen, Zap, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Play, UserPlus, Settings, Sparkles, Video, BookOpen, Zap, Star, Mail, MessageCircle } from "lucide-react";
 import { useTutorialVideos, TutorialVideo } from "@/hooks/useTutorialVideos";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -124,12 +125,31 @@ const Tutorials = () => {
               <p className="text-muted-foreground mb-4">
                 {t("tutorials.contactSupport")}
               </p>
-              <a
-                href="mailto:support@promptseonest.com"
-                className="text-primary hover:underline font-medium"
-              >
-                support@promptseonest.com
-              </a>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  asChild
+                >
+                  <a href="mailto:anisurrahman213@gmail.com">
+                    <Mail className="h-4 w-4" />
+                    anisurrahman213@gmail.com
+                  </a>
+                </Button>
+                <Button
+                  className="gap-2 bg-success hover:bg-success/90 text-success-foreground"
+                  asChild
+                >
+                  <a
+                    href="https://wa.me/8801711464759?text=Hi%2C%20I%20need%20help%20with%20PromptNest"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    WhatsApp
+                  </a>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
