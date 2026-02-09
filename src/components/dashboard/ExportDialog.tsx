@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -590,7 +590,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
               />
             </div>
 
-            <ScrollArea className="flex-1 pr-4">
+            <div className="flex-1 overflow-y-auto pr-4">
               <RadioGroup
                 value={selectedFormat}
                 onValueChange={(value) => handleFormatSelect(value as ExportFormat)}
@@ -605,7 +605,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                   />
                 ))}
               </RadioGroup>
-            </ScrollArea>
+            </div>
           </TabsContent>
 
           <TabsContent value="preview" className="mt-4">
@@ -671,8 +671,8 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                   </div>
 
                   {/* Preview Items - Show all items with expandable details */}
-                  <ScrollArea className="h-[220px]">
-                    <div className="space-y-2 pr-2">
+                  <div className="h-[220px] overflow-y-auto pr-2">
+                    <div className="space-y-2">
                       {previewData.rows.map((row, rowIndex) => (
                         <PreviewRow 
                           key={rowIndex} 
@@ -693,7 +693,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                         />
                       ))}
                     </div>
-                  </ScrollArea>
+                  </div>
                 </motion.div>
               ) : (
                 <div className="h-[300px] flex items-center justify-center text-muted-foreground">
@@ -734,7 +734,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
             </div>
 
             {/* Results - Scrollable area */}
-            <ScrollArea className="flex-1 mt-4" style={{ height: '280px' }}>
+            <div className="flex-1 mt-4 overflow-y-auto" style={{ maxHeight: '280px' }}>
                 <AnimatePresence mode="wait">
                   {qualityIssues === null ? (
                     <motion.div
@@ -838,7 +838,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
                     </motion.div>
                   )}
                 </AnimatePresence>
-            </ScrollArea>
+            </div>
           </TabsContent>
         </Tabs>
 
