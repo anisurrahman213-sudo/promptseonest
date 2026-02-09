@@ -185,8 +185,8 @@ export function TutorialManagement() {
   };
 
   const TutorialForm = ({ isEdit = false }: { isEdit?: boolean }) => (
-    <div className="flex flex-col max-h-[70vh]">
-      <ScrollArea className="flex-1 pr-4">
+    <div className="flex flex-col h-full">
+      <ScrollArea className="flex-1 max-h-[50vh] pr-4">
         <div className="space-y-4 pb-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -371,7 +371,7 @@ export function TutorialManagement() {
         </div>
       </ScrollArea>
 
-      <div className="flex justify-end gap-2 pt-4 border-t mt-4 bg-background sticky bottom-0">
+      <div className="flex justify-end gap-2 pt-4 border-t mt-4 bg-background shrink-0">
         <Button
           variant="outline"
           onClick={() => {
@@ -417,8 +417,8 @@ export function TutorialManagement() {
               Add Tutorial
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+            <DialogHeader className="shrink-0">
               <DialogTitle>Create New Tutorial</DialogTitle>
             </DialogHeader>
             <TutorialForm />
@@ -497,8 +497,8 @@ export function TutorialManagement() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editingTutorial} onOpenChange={(open) => !open && setEditingTutorial(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>Edit Tutorial</DialogTitle>
           </DialogHeader>
           <TutorialForm isEdit />
