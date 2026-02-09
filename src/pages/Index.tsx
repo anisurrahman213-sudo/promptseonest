@@ -9,7 +9,7 @@ import { useSiteSetting } from "@/hooks/useSiteSettings";
 import { motion } from "framer-motion";
 import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2, Calendar, LucideIcon } from "lucide-react";
 import DemoVideoSection from "@/components/landing/DemoVideoSection";
-
+import { ProductHuntBanner } from "@/components/landing/ProductHuntBanner";
 const iconMap: Record<string, LucideIcon> = {
   Sparkles,
   Tags,
@@ -117,6 +117,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <ProductHuntBanner />
       <Header />
       
       {/* Hero Section */}
