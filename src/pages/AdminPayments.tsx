@@ -327,7 +327,7 @@ export default function AdminPayments() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-y-auto">
       <Header />
       
       <main className="container py-8">
@@ -347,7 +347,8 @@ export default function AdminPayments() {
           </div>
         ) : (
           <Tabs defaultValue="pending">
-            <TabsList className="mb-6">
+            <div className="overflow-x-auto pb-2 mb-4 -mx-1 px-1">
+              <TabsList className="inline-flex w-max min-w-full sm:w-auto">
               <TabsTrigger value="pending" className="relative">
                 Pending
                 {pendingPayments.length > 0 && (
@@ -377,11 +378,12 @@ export default function AdminPayments() {
                 <ImageIcon className="h-4 w-4 mr-1" />
                 Feature Cards
               </TabsTrigger>
-              <TabsTrigger value="tutorials">
-                <Video className="h-4 w-4 mr-1" />
-                Tutorials
-              </TabsTrigger>
-            </TabsList>
+                <TabsTrigger value="tutorials">
+                  <Video className="h-4 w-4 mr-1" />
+                  Tutorials
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="pending" className="space-y-4">
               {pendingPayments.length === 0 ? (
