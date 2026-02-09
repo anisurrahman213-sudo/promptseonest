@@ -186,7 +186,7 @@ export function TutorialManagement() {
 
   const TutorialForm = ({ isEdit = false }: { isEdit?: boolean }) => (
     <div className="flex flex-col h-full overflow-hidden">
-      <ScrollArea className="flex-1 max-h-[60vh] pr-4">
+      <ScrollArea className="flex-1 pr-4" style={{ maxHeight: "calc(85vh - 180px)" }}>
         <div className="space-y-4 pb-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
