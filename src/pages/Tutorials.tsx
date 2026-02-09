@@ -25,17 +25,31 @@ const TutorialCard = ({ tutorial }: { tutorial: TutorialVideo }) => {
   const title = t(tutorial.title_key, { defaultValue: tutorial.title });
   const description = t(tutorial.description_key, { defaultValue: tutorial.description });
 
+  // Check if it's a direct video file (mp4, webm, etc.) or an embed URL (YouTube)
+  const isDirectVideo = tutorial.video_url?.match(/\.(mp4|webm|ogg|mov)(\?|$)/i);
+
   return (
     <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
       <div className="relative aspect-video bg-muted overflow-hidden">
         {tutorial.video_url ? (
-          <iframe
-            src={tutorial.video_url}
-            title={title}
-            className="w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          isDirectVideo ? (
+            <video
+              src={tutorial.video_url}
+              title={title}
+              className="w-full h-full object-cover"
+              controls
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <iframe
+              src={tutorial.video_url}
+              title={title}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          )
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
             <div className="text-center space-y-3">
