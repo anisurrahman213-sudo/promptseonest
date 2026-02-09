@@ -185,8 +185,8 @@ export function TutorialManagement() {
   };
 
   const TutorialForm = ({ isEdit = false }: { isEdit?: boolean }) => (
-    <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1 max-h-[50vh] pr-4">
+    <div className="flex flex-col h-full overflow-hidden">
+      <ScrollArea className="flex-1 max-h-[60vh] pr-4">
         <div className="space-y-4 pb-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
