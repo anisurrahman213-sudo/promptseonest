@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
@@ -184,189 +185,193 @@ export function TutorialManagement() {
   };
 
   const TutorialForm = ({ isEdit = false }: { isEdit?: boolean }) => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Title (Display)</Label>
-          <Input
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            placeholder="Getting Started"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Title Key (i18n)</Label>
-          <Input
-            value={formData.title_key}
-            onChange={(e) => setFormData({ ...formData, title_key: e.target.value })}
-            placeholder="tutorials.signupTitle"
-          />
-        </div>
-      </div>
+    <div className="flex flex-col max-h-[70vh]">
+      <ScrollArea className="flex-1 pr-4">
+        <div className="space-y-4 pb-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Title (Display)</Label>
+              <Input
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Getting Started"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Title Key (i18n)</Label>
+              <Input
+                value={formData.title_key}
+                onChange={(e) => setFormData({ ...formData, title_key: e.target.value })}
+                placeholder="tutorials.signupTitle"
+              />
+            </div>
+          </div>
 
-      <div className="space-y-2">
-        <Label>Description (Display)</Label>
-        <Textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Learn how to create your account..."
-          rows={2}
-        />
-      </div>
+          <div className="space-y-2">
+            <Label>Description (Display)</Label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Learn how to create your account..."
+              rows={2}
+            />
+          </div>
 
-      <div className="space-y-2">
-        <Label>Description Key (i18n)</Label>
-        <Input
-          value={formData.description_key}
-          onChange={(e) => setFormData({ ...formData, description_key: e.target.value })}
-          placeholder="tutorials.signupDesc"
-        />
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>Icon</Label>
-          <select
-            value={formData.icon_name}
-            onChange={(e) => setFormData({ ...formData, icon_name: e.target.value })}
-            className="w-full h-10 px-3 rounded-md border border-input bg-background"
-          >
-            {iconOptions.map((icon) => (
-              <option key={icon} value={icon}>
-                {icon}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label>Duration</Label>
-          <Input
-            value={formData.duration}
-            onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-            placeholder="5:00"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Order</Label>
-          <Input
-            type="number"
-            value={formData.display_order}
-            onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <Label>Video Source</Label>
-        <Tabs value={videoSourceType} onValueChange={(v) => setVideoSourceType(v as "url" | "upload")}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="url" className="flex items-center gap-2">
-              <Link className="h-4 w-4" />
-              YouTube URL
-            </TabsTrigger>
-            <TabsTrigger value="upload" className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
-              Upload Video
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="url" className="space-y-2 mt-3">
+          <div className="space-y-2">
+            <Label>Description Key (i18n)</Label>
             <Input
-              value={formData.video_url}
-              onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-              placeholder="https://www.youtube.com/embed/VIDEO_ID"
+              value={formData.description_key}
+              onChange={(e) => setFormData({ ...formData, description_key: e.target.value })}
+              placeholder="tutorials.signupDesc"
             />
-            <p className="text-xs text-muted-foreground">
-              YouTube embed URL অথবা সরাসরি video URL দিন
-            </p>
-          </TabsContent>
-          
-          <TabsContent value="upload" className="space-y-3 mt-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
-              onChange={(e) => e.target.files?.[0] && handleVideoUpload(e.target.files[0])}
-              className="hidden"
-            />
-            
-            {formData.video_url && videoSourceType === "upload" ? (
-              <div className="space-y-2">
-                <div className="rounded-lg border bg-muted/50 p-3">
-                  <div className="flex items-center gap-2">
-                    <Video className="h-5 w-5 text-primary" />
-                    <span className="text-sm truncate flex-1">
-                      {formData.video_url.split('/').pop()}
-                    </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Icon</Label>
+              <select
+                value={formData.icon_name}
+                onChange={(e) => setFormData({ ...formData, icon_name: e.target.value })}
+                className="w-full h-10 px-3 rounded-md border border-input bg-background"
+              >
+                {iconOptions.map((icon) => (
+                  <option key={icon} value={icon}>
+                    {icon}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Duration</Label>
+              <Input
+                value={formData.duration}
+                onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                placeholder="5:00"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Order</Label>
+              <Input
+                type="number"
+                value={formData.display_order}
+                onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label>Video Source</Label>
+            <Tabs value={videoSourceType} onValueChange={(v) => setVideoSourceType(v as "url" | "upload")}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="url" className="flex items-center gap-2">
+                  <Link className="h-4 w-4" />
+                  YouTube URL
+                </TabsTrigger>
+                <TabsTrigger value="upload" className="flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
+                  Upload Video
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="url" className="space-y-2 mt-3">
+                <Input
+                  value={formData.video_url}
+                  onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                  placeholder="https://www.youtube.com/embed/VIDEO_ID"
+                />
+                <p className="text-xs text-muted-foreground">
+                  YouTube embed URL অথবা সরাসরি video URL দিন
+                </p>
+              </TabsContent>
+              
+              <TabsContent value="upload" className="space-y-3 mt-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                  onChange={(e) => e.target.files?.[0] && handleVideoUpload(e.target.files[0])}
+                  className="hidden"
+                />
+                
+                {formData.video_url && videoSourceType === "upload" ? (
+                  <div className="space-y-2">
+                    <div className="rounded-lg border bg-muted/50 p-3">
+                      <div className="flex items-center gap-2">
+                        <Video className="h-5 w-5 text-primary" />
+                        <span className="text-sm truncate flex-1">
+                          {formData.video_url.split('/').pop()}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setFormData({ ...formData, video_url: "" });
+                            setUploadProgress(0);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      onClick={() => {
-                        setFormData({ ...formData, video_url: "" });
-                        setUploadProgress(0);
-                      }}
+                      onClick={() => fileInputRef.current?.click()}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      অন্য ভিডিও আপলোড করুন
                     </Button>
                   </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  অন্য ভিডিও আপলোড করুন
-                </Button>
-              </div>
-            ) : (
-              <div
-                onClick={() => !isUploading && fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                  isUploading ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
-                }`}
-              >
-                {isUploading ? (
-                  <div className="space-y-3">
-                    <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">আপলোড হচ্ছে...</p>
-                    <Progress value={uploadProgress} className="h-2" />
-                    <p className="text-xs text-muted-foreground">{uploadProgress}%</p>
-                  </div>
                 ) : (
-                  <div className="space-y-2">
-                    <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                    <p className="text-sm font-medium">ভিডিও আপলোড করুন</p>
-                    <p className="text-xs text-muted-foreground">
-                      MP4, WebM, MOV, AVI (সর্বোচ্চ 50MB)
-                    </p>
+                  <div
+                    onClick={() => !isUploading && fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                      isUploading ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
+                    }`}
+                  >
+                    {isUploading ? (
+                      <div className="space-y-3">
+                        <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
+                        <p className="text-sm text-muted-foreground">আপলোড হচ্ছে...</p>
+                        <Progress value={uploadProgress} className="h-2" />
+                        <p className="text-xs text-muted-foreground">{uploadProgress}%</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                        <p className="text-sm font-medium">ভিডিও আপলোড করুন</p>
+                        <p className="text-xs text-muted-foreground">
+                          MP4, WebM, MOV, AVI (সর্বোচ্চ 50MB)
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
+              </TabsContent>
+            </Tabs>
+          </div>
 
-      <div className="space-y-2">
-        <Label>Thumbnail URL (Optional)</Label>
-        <Input
-          value={formData.thumbnail_url}
-          onChange={(e) => setFormData({ ...formData, thumbnail_url: e.target.value })}
-          placeholder="https://example.com/thumbnail.jpg"
-        />
-      </div>
+          <div className="space-y-2">
+            <Label>Thumbnail URL (Optional)</Label>
+            <Input
+              value={formData.thumbnail_url}
+              onChange={(e) => setFormData({ ...formData, thumbnail_url: e.target.value })}
+              placeholder="https://example.com/thumbnail.jpg"
+            />
+          </div>
 
-      <div className="flex items-center gap-2">
-        <Switch
-          checked={formData.is_active}
-          onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-        />
-        <Label>Active (visible on tutorials page)</Label>
-      </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={formData.is_active}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+            />
+            <Label>Active (visible on tutorials page)</Label>
+          </div>
+        </div>
+      </ScrollArea>
 
-      <div className="flex justify-end gap-2 pt-4">
+      <div className="flex justify-end gap-2 pt-4 border-t mt-4 bg-background sticky bottom-0">
         <Button
           variant="outline"
           onClick={() => {
