@@ -185,8 +185,8 @@ export function TutorialManagement() {
   };
 
   const TutorialForm = ({ isEdit = false }: { isEdit?: boolean }) => (
-    <div className="flex flex-col h-full overflow-hidden">
-      <ScrollArea className="flex-1 pr-4" style={{ maxHeight: "calc(85vh - 180px)" }}>
+    <div className="flex flex-col overflow-hidden" style={{ maxHeight: "calc(85vh - 140px)" }}>
+      <div className="flex-1 overflow-y-auto pr-4">
         <div className="space-y-4 pb-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -369,7 +369,7 @@ export function TutorialManagement() {
             <Label>Active (visible on tutorials page)</Label>
           </div>
         </div>
-      </ScrollArea>
+      </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t mt-4 bg-background shrink-0">
         <Button
