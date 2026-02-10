@@ -1,20 +1,18 @@
 import { useTranslation } from "react-i18next";
-import { useSiteSetting } from "@/hooks/useSiteSettings";
+import { useSiteSettingsBatch, getSettingValue } from "@/hooks/useSiteSettings";
 import { motion } from "framer-motion";
 import { Play, Youtube } from "lucide-react";
 import { useState } from "react";
 
 const DemoVideoSection = () => {
   const { t } = useTranslation();
-  const { data: demoVideoUrlSetting } = useSiteSetting('demo_video_url');
-  const { data: demoVideoTitleSetting } = useSiteSetting('demo_video_title');
-  const { data: demoVideoSubtitleSetting } = useSiteSetting('demo_video_subtitle');
+  const { data: demoSettings } = useSiteSettingsBatch(['demo_video_url', 'demo_video_title', 'demo_video_subtitle']);
   
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const videoUrl = demoVideoUrlSetting?.setting_value || '';
-  const videoTitle = demoVideoTitleSetting?.setting_value || t('landing.demoVideoTitle', 'See How It Works');
-  const videoSubtitle = demoVideoSubtitleSetting?.setting_value || t('landing.demoVideoSubtitle', 'Watch our 2-minute demo to see how easy it is to generate SEO metadata for your stock photos');
+  const videoUrl = getSettingValue(demoSettings, 'demo_video_url') || '';
+  const videoTitle = getSettingValue(demoSettings, 'demo_video_title') || t('landing.demoVideoTitle', 'See How It Works');
+  const videoSubtitle = getSettingValue(demoSettings, 'demo_video_subtitle') || t('landing.demoVideoSubtitle', 'Watch our 2-minute demo to see how easy it is to generate SEO metadata for your stock photos');
 
   // Check if it's a YouTube URL
   const getYouTubeId = (url: string) => {

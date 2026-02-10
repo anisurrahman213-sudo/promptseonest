@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { useFeatureCards } from "@/hooks/useFeatureCards";
-import { useSiteSetting } from "@/hooks/useSiteSettings";
+import { useSiteSettingsBatch, getSettingValue } from "@/hooks/useSiteSettings";
 import { motion } from "framer-motion";
 import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2, Calendar, LucideIcon } from "lucide-react";
 import DemoVideoSection from "@/components/landing/DemoVideoSection";
@@ -31,32 +31,21 @@ const Index = () => {
     data: featureCards,
     isLoading: featuresLoading
   } = useFeatureCards();
-  const {
-    data: heroBackgroundSetting
-  } = useSiteSetting('hero_background_url');
-  const {
-    data: heroVideoSetting
-  } = useSiteSetting('hero_video_url');
-  const {
-    data: heroSizeSetting
-  } = useSiteSetting('hero_background_size');
-  const {
-    data: heroPositionXSetting
-  } = useSiteSetting('hero_background_position_x');
-  const {
-    data: heroPositionYSetting
-  } = useSiteSetting('hero_background_position_y');
-  const {
-    data: heroOpacitySetting
-  } = useSiteSetting('hero_overlay_opacity');
-  const {
-    data: heroTextColorSetting
-  } = useSiteSetting('hero_text_color');
-  const {
-    data: heroTextShadowSetting
-  } = useSiteSetting('hero_text_shadow');
-  const heroBackgroundUrl = heroBackgroundSetting?.setting_value;
-  const heroVideoUrl = heroVideoSetting?.setting_value;
+  const heroSettingKeys = [
+    'hero_background_url', 'hero_video_url', 'hero_background_size',
+    'hero_background_position_x', 'hero_background_position_y',
+    'hero_overlay_opacity', 'hero_text_color', 'hero_text_shadow'
+  ];
+  const { data: heroSettings } = useSiteSettingsBatch(heroSettingKeys);
+
+  const heroBackgroundUrl = getSettingValue(heroSettings, 'hero_background_url');
+  const heroVideoUrl = getSettingValue(heroSettings, 'hero_video_url');
+  const heroSize = parseInt(getSettingValue(heroSettings, 'hero_background_size') || '100');
+  const heroPositionX = parseInt(getSettingValue(heroSettings, 'hero_background_position_x') || '50');
+  const heroPositionY = parseInt(getSettingValue(heroSettings, 'hero_background_position_y') || '50');
+  const heroOverlayOpacity = parseInt(getSettingValue(heroSettings, 'hero_overlay_opacity') || '70');
+  const heroTextColor = getSettingValue(heroSettings, 'hero_text_color') || '';
+  const heroTextShadow = parseInt(getSettingValue(heroSettings, 'hero_text_shadow') || '0');
 
   // Preload hero background image for LCP optimization
   useEffect(() => {
@@ -73,12 +62,7 @@ const Index = () => {
     document.head.appendChild(link);
     return () => { document.head.removeChild(link); };
   }, [heroBackgroundUrl, heroVideoUrl]);
-  const heroSize = heroSizeSetting?.setting_value ? parseInt(heroSizeSetting.setting_value) : 100;
-  const heroPositionX = heroPositionXSetting?.setting_value ? parseInt(heroPositionXSetting.setting_value) : 50;
-  const heroPositionY = heroPositionYSetting?.setting_value ? parseInt(heroPositionYSetting.setting_value) : 50;
-  const heroOverlayOpacity = heroOpacitySetting?.setting_value ? parseInt(heroOpacitySetting.setting_value) : 70;
-  const heroTextColor = heroTextColorSetting?.setting_value || '';
-  const heroTextShadow = heroTextShadowSetting?.setting_value ? parseInt(heroTextShadowSetting.setting_value) : 0;
+
   const heroTextStyle = {
     color: heroTextColor || undefined,
     textShadow: heroTextShadow > 0 ? `0 2px ${heroTextShadow}px rgba(0,0,0,0.5)` : undefined
