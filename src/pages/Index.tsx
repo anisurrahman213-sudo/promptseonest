@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2, Calendar, LucideIcon } from "lucide-react";
 import DemoVideoSection from "@/components/landing/DemoVideoSection";
 import { ProductHuntBanner } from "@/components/landing/ProductHuntBanner";
+import { getOptimizedImageUrl } from "@/lib/imageOptimization";
 const iconMap: Record<string, LucideIcon> = {
   Sparkles,
   Tags,
@@ -126,7 +127,7 @@ const Index = () => {
           backgroundColor: `hsl(var(--background) / ${heroOverlayOpacity / 100})`
         }} />
           </div> : heroBackgroundUrl ? <div className="absolute inset-0 z-0" style={{
-        backgroundImage: `url(${heroBackgroundUrl})`,
+        backgroundImage: `url(${getOptimizedImageUrl(heroBackgroundUrl, 1920, 80)})`,
         backgroundSize: `${heroSize}%`,
         backgroundPosition: `${heroPositionX}% ${heroPositionY}%`,
         backgroundRepeat: 'no-repeat'
@@ -301,7 +302,7 @@ const Index = () => {
             }}>
                   <Card className="group h-full border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg overflow-hidden active:scale-[0.98]">
                     {feature.image_url && <div className="aspect-video overflow-hidden">
-                        {isVideo ? <video src={feature.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" muted loop autoPlay playsInline /> : <img src={feature.image_url} alt={feature.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy" />}
+                        {isVideo ? <video src={feature.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" muted loop autoPlay playsInline /> : <img src={getOptimizedImageUrl(feature.image_url!, 800)} alt={feature.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy" />}
                       </div>}
                     <CardContent className="p-4 sm:p-6">
                       {!feature.image_url && <div className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
