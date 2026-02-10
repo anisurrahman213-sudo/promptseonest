@@ -40,6 +40,33 @@ export function useSiteSetting(key: string) {
   });
 }
 
+// Batch fetch multiple settings in a single query
+export function useSiteSettingsBatch(keys: string[]) {
+  return useQuery({
+    queryKey: ['site-settings-batch', ...keys],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .in('setting_key', keys);
+      
+      if (error) throw error;
+      
+      // Create a map for easy lookup
+      const settingsMap: Record<string, SiteSetting> = {};
+      (data as SiteSetting[])?.forEach(setting => {
+        settingsMap[setting.setting_key] = setting;
+      });
+      return settingsMap;
+    },
+  });
+}
+
+// Helper to get a value from the batch result
+export function getSettingValue(settings: Record<string, SiteSetting> | undefined, key: string): string | null {
+  return settings?.[key]?.setting_value ?? null;
+}
+
 export function useUpdateSiteSetting() {
   const queryClient = useQueryClient();
   
