@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,11 @@ import { useFeatureCards } from "@/hooks/useFeatureCards";
 import { useSiteSettingsBatch, getSettingValue } from "@/hooks/useSiteSettings";
 import { motion } from "framer-motion";
 import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2, Calendar, LucideIcon } from "lucide-react";
-import DemoVideoSection from "@/components/landing/DemoVideoSection";
-import { ProductHuntBanner } from "@/components/landing/ProductHuntBanner";
-import { getOptimizedImageUrl } from "@/lib/imageOptimization";
+import { getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/imageOptimization";
+
+// Lazy load below-fold components
+const DemoVideoSection = lazy(() => import("@/components/landing/DemoVideoSection"));
+const ProductHuntBanner = lazy(() => import("@/components/landing/ProductHuntBanner").then(m => ({ default: m.ProductHuntBanner })));
 const iconMap: Record<string, LucideIcon> = {
   Sparkles,
   Tags,
@@ -47,12 +49,13 @@ const Index = () => {
   const heroTextColor = getSettingValue(heroSettings, 'hero_text_color') || '';
   const heroTextShadow = parseInt(getSettingValue(heroSettings, 'hero_text_shadow') || '0');
 
-  // Preload hero background image for LCP optimization
+  // Preload hero background image for LCP optimization with responsive sizes
   useEffect(() => {
-    const url = !heroVideoUrl && heroBackgroundUrl
-      ? getOptimizedImageUrl(heroBackgroundUrl, 1920, 80)
-      : null;
-    if (!url) return;
+    if (heroVideoUrl || !heroBackgroundUrl) return;
+    
+    const isMobile = window.innerWidth < 768;
+    const width = isMobile ? 800 : 1920;
+    const url = getOptimizedImageUrl(heroBackgroundUrl, width, 80);
 
     const link = document.createElement('link');
     link.rel = 'preload';
@@ -116,11 +119,18 @@ const Index = () => {
   }];
   const whatYouGetItems = [t('landing.feature1'), t('landing.feature2'), t('landing.feature3'), t('landing.feature4'), t('landing.feature5'), t('landing.feature6')];
   return <div className="min-h-screen bg-background">
-      <ProductHuntBanner />
+      {/* Skip Navigation Link for Accessibility */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none">
+        Skip to main content
+      </a>
+      <Suspense fallback={null}>
+        <ProductHuntBanner />
+      </Suspense>
       <Header />
       
+      <main id="main-content" role="main">
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-32">
+      <section aria-label="Hero" className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-32">
         {/* Video Background */}
         {heroVideoUrl ? <div className="absolute inset-0 z-0 overflow-hidden">
             <video src={heroVideoUrl} className="h-full w-full object-cover" autoPlay muted loop playsInline />
@@ -128,7 +138,7 @@ const Index = () => {
           backgroundColor: `hsl(var(--background) / ${heroOverlayOpacity / 100})`
         }} />
           </div> : heroBackgroundUrl ? <div className="absolute inset-0 z-0" style={{
-        backgroundImage: `url(${getOptimizedImageUrl(heroBackgroundUrl, 1920, 80)})`,
+        backgroundImage: `url(${getOptimizedImageUrl(heroBackgroundUrl, typeof window !== 'undefined' && window.innerWidth < 768 ? 800 : 1920, 80)})`,
         backgroundSize: `${heroSize}%`,
         backgroundPosition: `${heroPositionX}% ${heroPositionY}%`,
         backgroundRepeat: 'no-repeat'
@@ -149,7 +159,7 @@ const Index = () => {
           }} transition={{
             duration: 0.5,
             ease: "easeOut"
-          }} className="mb-4 sm:mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-pink-600">
+          }} className="mb-4 sm:mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               {t('landing.badge')}
             </motion.div>
@@ -259,10 +269,12 @@ const Index = () => {
       </section>
 
       {/* Demo Video Section */}
-      <DemoVideoSection />
+      <Suspense fallback={null}>
+        <DemoVideoSection />
+      </Suspense>
 
       {/* Features Section */}
-      <section className="py-12 sm:py-24 bg-muted/30">
+      <section aria-label="Features" className="py-12 sm:py-24 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6">
           <motion.div initial={{
           opacity: 0,
@@ -303,7 +315,7 @@ const Index = () => {
             }}>
                   <Card className="group h-full border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg overflow-hidden active:scale-[0.98]">
                     {feature.image_url && <div className="aspect-video overflow-hidden">
-                        {isVideo ? <video src={feature.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" width={800} height={450} muted loop autoPlay playsInline /> : <img src={getOptimizedImageUrl(feature.image_url!, 800)} alt={feature.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading={index === 0 ? "eager" : "lazy"} fetchPriority={index === 0 ? "high" : undefined} decoding={index === 0 ? "sync" : "async"} width={800} height={450} />}
+                        {isVideo ? <video src={feature.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" width={800} height={450} muted loop autoPlay playsInline aria-label={feature.title} /> : <img src={getOptimizedImageUrl(feature.image_url!, 800)} srcSet={getResponsiveSrcSet(feature.image_url!, [400, 800])} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" alt={feature.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading={index === 0 ? "eager" : "lazy"} fetchPriority={index === 0 ? "high" : undefined} decoding={index === 0 ? "sync" : "async"} width={800} height={450} />}
                       </div>}
                     <CardContent className="p-4 sm:p-6">
                       {!feature.image_url && <div className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
@@ -324,7 +336,7 @@ const Index = () => {
       </section>
 
       {/* Event Calendar CTA */}
-      <section className="py-10 sm:py-16 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
+      <section aria-label="Event Calendar" className="py-10 sm:py-16 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary">
@@ -349,7 +361,7 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-12 sm:py-24">
+      <section aria-label="How It Works" className="py-12 sm:py-24">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="mx-auto mb-10 sm:mb-16 max-w-2xl text-center">
             <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
@@ -376,7 +388,7 @@ const Index = () => {
       </section>
 
       {/* What You Get Section */}
-      <section className="py-12 sm:py-24 bg-muted/30">
+      <section aria-label="What You Get" className="py-12 sm:py-24 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="mx-auto max-w-4xl">
             <div className="mb-10 sm:mb-16 text-center">
@@ -398,7 +410,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-24">
+      <section aria-label="Call to Action" className="py-12 sm:py-24">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="mx-auto max-w-3xl rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 p-8 sm:p-12 text-center">
             <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
@@ -417,18 +429,20 @@ const Index = () => {
         </div>
       </section>
 
+      </main>
+
       {/* Footer */}
-      <footer className="border-t border-border/50 py-6 sm:py-8">
+      <footer className="border-t border-border/50 py-6 sm:py-8" role="contentinfo">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               <span className="font-semibold text-sm sm:text-base text-foreground">Prompt SEO Nest</span>
             </div>
-            <div className="flex gap-6 text-sm text-muted-foreground">
+            <nav aria-label="Footer navigation" className="flex gap-6 text-sm text-muted-foreground">
               <Link to="/pricing" className="hover:text-foreground py-1">{t('footer.pricing')}</Link>
               <Link to="/auth" className="hover:text-foreground py-1">{t('header.login')}</Link>
-            </div>
+            </nav>
             <p className="text-xs sm:text-sm text-muted-foreground">
               {t('footer.copyright')}
             </p>

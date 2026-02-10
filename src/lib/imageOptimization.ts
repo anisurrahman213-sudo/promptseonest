@@ -18,3 +18,18 @@ export function getOptimizedImageUrl(
   const [, base, path] = match;
   return `${base}render/image/${path}?width=${width}&quality=${quality}`;
 }
+
+/**
+ * Generates a srcSet string for responsive images using Supabase transforms.
+ */
+export function getResponsiveSrcSet(
+  originalUrl: string,
+  widths: number[] = [400, 800, 1200],
+  quality: number = 75
+): string {
+  if (!originalUrl) return '';
+  
+  return widths
+    .map(w => `${getOptimizedImageUrl(originalUrl, w, quality)} ${w}w`)
+    .join(', ');
+}

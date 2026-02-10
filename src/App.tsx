@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,16 +12,18 @@ import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { AiAskPopup } from "@/components/AiAskPopup";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Pricing from "./pages/Pricing";
-import CalendarPage from "./pages/CalendarPage";
-import PaymentHistory from "./pages/PaymentHistory";
-import AdminPayments from "./pages/AdminPayments";
-import AdminDashboard from "./pages/AdminDashboard";
-import Profile from "./pages/Profile";
-import Tutorials from "./pages/Tutorials";
-import NotFound from "./pages/NotFound";
+
+// Lazy load non-critical routes to reduce initial bundle size
+const Auth = lazy(() => import("./pages/Auth"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const CalendarPage = lazy(() => import("./pages/CalendarPage"));
+const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
+const AdminPayments = lazy(() => import("./pages/AdminPayments"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Tutorials = lazy(() => import("./pages/Tutorials"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,19 +53,21 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/calendar" element={<CalendarPage />} />
-                <Route path="/payment-history" element={<PaymentHistory />} />
-                <Route path="/admin/payments" element={<AdminPayments />} />
-                <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/tutorials" element={<Tutorials />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense fallback={<div className="min-h-screen bg-background" />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/payment-history" element={<PaymentHistory />} />
+                  <Route path="/admin/payments" element={<AdminPayments />} />
+                  <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/tutorials" element={<Tutorials />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </BrowserRouter>
           </TooltipProvider>
         </BackgroundProcessorProvider>
