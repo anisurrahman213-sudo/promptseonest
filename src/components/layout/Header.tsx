@@ -31,7 +31,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 glass">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 glass" role="banner">
       <div className="container flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
         <button 
           onClick={() => navigate('/')} 
@@ -44,7 +44,7 @@ export function Header() {
         </button>
 
         {/* Desktop Navigation */}
-        <div className="hidden sm:flex items-center gap-3">
+        <nav className="hidden sm:flex items-center gap-3" aria-label="Main navigation">
           <LanguageSwitcher />
           
           <Button
@@ -52,6 +52,7 @@ export function Header() {
             size="icon"
             onClick={toggleTheme}
             className="rounded-full"
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
           >
             {theme === 'light' ? (
               <Moon className="h-5 w-5" />
@@ -110,6 +111,7 @@ export function Header() {
                 size="icon"
                 onClick={handleSignOut}
                 className="rounded-full"
+                aria-label="Sign out"
               >
                 <LogOut className="h-5 w-5" />
               </Button>
@@ -135,7 +137,7 @@ export function Header() {
               </Button>
             </>
           )}
-        </div>
+        </nav>
 
         {/* Mobile Navigation */}
         <div className="flex sm:hidden items-center gap-1.5">
@@ -155,6 +157,7 @@ export function Header() {
             size="icon"
             onClick={toggleTheme}
             className="rounded-full h-9 w-9"
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
           >
             {theme === 'light' ? (
               <Moon className="h-4 w-4" />
@@ -168,6 +171,8 @@ export function Header() {
             size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="rounded-full h-9 w-9"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <X className="h-5 w-5" />
