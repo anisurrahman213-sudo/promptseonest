@@ -319,7 +319,7 @@ const Index = () => {
             }}>
                   <Card className="group h-full border-border/50 bg-card/50 backdrop-blur-sm transition-all hover:border-primary/30 hover:shadow-lg overflow-hidden active:scale-[0.98]">
                     {feature.image_url && <div className="aspect-video overflow-hidden">
-                        {isVideo ? <video src={feature.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" width={800} height={450} muted loop autoPlay playsInline /> : <img src={getOptimizedImageUrl(feature.image_url!, 800)} alt={feature.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy" width={800} height={450} />}
+                        {isVideo ? <video src={feature.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-105" width={800} height={450} muted loop autoPlay playsInline /> : <img src={getOptimizedImageUrl(feature.image_url!, 800)} alt={feature.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" loading={index === 0 ? "eager" : "lazy"} fetchPriority={index === 0 ? "high" : undefined} width={800} height={450} />}
                       </div>}
                     <CardContent className="p-4 sm:p-6">
                       {!feature.image_url && <div className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
