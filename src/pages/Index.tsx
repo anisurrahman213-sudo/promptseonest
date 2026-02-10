@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,22 @@ const Index = () => {
   } = useSiteSetting('hero_text_shadow');
   const heroBackgroundUrl = heroBackgroundSetting?.setting_value;
   const heroVideoUrl = heroVideoSetting?.setting_value;
+
+  // Preload hero background image for LCP optimization
+  useEffect(() => {
+    const url = !heroVideoUrl && heroBackgroundUrl
+      ? getOptimizedImageUrl(heroBackgroundUrl, 1920, 80)
+      : null;
+    if (!url) return;
+
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = url;
+    link.fetchPriority = 'high';
+    document.head.appendChild(link);
+    return () => { document.head.removeChild(link); };
+  }, [heroBackgroundUrl, heroVideoUrl]);
   const heroSize = heroSizeSetting?.setting_value ? parseInt(heroSizeSetting.setting_value) : 100;
   const heroPositionX = heroPositionXSetting?.setting_value ? parseInt(heroPositionXSetting.setting_value) : 50;
   const heroPositionY = heroPositionYSetting?.setting_value ? parseInt(heroPositionYSetting.setting_value) : 50;
