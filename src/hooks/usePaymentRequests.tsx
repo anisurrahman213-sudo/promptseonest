@@ -50,29 +50,23 @@ export function usePaymentRequests() {
 }
 
 export function useAdminPaymentRequests() {
+  const { data: users } = useAdminUsers();
+
   return useQuery({
     queryKey: ['admin-payment-requests'],
     queryFn: async () => {
-      // Get payment requests
       const { data: payments, error: paymentsError } = await supabase
         .from('payment_requests')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (paymentsError) throw paymentsError;
-
-      // Get user info from secure RPC function
-      const { data: users, error: usersError } = await supabase
-        .rpc('get_admin_user_view');
-
-      if (usersError) {
-        console.error('Error fetching user info:', usersError);
-        return payments as PaymentRequest[];
-      }
-
-      // Merge user info with payments
-      const paymentsWithUserInfo = payments?.map(payment => {
-        const userInfo = (users as UserInfo[])?.find(u => u.user_id === payment.user_id);
+      return payments as PaymentRequest[];
+    },
+    select: (payments) => {
+      if (!users) return payments;
+      return payments.map(payment => {
+        const userInfo = users.find(u => u.user_id === payment.user_id);
         return {
           ...payment,
           user_email: userInfo?.email || null,
@@ -80,8 +74,6 @@ export function useAdminPaymentRequests() {
           user_name: userInfo?.full_name || null,
         };
       });
-
-      return paymentsWithUserInfo as PaymentRequest[];
     },
   });
 }
@@ -104,6 +96,7 @@ export function useAdminUsers() {
       
       return sortedData;
     },
+    staleTime: 30000, // 30 seconds cache
   });
 }
 

@@ -1,42 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 export function useCredits() {
   const { user } = useAuth();
-  const [credits, setCredits] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchCredits = async () => {
-    if (!user) {
-      setCredits(null);
-      setLoading(false);
-      return;
-    }
+  const { data: credits, isLoading: loading } = useQuery({
+    queryKey: ['user-credits', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('credits')
+        .eq('user_id', user!.id)
+        .single();
 
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('credits')
-      .eq('user_id', user.id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching credits:', error);
-      setCredits(null);
-    } else {
-      setCredits(data?.credits ?? 0);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchCredits();
-  }, [user]);
+      if (error) {
+        console.error('Error fetching credits:', error);
+        return null;
+      }
+      return data?.credits ?? 0;
+    },
+    enabled: !!user,
+    staleTime: 30000, // 30 seconds cache
+  });
 
   const refreshCredits = () => {
-    setLoading(true);
-    fetchCredits();
+    queryClient.invalidateQueries({ queryKey: ['user-credits', user?.id] });
   };
 
-  return { credits, loading, refreshCredits };
+  return { credits: credits ?? null, loading, refreshCredits };
 }
