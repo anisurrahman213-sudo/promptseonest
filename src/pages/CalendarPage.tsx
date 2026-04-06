@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Sparkles, Star, Heart, Rocket, Trophy, Gift, Sun, Moon, Flame, Target, TrendingUp, DollarSign, BarChart3, Globe, Building2, Briefcase, Plus, X, Trash2, Filter, Download } from 'lucide-react';

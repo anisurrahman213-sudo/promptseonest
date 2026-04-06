@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/layout/Header';
 import { usePaymentRequests } from '@/hooks/usePaymentRequests';
 import { useAuth } from '@/hooks/useAuth';
