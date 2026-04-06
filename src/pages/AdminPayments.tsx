@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { SEOHead } from '@/components/SEOHead';
 import { Header } from '@/components/layout/Header';
 import { useAdminPaymentRequests, useAdminUsers, useApprovePayment, useRejectPayment, useIsAdmin, useSendCustomEmail } from '@/hooks/usePaymentRequests';
 import { useAuth } from '@/hooks/useAuth';
