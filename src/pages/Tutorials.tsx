@@ -88,6 +88,7 @@ const Tutorials = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Tutorials" description="Learn how to use Prompt SEO Nest to generate AI-powered SEO metadata for your stock photos and images." path="/tutorials" keywords="tutorials, seo guide, stock photo seo tutorial" />
       <Header />
       <main className="container mx-auto px-4 py-12">
         {/* Hero Section */}

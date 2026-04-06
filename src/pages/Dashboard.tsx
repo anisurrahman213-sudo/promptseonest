@@ -157,9 +157,9 @@ export default function Dashboard() {
       className="min-h-screen bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      <SEOHead title="Dashboard" description="Manage your AI-generated image SEO metadata. Upload images, view tags, titles and descriptions." path="/dashboard" noindex />
       transition={{ duration: 0.3 }}
     >
+      <SEOHead title="Dashboard" description="Manage your AI-generated image SEO metadata. Upload images, view tags, titles and descriptions." path="/dashboard" noindex />
       <Header />
       
       <main className="container py-4 sm:py-8 pb-20 px-4 sm:px-6">

@@ -434,6 +434,7 @@ ${eventsICS}END:VCALENDAR`;
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Content Calendar" description="Plan your stock photography content with our AI-powered calendar. Never miss trending topics and seasonal opportunities." path="/calendar" keywords="content calendar, stock photo planning, seasonal photography" />
       <Header />
       
       <main className="container py-6 sm:py-10 px-4 sm:px-6">

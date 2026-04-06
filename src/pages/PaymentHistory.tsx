@@ -57,6 +57,7 @@ export default function PaymentHistory() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Payment History" description="View your payment history and transaction records." path="/payment-history" noindex />
       <Header />
       
       <main className="container py-8">
