@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { SEOHead } from "@/components/SEOHead";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +88,7 @@ const Tutorials = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Tutorials" description="Learn how to use Prompt SEO Nest to generate AI-powered SEO metadata for your stock photos and images." path="/tutorials" keywords="tutorials, seo guide, stock photo seo tutorial" />
       <Header />
       <main className="container mx-auto px-4 py-12">
         {/* Hero Section */}

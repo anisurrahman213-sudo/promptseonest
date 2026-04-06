@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { SEOHead } from '@/components/SEOHead';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
@@ -158,6 +159,7 @@ export default function Dashboard() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      <SEOHead title="Dashboard" description="Manage your AI-generated image SEO metadata. Upload images, view tags, titles and descriptions." path="/dashboard" noindex />
       <Header />
       
       <main className="container py-4 sm:py-8 pb-20 px-4 sm:px-6">

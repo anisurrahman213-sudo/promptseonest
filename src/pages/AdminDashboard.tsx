@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { SEOHead } from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminUsers, useIsAdmin, useDeleteUser, useSendCustomEmail } from '@/hooks/usePaymentRequests';
@@ -227,6 +228,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Admin Dashboard" description="Admin dashboard for managing users and settings." path="/admin-dashboard" noindex />
       <div className="container mx-auto p-4 md:p-6 max-w-6xl">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">

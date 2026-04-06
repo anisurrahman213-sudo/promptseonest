@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { SEOHead } from '@/components/SEOHead';
 import { Header } from '@/components/layout/Header';
 import { usePaymentRequests } from '@/hooks/usePaymentRequests';
 import { useAuth } from '@/hooks/useAuth';
@@ -56,6 +57,7 @@ export default function PaymentHistory() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Payment History" description="View your payment history and transaction records." path="/payment-history" noindex />
       <Header />
       
       <main className="container py-8">

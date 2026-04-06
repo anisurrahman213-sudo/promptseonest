@@ -1,4 +1,5 @@
 import { useEffect, lazy, Suspense } from "react";
+import { SEOHead } from "@/components/SEOHead";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -119,6 +120,12 @@ const Index = () => {
   }];
   const whatYouGetItems = [t('landing.feature1'), t('landing.feature2'), t('landing.feature3'), t('landing.feature4'), t('landing.feature5'), t('landing.feature6')];
   return <div className="min-h-screen bg-background">
+      <SEOHead
+        title="AI-Powered Image SEO Generator"
+        description="Generate SEO-optimized titles, descriptions, and 49 unique tags for your images using AI. Perfect for Adobe Stock, Shutterstock, Freepik, and Midjourney."
+        path="/"
+        keywords="image seo, ai seo generator, stock photo tags, image title generator, adobe stock, shutterstock, freepik"
+      />
       {/* Skip Navigation Link for Accessibility */}
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none">
         Skip to main content

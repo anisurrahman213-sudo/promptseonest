@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SEOHead } from '@/components/SEOHead';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Pricing Plans" description="Affordable pricing plans for AI-powered image SEO. Get credits to generate titles, descriptions and tags for your stock photos." path="/pricing" keywords="pricing, seo credits, stock photo seo pricing" />
       <Header />
       
       <main className="container py-8 sm:py-16 px-4 sm:px-6">

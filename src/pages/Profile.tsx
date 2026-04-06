@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { SEOHead } from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
@@ -117,6 +118,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Profile" description="Manage your Prompt SEO Nest profile settings and account preferences." path="/profile" noindex />
       <Header />
       
       <main className="container py-8 max-w-2xl">

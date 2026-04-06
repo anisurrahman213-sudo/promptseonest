@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { SEOHead } from '@/components/SEOHead';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Sparkles, Star, Heart, Rocket, Trophy, Gift, Sun, Moon, Flame, Target, TrendingUp, DollarSign, BarChart3, Globe, Building2, Briefcase, Plus, X, Trash2, Filter, Download } from 'lucide-react';
@@ -433,6 +434,7 @@ ${eventsICS}END:VCALENDAR`;
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Content Calendar" description="Plan your stock photography content with our AI-powered calendar. Never miss trending topics and seasonal opportunities." path="/calendar" keywords="content calendar, stock photo planning, seasonal photography" />
       <Header />
       
       <main className="container py-6 sm:py-10 px-4 sm:px-6">
