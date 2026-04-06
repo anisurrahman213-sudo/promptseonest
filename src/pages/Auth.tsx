@@ -309,6 +309,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead title="Sign In" description="Sign in or create an account to start generating AI-powered SEO metadata for your images." path="/auth" noindex />
       <div className="absolute top-3 sm:top-4 left-3 sm:left-4 z-10">
         <Link to="/" className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground transition-colors p-1">
           <ArrowLeft className="h-4 w-4" />
