@@ -93,7 +93,6 @@ export default function AdminDashboard() {
 
   const toggleSelectAll = () => {
     if (!users) return;
-    const { filterUsers } = require('@/components/admin/UserFilters');
     const filtered = filterUsers(users, userFilters);
     setSelectedUserIds(selectedUserIds.size === filtered.length ? new Set() : new Set(filtered.map((u: any) => u.user_id)));
   };
