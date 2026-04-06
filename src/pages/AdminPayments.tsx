@@ -329,6 +329,7 @@ export default function AdminPayments() {
 
   return (
     <div className="min-h-screen bg-background overflow-y-auto">
+      <SEOHead title="Admin Payments" description="Manage payment requests and transactions." path="/admin/payments" noindex />
       <Header />
       
       <main className="container py-8">
