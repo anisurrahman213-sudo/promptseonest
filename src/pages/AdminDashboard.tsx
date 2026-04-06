@@ -15,7 +15,7 @@ import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManag
 import { DemoVideoManagement } from '@/components/admin/DemoVideoManagement';
 import { GenerationsManagement } from '@/components/admin/GenerationsManagement';
 import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog';
-import { UserFilters } from '@/components/admin/UserFilters';
+import { UserFilters, filterUsers } from '@/components/admin/UserFilters';
 import { BulkEmailDialog } from '@/components/admin/BulkEmailDialog';
 import { TutorialManagement } from '@/components/admin/TutorialManagement';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
