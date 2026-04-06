@@ -1,5 +1,5 @@
 # Prompt SEO Nest - robots.txt
-# https://promptseonest.com
+# https://www.promptseonest.com
 
 # Allow all search engine crawlers
 User-agent: Googlebot
@@ -25,10 +25,10 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin-dashboard
+Disallow: /admin/payments
+Disallow: /profile
+Disallow: /payment-history
 
 # Sitemap location
 Sitemap: https://www.promptseonest.com/sitemap.xml
-
-# Disallow admin routes from indexing
-Disallow: /admin
-Disallow: /admin-payments
