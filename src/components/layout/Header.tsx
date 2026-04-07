@@ -97,14 +97,6 @@ export function Header() {
                 </Button>
               )}
 
-              <Button 
-                size="sm" 
-                className="bg-gradient-primary hover:opacity-90 text-white"
-                onClick={() => handleNavigate('/pricing')}
-              >
-                <Crown className="h-4 w-4 mr-1" />
-                Upgrade
-              </Button>
 
               <Button
                 variant="ghost"
@@ -121,9 +113,6 @@ export function Header() {
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/tutorials')}>
                 <HelpCircle className="h-4 w-4 mr-1" />
                 {t('header.tutorials')}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/pricing')}>
-                {t('header.pricing')}
               </Button>
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/auth')}>
                 {t('header.login')}
@@ -230,13 +219,6 @@ export function Header() {
                       {t('header.adminPanel')}
                     </Button>
                   )}
-                  <Button 
-                    className="w-full justify-center h-11 bg-gradient-primary hover:opacity-90 text-white"
-                    onClick={() => handleNavigate('/pricing')}
-                  >
-                    <Crown className="mr-2 h-4 w-4" />
-                    {t('header.upgradePlan')}
-                  </Button>
                   <Button
                     variant="ghost"
                     onClick={handleSignOut}
@@ -255,14 +237,6 @@ export function Header() {
                   >
                     <HelpCircle className="mr-2 h-4 w-4" />
                     {t('header.tutorials')}
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-center h-11"
-                    onClick={() => handleNavigate('/pricing')}
-                  >
-                    <Crown className="mr-2 h-4 w-4" />
-                    {t('header.pricing')}
                   </Button>
                   <Button 
                     variant="outline" 
