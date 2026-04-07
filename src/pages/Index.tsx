@@ -11,7 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { useFeatureCards } from "@/hooks/useFeatureCards";
 import { useSiteSettingsBatch, getSettingValue } from "@/hooks/useSiteSettings";
 import { motion } from "framer-motion";
-import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2, Calendar, LucideIcon } from "lucide-react";
+import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2, Calendar, LucideIcon, Loader2 } from "lucide-react";
 import { getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/imageOptimization";
 
 // Lazy load below-fold components
