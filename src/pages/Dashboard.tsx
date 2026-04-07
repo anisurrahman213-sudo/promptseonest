@@ -194,8 +194,6 @@ export default function Dashboard() {
           {/* Auto-Delete Warning - Important for users */}
           <AutoDeleteWarning generations={generations} />
 
-          {/* Upgrade Banner */}
-          <UpgradeBanner credits={credits} />
 
           {/* Stats Cards */}
           <StatsCards 
