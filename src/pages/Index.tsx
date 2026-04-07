@@ -30,8 +30,25 @@ const Index = () => {
     t
   } = useTranslation();
   const {
-    user
+    user,
+    signInWithGoogle
   } = useAuth();
+  const navigate = useNavigate();
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        toast({ title: t('auth.error'), description: error.message, variant: 'destructive' });
+      }
+    } catch (err) {
+      toast({ title: t('auth.error'), description: 'Something went wrong', variant: 'destructive' });
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
   const {
     data: featureCards,
     isLoading: featuresLoading
