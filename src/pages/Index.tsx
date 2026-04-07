@@ -272,11 +272,6 @@ const Index = () => {
                         <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                       </Button>
                     </Link>
-                    <Link to="/pricing" className="w-full sm:w-auto">
-                      <Button variant="outline" size="lg" className="px-6 py-5 sm:px-8 sm:py-6 text-base sm:text-lg w-full">
-                        {t('landing.viewPricing')}
-                      </Button>
-                    </Link>
                   </div>
                   <div className="relative w-full sm:w-auto flex flex-col items-center gap-2">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
