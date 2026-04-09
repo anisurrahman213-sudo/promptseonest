@@ -6,8 +6,9 @@ import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 
-// Optimized concurrent uploads - balanced for speed and stability
-const MAX_CONCURRENT = 25;
+// Reduced concurrency to avoid AI gateway rate limits
+const MAX_CONCURRENT = 5;
+const STAGGER_DELAY_MS = 500;
 
 interface UseParallelUploadOptions {
   userId: string;
@@ -197,7 +198,11 @@ export function useParallelUpload({
       
       // Process batch in parallel
       const batchResults = await Promise.all(
-        batch.map((file, batchIdx) => processFile(file, batchIndices[batchIdx]))
+        batch.map((file, batchIdx) => 
+          new Promise<boolean>(resolve => 
+            setTimeout(() => processFile(file, batchIndices[batchIdx]).then(resolve), batchIdx * STAGGER_DELAY_MS)
+          )
+        )
       );
       
       results.push(...batchResults);
