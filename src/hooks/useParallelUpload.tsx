@@ -6,9 +6,9 @@ import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 
-// Process one at a time to avoid AI gateway rate limits
-const MAX_CONCURRENT = 1;
-const STAGGER_DELAY_MS = 2000;
+// Process multiple files concurrently for speed
+const MAX_CONCURRENT = 5;
+const STAGGER_DELAY_MS = 500;
 
 interface UseParallelUploadOptions {
   userId: string;
