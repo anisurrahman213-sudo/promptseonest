@@ -289,15 +289,16 @@ export default function AdobeStockGenerator() {
   };
 
   const guidelineChecks = selected?.metadata ? [
-    { label: 'Title ≤ 70 characters', pass: selected.metadata.title.length <= 70, value: `${selected.metadata.title.length}/70` },
+    { label: `Title ≤ ${titleLimit} characters`, pass: selected.metadata.title.length <= titleLimit, value: `${selected.metadata.title.length}/${titleLimit}` },
     { label: 'No commas/colons in title', pass: !/[,:]/.test(selected.metadata.title) },
-    { label: 'Description 200-500 chars', pass: selected.metadata.description.length >= 200 && selected.metadata.description.length <= 500, value: `${selected.metadata.description.length} chars` },
-    { label: '49 keywords', pass: keywordCount === 49, value: `${keywordCount}/49` },
+    ...(descriptionLimit > 0 ? [{ label: `Description ≤ ${descriptionLimit} chars`, pass: selected.metadata.description.length <= descriptionLimit, value: `${selected.metadata.description.length}/${descriptionLimit} chars` }] : []),
+    { label: `${keywordsLimit} keywords`, pass: keywordCount === keywordsLimit, value: `${keywordCount}/${keywordsLimit}` },
     { label: 'Single words only', pass: !selected.metadata.keywords.split(',').some(k => k.trim().includes(' ')) },
     { label: 'Minimum 4MP', pass: selected.resolution.megapixels >= 4, value: `${selected.resolution.megapixels.toFixed(1)}MP` },
     { label: 'Valid category', pass: selected.metadata.category >= 1 && selected.metadata.category <= 21, value: ADOBE_CATEGORIES[selected.metadata.category] },
     ...(selected.hasTransparency ? [{ label: 'Transparent BG in title', pass: /transparent/i.test(selected.metadata.title) }] : []),
     ...(isAiGenerated ? [{ label: 'AI Generated flagged', pass: true }] : []),
+    ...(!platformReq.aiContentAllowed && isAiGenerated ? [{ label: 'AI content NOT accepted on this platform', pass: false }] : []),
   ] : [];
 
   return (
