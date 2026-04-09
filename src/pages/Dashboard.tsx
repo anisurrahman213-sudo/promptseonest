@@ -29,6 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
+  const { data: hasActivePlans } = usePlansActive();
   const { credits, refreshCredits } = useCredits();
   const { 
     generations, 
