@@ -336,16 +336,19 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
 
   // Auto-apply platform limits when platform changes
   useEffect(() => {
-    if (isAutoLimits && settings.exportPlatform !== prevPlatformRef.current) {
-      const limits = platformLimits[settings.exportPlatform];
-      onSettingsChange({
-        ...settings,
-        titleLength: limits.title,
-        descriptionLength: limits.description,
-        keywordsCount: limits.keywords,
-      });
-      prevPlatformRef.current = settings.exportPlatform;
-    }
+    if (!isAutoLimits) return;
+    if (settings.exportPlatform === prevPlatformRef.current) return;
+    prevPlatformRef.current = settings.exportPlatform;
+    const limits = platformLimits[settings.exportPlatform];
+    // Use setTimeout to avoid stale closure over settings
+    const newSettings = {
+      ...settings,
+      titleLength: limits.title,
+      descriptionLength: limits.description,
+      keywordsCount: limits.keywords,
+    };
+    onSettingsChange(newSettings);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.exportPlatform, isAutoLimits]);
 
   // Reset to platform defaults
