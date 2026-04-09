@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Upload, Copy, CheckCircle, Loader2, Sparkles, AlertTriangle,
   ImageIcon, FileText, Tag, MessageSquare, ClipboardCopy, Info, XCircle, Check,
@@ -19,6 +20,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { platformRequirements } from '@/components/dashboard/PlatformChecklist';
+import type { ExportPlatform } from '@/components/dashboard/AdvancedMetadataControls';
 
 const ADOBE_CATEGORIES: Record<number, string> = {
   1: 'Animals', 2: 'Buildings/Architecture', 3: 'Business', 4: 'Drinks',
@@ -115,8 +118,14 @@ const MAX_CONCURRENT = 5;
 export default function AdobeStockGenerator() {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedPlatform, setSelectedPlatform] = useState<ExportPlatform>('adobe_stock');
   const [isAiGenerated, setIsAiGenerated] = useState(false);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+
+  const platformReq = platformRequirements[selectedPlatform];
+  const titleLimit = platformReq.titleLimit;
+  const descriptionLimit = platformReq.descriptionLimit;
+  const keywordsLimit = platformReq.keywordsLimit;
 
   const updateImage = (id: string, updates: Partial<ImageItem>) => {
     setImages(prev => prev.map(img => img.id === id ? { ...img, ...updates } : img));
@@ -280,15 +289,16 @@ export default function AdobeStockGenerator() {
   };
 
   const guidelineChecks = selected?.metadata ? [
-    { label: 'Title ≤ 70 characters', pass: selected.metadata.title.length <= 70, value: `${selected.metadata.title.length}/70` },
+    { label: `Title ≤ ${titleLimit} characters`, pass: selected.metadata.title.length <= titleLimit, value: `${selected.metadata.title.length}/${titleLimit}` },
     { label: 'No commas/colons in title', pass: !/[,:]/.test(selected.metadata.title) },
-    { label: 'Description 200-500 chars', pass: selected.metadata.description.length >= 200 && selected.metadata.description.length <= 500, value: `${selected.metadata.description.length} chars` },
-    { label: '49 keywords', pass: keywordCount === 49, value: `${keywordCount}/49` },
+    ...(descriptionLimit > 0 ? [{ label: `Description ≤ ${descriptionLimit} chars`, pass: selected.metadata.description.length <= descriptionLimit, value: `${selected.metadata.description.length}/${descriptionLimit} chars` }] : []),
+    { label: `${keywordsLimit} keywords`, pass: keywordCount === keywordsLimit, value: `${keywordCount}/${keywordsLimit}` },
     { label: 'Single words only', pass: !selected.metadata.keywords.split(',').some(k => k.trim().includes(' ')) },
     { label: 'Minimum 4MP', pass: selected.resolution.megapixels >= 4, value: `${selected.resolution.megapixels.toFixed(1)}MP` },
     { label: 'Valid category', pass: selected.metadata.category >= 1 && selected.metadata.category <= 21, value: ADOBE_CATEGORIES[selected.metadata.category] },
     ...(selected.hasTransparency ? [{ label: 'Transparent BG in title', pass: /transparent/i.test(selected.metadata.title) }] : []),
     ...(isAiGenerated ? [{ label: 'AI Generated flagged', pass: true }] : []),
+    ...(!platformReq.aiContentAllowed && isAiGenerated ? [{ label: 'AI content NOT accepted on this platform', pass: false }] : []),
   ] : [];
 
   return (
@@ -343,6 +353,26 @@ export default function AdobeStockGenerator() {
                   {/* Stats Bar */}
                   <Card>
                     <CardContent className="p-4 space-y-3">
+                      {/* Platform Selector */}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Label className="text-xs font-medium">Platform:</Label>
+                        <Select value={selectedPlatform} onValueChange={(v) => setSelectedPlatform(v as ExportPlatform)}>
+                          <SelectTrigger className="w-[180px] h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(platformRequirements).map(([key, val]) => (
+                              <SelectItem key={key} value={key} className="text-xs">
+                                {val.icon} {val.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Badge variant="secondary" className="text-xs gap-1">
+                          T:{titleLimit} D:{descriptionLimit} K:{keywordsLimit}
+                        </Badge>
+                      </div>
+
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <Badge variant="outline" className="gap-1.5">
@@ -501,15 +531,15 @@ export default function AdobeStockGenerator() {
                             <ClipboardCopy className="h-4 w-4" /> Copy All
                           </Button>
                         </div>
-                        <MetadataField icon={<FileText className="h-4 w-4" />} label="Title" sublabel={`${selected.metadata.title.length}/70`}
+                        <MetadataField icon={<FileText className="h-4 w-4" />} label="Title" sublabel={`${selected.metadata.title.length}/${titleLimit}`}
                           value={selected.metadata.title}
                           onChange={(v) => updateImage(selected.id, { metadata: { ...selected.metadata!, title: v } })}
                           singleLine />
-                        <MetadataField icon={<MessageSquare className="h-4 w-4" />} label="Description" sublabel={`${selected.metadata.description.length} chars`}
+                        <MetadataField icon={<MessageSquare className="h-4 w-4" />} label="Description" sublabel={descriptionLimit > 0 ? `${selected.metadata.description.length}/${descriptionLimit}` : `${selected.metadata.description.length} chars`}
                           value={selected.metadata.description}
                           onChange={(v) => updateImage(selected.id, { metadata: { ...selected.metadata!, description: v } })} />
                         <MetadataField icon={<Tag className="h-4 w-4" />} label="Keywords"
-                          sublabel={<span className={cn(keywordCount === 49 ? 'text-emerald-600' : 'text-amber-600')}>{keywordCount}/49</span>}
+                          sublabel={<span className={cn(keywordCount === keywordsLimit ? 'text-emerald-600' : 'text-amber-600')}>{keywordCount}/{keywordsLimit}</span>}
                           value={selected.metadata.keywords}
                           onChange={(v) => updateImage(selected.id, { metadata: { ...selected.metadata!, keywords: v } })} />
                         <MetadataField icon={<ImageIcon className="h-4 w-4" />} label="AI Prompt"
@@ -539,21 +569,22 @@ export default function AdobeStockGenerator() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-primary" />
-                    Adobe Stock Guidelines
+                    {platformReq.icon} {platformReq.name} Guidelines
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {!selected?.metadata ? (
                     <div className="space-y-3 text-sm text-muted-foreground">
-                      <GuidelineItem text="Title: Max 70 chars, no commas/colons" />
-                      <GuidelineItem text="Description: 200-500 characters" />
-                      <GuidelineItem text="Keywords: Exactly 49 single words" />
+                      <GuidelineItem text={`Title: Max ${titleLimit} chars, no commas/colons`} />
+                      {descriptionLimit > 0 && <GuidelineItem text={`Description: Max ${descriptionLimit} characters`} />}
+                      <GuidelineItem text={`Keywords: Max ${keywordsLimit} single words`} />
                       <GuidelineItem text="No keyword stuffing" />
-                      <GuidelineItem text="Minimum 4MP resolution" />
-                      <GuidelineItem text="PNG transparent = auto-label" />
-                      <GuidelineItem text="AI content must be disclosed" />
-                      <GuidelineItem text="No trademarked terms" />
-                      <GuidelineItem text="Category must be 1-21" />
+                      <GuidelineItem text={`Min resolution: ${platformReq.minResolution}`} />
+                      <GuidelineItem text={`Formats: ${platformReq.formats.join(', ')}`} />
+                      <GuidelineItem text={platformReq.aiContentAllowed ? 'AI content accepted ✓' : 'AI content NOT accepted ✗'} />
+                      {platformReq.additionalNotes.map((note, i) => (
+                        <GuidelineItem key={i} text={note} />
+                      ))}
                     </div>
                   ) : (
                     <div className="space-y-2.5">
