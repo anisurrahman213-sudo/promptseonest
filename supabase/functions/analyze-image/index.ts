@@ -238,13 +238,13 @@ Generate the following:
      * high → elevated/towering/monumental
    - Use academic descriptors: dramatic, atmospheric, expansive, striking, compelling, distinctive, monumental, panoramic, sweeping
    - Structure: [Academic Adjective] + [Subject] + [Technical Detail] + [Setting]
-   - ${imageTypePrefix ? \`Start with "\${imageTypePrefix}" after any prefix\` : 'Lead with the MOST SPECIFIC, UNIQUE aspect'}
+   - ${imageTypePrefix ? `Start with "${imageTypePrefix}" after any prefix` : 'Lead with the MOST SPECIFIC, UNIQUE aspect'}
    - Include primary keyword naturally
    - NO generic adjectives (beautiful, nice, good, amazing, stunning) — use precise academic words
-   - Example: Instead of "Beautiful sunset" → "\${settings.prefix ? settings.prefix + ' ' : ''}\${imageTypePrefix}Atmospheric Twilight Cascading Over Mist-Laden Mountain Ridges\${settings.suffix ? ' ' + settings.suffix : ''}"
+   - Example: Instead of "Beautiful sunset" → "${settings.prefix ? settings.prefix + ' ' : ''}${imageTypePrefix}Atmospheric Twilight Cascading Over Mist-Laden Mountain Ridges${settings.suffix ? ' ' + settings.suffix : ''}"
    - Example: Instead of "Big tower in dark sky" → "Monumental Transmission Pylon Silhouetted Against Dramatic Twilight Horizon"
 
-3. **SEO Description** \${descLengthNote}:
+3. **SEO Description** ${descLengthNote}:
    - Write in IELTS Academic Band 8-9 style with sophisticated sentence structures
    - Formal tone throughout with technical terminology relevant to subject matter
    - Varied vocabulary — no word repeated more than twice
@@ -260,14 +260,14 @@ Generate the following:
      * Sentence 3: Atmospheric/mood description
      * Sentence 4: Professional use cases (3 minimum)
      * Sentence 5: Commercial value statement
-   - \${mediaType === 'video' ? 'Describe motion, transitions, and dynamic elements' : 'Describe visual elements, textures, and artistic qualities'}
+   - ${mediaType === 'video' ? 'Describe motion, transitions, and dynamic elements' : 'Describe visual elements, textures, and artistic qualities'}
 
-4. **Keywords/Tags** (exactly \${keywordCount} unique tags):\${negativeKeywordsInstruction}
+4. **Keywords/Tags** (exactly ${keywordCount} unique tags):${negativeKeywordsInstruction}
    - **ABSOLUTE CRITICAL: The FIRST 5 keywords are the MOST IMPORTANT — Adobe Stock gives them the HIGHEST weight in search ranking.**
      * These 5 keywords must PERFECTLY and EXACTLY describe what is in the image
      * Example: For a power line photo → first 5: "pylon, transmission, voltage, infrastructure, silhouette"
      * NOT: "tower, wire, shadow, building, electric" (too informal)
-   - **Keywords 6-10: The next 5 highest-selling, most-searched commercial terms** on \${platform}
+   - **Keywords 6-10: The next 5 highest-selling, most-searched commercial terms** on ${platform}
    - MANDATORY: Use technically accurate, Latinate/academic single words:
      * pylon (not tower), transmission (not wire), silhouette (not shadow)
      * twilight (not almost dark), infrastructure (not building)
@@ -284,7 +284,7 @@ Generate the following:
      * Use cases (5-7 terms)
      * Related concepts (5-7 terms)
      * Seasonal/temporal (2-3 if applicable)
-     * \${mediaType === 'video' ? 'Motion/action terms (5-7 terms)' : 'Composition terms (3-5 terms)'}
+     * ${mediaType === 'video' ? 'Motion/action terms (5-7 terms)' : 'Composition terms (3-5 terms)'}
    - Arrange: FIRST 5 = exact image description, 6-10 = best-selling terms, then MOST to LEAST specific
    - Use single words AND 2-3 word phrases
 
