@@ -1,0 +1,9 @@
+/* PromptSEONest content script styles - minimal, non-intrusive */
+.pn-highlight-error {
+  outline: 2px solid #ef4444 !important;
+  outline-offset: 1px;
+}
+.pn-highlight-ok {
+  outline: 2px solid #22c55e !important;
+  outline-offset: 1px;
+}

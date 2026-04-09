@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>PromptSEONest Settings</title>
+  <style>
+    body { width: 420px; min-height: auto; padding: 0; }
+    .settings-content { padding: 16px; }
+    .setting-group { margin-bottom: 16px; }
+    .setting-label { font-size: 12px; font-weight: 600; margin-bottom: 4px; display: block; }
+    .setting-desc { font-size: 11px; color: var(--pn-text-muted); margin-bottom: 6px; }
+    .setting-input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1.5px solid var(--pn-border);
+      border-radius: 8px;
+      font-size: 12px;
+      background: var(--pn-card);
+      color: var(--pn-text);
+      outline: none;
+      font-family: 'SF Mono', monospace;
+    }
+    .setting-input:focus { border-color: var(--pn-primary); }
+    .setting-select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1.5px solid var(--pn-border);
+      border-radius: 8px;
+      font-size: 12px;
+      background: var(--pn-card);
+      color: var(--pn-text);
+    }
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--pn-border);
+    }
+    .toggle-label { font-size: 12px; font-weight: 500; }
+    .toggle {
+      width: 40px; height: 22px;
+      background: var(--pn-border);
+      border-radius: 11px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+    }
+    .toggle.active { background: var(--pn-primary); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 18px; height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: left 0.2s;
+    }
+    .toggle.active::after { left: 20px; }
+    .save-msg { color: var(--pn-success); font-size: 11px; margin-top: 6px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="header-title">⚙️ Settings</div>
+      <div class="header-sub">PromptSEONest Configuration</div>
+    </div>
+  </div>
+
+  <div class="settings-content">
+    <div class="setting-group">
+      <label class="setting-label">Claude API Key</label>
+      <div class="setting-desc">Get your key from <a href="https://console.anthropic.com" target="_blank" style="color:var(--pn-primary)">console.anthropic.com</a></div>
+      <input type="password" class="setting-input" id="apiKey" placeholder="sk-ant-...">
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">API Endpoint (Advanced)</label>
+      <div class="setting-desc">Leave default unless using a proxy</div>
+      <input type="text" class="setting-input" id="apiEndpoint" placeholder="https://api.anthropic.com/v1/messages">
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">Default Platform</label>
+      <select class="setting-select" id="defaultPlatform">
+        <option value="adobe_stock">Adobe Stock</option>
+        <option value="shutterstock">Shutterstock</option>
+        <option value="freepik">Freepik</option>
+      </select>
+    </div>
+
+    <div class="setting-group">
+      <div class="toggle-row">
+        <span class="toggle-label">Auto-fill on page load</span>
+        <button class="toggle" id="toggleAutoFill"></button>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Dark Mode</span>
+        <button class="toggle" id="toggleDark"></button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btnSave">💾 Save Settings</button>
+    <div class="save-msg" id="saveMsg">✅ Settings saved successfully!</div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

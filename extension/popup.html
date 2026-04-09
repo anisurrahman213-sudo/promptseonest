@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>PromptSEONest</title>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="header-title">PromptSEONest</div>
+      <div class="header-sub">Stock Metadata Optimizer</div>
+    </div>
+    <div class="header-right">
+      <button class="header-btn" id="btnAutoFill" title="Auto-fill from page">📥</button>
+      <button class="header-btn" id="btnSettings" title="Settings">⚙️</button>
+    </div>
+  </div>
+
+  <!-- Platform Bar -->
+  <div class="platform-bar">
+    <span>Platform:</span>
+    <span class="platform-badge none" id="platformBadge">Not Detected</span>
+    <select id="platformSelect" style="margin-left:auto;font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--pn-border);background:var(--pn-card);color:var(--pn-text);">
+      <option value="adobe_stock">Adobe Stock</option>
+      <option value="shutterstock">Shutterstock</option>
+      <option value="freepik">Freepik</option>
+    </select>
+  </div>
+
+  <!-- Score -->
+  <div class="score-section" id="scoreSection" style="display:none;">
+    <div class="score-header">
+      <span class="score-label">Compliance Score</span>
+      <span class="score-value" id="scoreValue">0%</span>
+    </div>
+    <div class="score-bar">
+      <div class="score-fill" id="scoreFill" style="width:0%"></div>
+    </div>
+    <div id="readyBadge" class="ready-badge hidden">✅ Platform Ready</div>
+    <div class="flex-between mt-1">
+      <span class="text-sm text-muted" id="errorSummary"></span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="content">
+    <div class="tabs">
+      <button class="tab active" data-tab="input">Input</button>
+      <button class="tab" data-tab="output">Output</button>
+      <button class="tab" data-tab="checklist">Checklist</button>
+    </div>
+
+    <!-- Input Tab -->
+    <div class="tab-content active" id="tab-input">
+      <div class="field-group">
+        <div class="field-label">
+          <span>Title</span>
+          <span class="field-counter" id="titleCounter">0/70</span>
+        </div>
+        <input type="text" class="field-input" id="titleInput" placeholder="Enter or paste title...">
+        <div class="field-issues" id="titleIssues"></div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">
+          <span>Keywords</span>
+          <span class="field-counter" id="kwCounter">0/49</span>
+        </div>
+        <textarea class="field-textarea" id="kwInput" placeholder="Comma-separated keywords..."></textarea>
+        <div class="field-issues" id="kwIssues"></div>
+        <div class="keyword-badges" id="kwBadges"></div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">
+          <span>Description</span>
+          <span class="field-counter" id="descCounter">0 chars</span>
+        </div>
+        <textarea class="field-textarea" id="descInput" placeholder="Enter description..."></textarea>
+        <div class="field-issues" id="descIssues"></div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label"><span>Prompt</span></div>
+        <textarea class="field-textarea" id="promptInput" placeholder="AI generation prompt (optional)..."></textarea>
+      </div>
+
+      <button class="btn-primary" id="btnAnalyze">
+        <span>🔍</span> Analyze & Fix
+      </button>
+
+      <div class="btn-primary hidden" id="loadingBtn" style="pointer-events:none;">
+        <div class="spinner"></div> Analyzing...
+      </div>
+    </div>
+
+    <!-- Output Tab -->
+    <div class="tab-content" id="tab-output">
+      <div id="outputEmpty" class="text-center text-muted" style="padding:40px 0;">
+        Click "Analyze & Fix" to see results
+      </div>
+      <div id="outputContent" class="hidden">
+        <!-- Fixed Title -->
+        <div class="fixed-field">
+          <div class="field-label">
+            <span>✅ Title</span>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <span class="field-counter" id="fixedTitleCounter"></span>
+              <button class="btn-copy" data-copy="fixedTitle">📋 Copy</button>
+            </div>
+          </div>
+          <div class="fixed-value" id="fixedTitle"></div>
+        </div>
+
+        <!-- Alt Titles -->
+        <div class="alt-titles" id="altTitlesSection"></div>
+
+        <!-- Fixed Keywords -->
+        <div class="fixed-field">
+          <div class="field-label">
+            <span>✅ Keywords</span>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <span class="field-counter" id="fixedKwCounter"></span>
+              <button class="btn-copy" data-copy="fixedKw">📋 Copy</button>
+            </div>
+          </div>
+          <div class="fixed-value" id="fixedKw"></div>
+        </div>
+
+        <!-- Fixed Description -->
+        <div class="fixed-field">
+          <div class="field-label">
+            <span>✅ Description</span>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <span class="field-counter" id="fixedDescCounter"></span>
+              <button class="btn-copy" data-copy="fixedDesc">📋 Copy</button>
+            </div>
+          </div>
+          <div class="fixed-value" id="fixedDesc"></div>
+        </div>
+
+        <!-- Prompt Checks -->
+        <div id="promptChecksSection" class="hidden">
+          <div style="font-size:12px;font-weight:700;margin-bottom:6px;">Prompt Quality</div>
+          <div class="prompt-checks" id="promptChecks"></div>
+        </div>
+
+        <!-- Error List -->
+        <div id="errorListSection" class="hidden">
+          <div style="font-size:12px;font-weight:700;margin-bottom:6px;">Changes Made (<span id="errorCount">0</span>)</div>
+          <div class="error-list" id="errorList"></div>
+        </div>
+
+        <button class="btn-secondary" id="btnCopyAll">📋 Copy All Fixed Metadata</button>
+        <button class="btn-secondary" id="btnAutoFillBack" style="margin-top:4px;">📥 Auto-Fill Into Page</button>
+      </div>
+    </div>
+
+    <!-- Checklist Tab -->
+    <div class="tab-content" id="tab-checklist">
+      <div id="checklistContent"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
