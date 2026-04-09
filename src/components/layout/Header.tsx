@@ -124,6 +124,14 @@ export function Header() {
             </>
           ) : (
             <>
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/metadata-fixer')}>
+                <Wrench className="h-4 w-4 mr-1" />
+                Metadata Fixer
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/extension')}>
+                <Chrome className="h-4 w-4 mr-1" />
+                Extension
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/tutorials')}>
                 <HelpCircle className="h-4 w-4 mr-1" />
                 {t('header.tutorials')}
