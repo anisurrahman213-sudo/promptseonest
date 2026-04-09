@@ -531,15 +531,15 @@ export default function AdobeStockGenerator() {
                             <ClipboardCopy className="h-4 w-4" /> Copy All
                           </Button>
                         </div>
-                        <MetadataField icon={<FileText className="h-4 w-4" />} label="Title" sublabel={`${selected.metadata.title.length}/70`}
+                        <MetadataField icon={<FileText className="h-4 w-4" />} label="Title" sublabel={`${selected.metadata.title.length}/${titleLimit}`}
                           value={selected.metadata.title}
                           onChange={(v) => updateImage(selected.id, { metadata: { ...selected.metadata!, title: v } })}
                           singleLine />
-                        <MetadataField icon={<MessageSquare className="h-4 w-4" />} label="Description" sublabel={`${selected.metadata.description.length} chars`}
+                        <MetadataField icon={<MessageSquare className="h-4 w-4" />} label="Description" sublabel={descriptionLimit > 0 ? `${selected.metadata.description.length}/${descriptionLimit}` : `${selected.metadata.description.length} chars`}
                           value={selected.metadata.description}
                           onChange={(v) => updateImage(selected.id, { metadata: { ...selected.metadata!, description: v } })} />
                         <MetadataField icon={<Tag className="h-4 w-4" />} label="Keywords"
-                          sublabel={<span className={cn(keywordCount === 49 ? 'text-emerald-600' : 'text-amber-600')}>{keywordCount}/49</span>}
+                          sublabel={<span className={cn(keywordCount === keywordsLimit ? 'text-emerald-600' : 'text-amber-600')}>{keywordCount}/{keywordsLimit}</span>}
                           value={selected.metadata.keywords}
                           onChange={(v) => updateImage(selected.id, { metadata: { ...selected.metadata!, keywords: v } })} />
                         <MetadataField icon={<ImageIcon className="h-4 w-4" />} label="AI Prompt"
