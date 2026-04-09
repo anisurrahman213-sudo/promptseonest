@@ -26,64 +26,69 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are an expert Adobe Stock metadata optimizer. Your job is to fix and optimize stock metadata for maximum search ranking and compliance.
+    const systemPrompt = `You are an expert Adobe Stock metadata validator and fixer. Analyze the given metadata and fix ALL issues according to these strict rules.
 
-RULES FOR TITLE:
-- Remove ALL special characters: colons (:), dashes (-), slashes (/), pipes (|), brackets, etc. Only letters, numbers, spaces, and periods allowed.
-- No color details in the title (remove "blue", "red", "orange" etc. from title)
-- Max 70 characters
-- Must be unique and SEO-friendly, natural sentence structure
-- If the background is described as "grey" or "gray", change it to "white" in the title
-- Format should follow: [Subject] + [Style] + [Background]
-- Example: "Professional Business Woman Standing Isolated on White Background"
+## TITLE RULES:
+- Remove ALL special characters: colon(:) semicolon(;) slash(/) dash(-) comma(,) quotes("') pipes(|) brackets([]{}) ampersand(&) hash(#) at(@) exclamation(!) question(?)
+- Only allow: letters, numbers, spaces, periods
+- Maximum 70 characters
+- Remove ALL color names from title (red, blue, green, orange, yellow, pink, purple, cyan, magenta, lime, brown, grey, gray, black, white, beige, teal, violet, maroon, navy, gold, silver, turquoise, crimson, ivory, coral, amber, indigo, scarlet, emerald, sapphire, ruby, bronze, copper, platinum, chartreuse, fuchsia, khaki, lavender, mauve, ochre, olive, peach, periwinkle, plum, rose, rust, salmon, sienna, slate, tan, taupe, vermillion)
+- Title MUST end with background type: "on White Background" or "on Transparent Background" or "Isolated on White Background"
+- If grey/gray background is mentioned anywhere, change to "White Background"
+- Format: [Subject] + [Action/Style] + on [Background Type]
+- Generate 3 alternative unique title suggestions following same rules
 
-RULES FOR KEYWORDS:
-- Every keyword must be a SINGLE WORD only — no spaces, no hyphens
-- Convert hyphenated words: "close-up" → "closeup", "high-quality" → "highquality" or split into separate words
-- Convert multi-word phrases: "orange spots" → "orange" and "spots" as separate keywords
-- "lime green" → "lime" and "green" as separate keywords
-- Must have EXACTLY 49 keywords
-- Best ranking/most searchable words first
-- Adobe Stock guideline compliant
-- Remove all duplicates
-- No keyword stuffing (no repetitive variants)
-- All lowercase
+## KEYWORD RULES:
+- Every keyword MUST be a single word — no spaces allowed
+- Remove hyphens and merge: "close-up" → "closeup", "high-quality" → "highquality"
+- Split multi-word phrases into individual words: "white background" → keep only "background"
+- Compound concepts: "life cycle" → "lifecycle", "sun flower" → "sunflower"
+- Remove ALL exact duplicate words (case-insensitive)
+- Remove near-duplicates: if "detail" and "detailed" both exist, keep only the more useful one
+- Final count MUST be EXACTLY 49 keywords
+- If fewer than 49: add relevant, high-search-volume single keywords related to the image subject
+- If more than 49: remove least relevant keywords
+- Sort by search relevance — most commonly searched terms first
+- All keywords lowercase
 
-RULES FOR BACKGROUND:
-- If prompt mentions "grey background" or "gray background", suggest "white background" instead
-- Add "white", "background", "isolated" as keywords if relevant
-- Update title to mention white background if applicable
+## DESCRIPTION RULES:
+- Must be 200-500 characters
+- Must mention at least 2 use cases (e.g., marketing, web design, presentations, social media, etc.)
+- No keyword stuffing — natural reading flow
+- Last sentence must mention commercial or editorial use suitability
+- If too short, expand with relevant details
+- If too long, trim while keeping key information
 
-RULES FOR DESCRIPTION:
-- 200-500 characters
-- Natural language, mention potential use cases
-- No special characters that could cause issues
-- SEO optimized
+## PROMPT VALIDATION:
+- Check if "white background" or "transparent background" is mentioned
+- Check if lighting is described (studio lighting, soft light, etc.)
+- Check if camera angle is mentioned (front view, top view, eye level, etc.)
+- Check if color palette is described
+- Check if mood/atmosphere is mentioned (professional, clean, vibrant, etc.)
 
-Analyze the input metadata and return a JSON response with:
-1. Fixed versions of all fields
-2. List of issues found in each field
-3. Compliance score (0-100)
-
-Respond ONLY with valid JSON in this exact format:
+Respond ONLY with valid JSON:
 {
-  "fixed": {
-    "title": "...",
-    "keywords": "word1, word2, word3, ...",
-    "description": "...",
-    "prompt": "..."
+  "title": "Fixed title here",
+  "alt_titles": ["Alt title 1", "Alt title 2", "Alt title 3"],
+  "keywords": "word1, word2, word3, ... (exactly 49 single words)",
+  "description": "Fixed description here",
+  "prompt_checks": {
+    "white_background": true/false,
+    "lighting": true/false,
+    "camera_angle": true/false,
+    "color_palette": true/false,
+    "mood": true/false
   },
-  "issues": [
+  "errors": [
     {
       "field": "title|keywords|description|prompt",
       "type": "error|warning",
-      "original": "the problematic text",
-      "fixed": "the corrected text",
-      "reason": "brief explanation"
+      "original": "problematic text",
+      "fixed": "corrected text",
+      "reason": "Short explanation"
     }
   ],
-  "score": 85,
-  "summary": "Brief summary of all changes made"
+  "compliance_score": 0-100
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -98,7 +103,7 @@ Respond ONLY with valid JSON in this exact format:
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Fix and optimize the following Adobe Stock metadata:\n\nTitle: ${title || "(empty)"}\n\nKeywords: ${keywords || "(empty)"}\n\nDescription: ${description || "(empty)"}\n\nPrompt: ${prompt || "(empty)"}`,
+            content: `Fix and optimize this Adobe Stock metadata:\n\nTITLE: ${title || "(empty)"}\n\nKEYWORDS: ${keywords || "(empty)"}\n\nDESCRIPTION: ${description || "(empty)"}\n\nPROMPT: ${prompt || "(empty)"}`,
           },
         ],
       }),
@@ -107,14 +112,12 @@ Respond ONLY with valid JSON in this exact format:
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
         return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const errText = await response.text();
@@ -126,9 +129,7 @@ Respond ONLY with valid JSON in this exact format:
     let content = data.choices?.[0]?.message?.content || "";
 
     const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      content = jsonMatch[1].trim();
-    }
+    if (jsonMatch) content = jsonMatch[1].trim();
 
     let metadata;
     try {
