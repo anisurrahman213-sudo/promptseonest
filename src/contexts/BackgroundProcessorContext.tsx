@@ -136,10 +136,10 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
         
         // Compress the image first
         const compressedFile = await compressImage(file, {
-          maxWidth: 1024,
-          maxHeight: 1024,
-          quality: 0.3,
-          maxSizeKB: 100,
+          maxWidth: 1400,
+          maxHeight: 1400,
+          quality: 0.5,
+          maxSizeKB: 200,
           aggressive: true
         });
         
