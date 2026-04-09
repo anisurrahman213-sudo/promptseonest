@@ -65,12 +65,14 @@ export function Header() {
 
           {user ? (
             <>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
-                <Coins className="h-4 w-4 text-warning" />
-                <span className="font-medium text-sm">
-                  {credits !== null ? credits : '...'} {t('common.credits')}
-                </span>
-              </div>
+              {hasActivePlans && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
+                  <Coins className="h-4 w-4 text-warning" />
+                  <span className="font-medium text-sm">
+                    {credits !== null ? credits : '...'} {t('common.credits')}
+                  </span>
+                </div>
+              )}
 
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/profile')}>
                 <User className="h-4 w-4 mr-1" />
