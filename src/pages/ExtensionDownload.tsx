@@ -1,8 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Download, Chrome, CheckCircle2, Settings, Zap, Globe } from "lucide-react";
+import { ArrowLeft, Download, Chrome, Settings, Globe, ChevronLeft, ChevronRight, X, Images } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useCallback } from "react";
+
+import screenshot1 from "@/assets/extension-screenshot-1.jpg";
+import screenshot2 from "@/assets/extension-screenshot-2.jpg";
+import screenshot3 from "@/assets/extension-screenshot-3.jpg";
+import screenshot4 from "@/assets/extension-screenshot-4.jpg";
+
+const screenshots = [
+  { src: screenshot1, title: "Metadata Optimizer Popup", desc: "Fix titles, keywords & descriptions with compliance scoring" },
+  { src: screenshot2, title: "Auto-Fill on Adobe Stock", desc: "Automatically fill metadata into upload page fields" },
+  { src: screenshot3, title: "Keyword Validator", desc: "Detect multi-word keywords and ensure exactly 49 single words" },
+  { src: screenshot4, title: "Right-Click Context Menu", desc: "Generate metadata for any image directly from context menu" },
+];
 
 const features = [
   { icon: "🔍", title: "Auto-Detect Platform", desc: "Detects Adobe Stock, Shutterstock & Freepik automatically" },
@@ -21,6 +34,105 @@ const steps = [
   "Click Load Unpacked and select the unzipped folder",
   "Pin PromptSEONest to your toolbar — ready to use!",
 ];
+
+function ScreenshotGallery() {
+  const [current, setCurrent] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
+
+  const next = useCallback(() => setCurrent((p) => (p + 1) % screenshots.length), []);
+  const prev = useCallback(() => setCurrent((p) => (p - 1 + screenshots.length) % screenshots.length), []);
+
+  return (
+    <>
+      <div className="space-y-4">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 text-sm font-medium text-primary">
+            <Images className="h-4 w-4" /> Screenshots
+          </div>
+          <h3 className="font-bold text-lg">See It in Action</h3>
+        </div>
+
+        {/* Main preview */}
+        <div className="relative group cursor-pointer" onClick={() => setLightbox(true)}>
+          <div className="overflow-hidden rounded-xl border bg-muted/30 shadow-lg">
+            <img
+              src={screenshots[current].src}
+              alt={screenshots[current].title}
+              className="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              loading="lazy"
+              width={800}
+              height={600}
+            />
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); prev(); }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/80 backdrop-blur-sm border shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); next(); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/80 backdrop-blur-sm border shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Caption */}
+        <div className="text-center">
+          <p className="font-semibold text-sm">{screenshots[current].title}</p>
+          <p className="text-xs text-muted-foreground">{screenshots[current].desc}</p>
+        </div>
+
+        {/* Thumbnails */}
+        <div className="flex justify-center gap-2">
+          {screenshots.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`overflow-hidden rounded-lg border-2 transition-all w-20 h-15 ${
+                i === current ? "border-primary ring-2 ring-primary/20" : "border-transparent opacity-60 hover:opacity-100"
+              }`}
+            >
+              <img src={s.src} alt={s.title} className="w-full h-full object-cover" loading="lazy" width={80} height={60} />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setLightbox(false)}>
+          <button className="absolute top-4 right-4 text-white/70 hover:text-white" onClick={() => setLightbox(false)}>
+            <X className="h-6 w-6" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); prev(); }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <img
+            src={screenshots[current].src}
+            alt={screenshots[current].title}
+            className="max-w-full max-h-[85vh] rounded-lg object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={(e) => { e.stopPropagation(); next(); }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+          <div className="absolute bottom-6 text-center text-white">
+            <p className="font-semibold">{screenshots[current].title}</p>
+            <p className="text-sm text-white/70">{screenshots[current].desc}</p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function ExtensionDownload() {
   const navigate = useNavigate();
@@ -70,6 +182,9 @@ export default function ExtensionDownload() {
           </Button>
           <p className="text-xs text-muted-foreground">Works on Chrome, Edge, Brave, Arc & Opera</p>
         </div>
+
+        {/* Screenshot Gallery */}
+        <ScreenshotGallery />
 
         {/* Features */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
