@@ -70,6 +70,7 @@ const App = () => (
                   <Route path="/admin-dashboard" element={<AdminDashboard />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/tutorials" element={<Tutorials />} />
+                  <Route path="/adobe-stock-generator" element={<AdobeStockGenerator />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
