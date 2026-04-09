@@ -200,7 +200,7 @@ export default function Dashboard() {
           {/* Stats Cards */}
           <StatsCards 
             totalGenerations={totalCount}
-            credits={credits}
+            credits={hasActivePlans ? credits : null}
             todayGenerations={todayGenerations}
           />
 
@@ -250,13 +250,13 @@ export default function Dashboard() {
                     <MediaUploader 
                       onUpload={handleUpload} 
                       isProcessing={isProcessing}
-                      maxFiles={credits !== null ? Math.min(credits, 500) : 500}
+                      maxFiles={hasActivePlans && credits !== null ? Math.min(credits, 500) : 500}
                       selectedPlatform={metadataSettings.exportPlatform}
                     />
                   </motion.div>
                   
                   <AnimatePresence>
-                    {credits !== null && credits < 3 && credits > 0 && (
+                    {hasActivePlans && credits !== null && credits < 3 && credits > 0 && (
                       <motion.div 
                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-warning/10 to-orange-500/10 border border-warning/20"
                         initial={{ opacity: 0, y: 20 }}
@@ -287,7 +287,7 @@ export default function Dashboard() {
                       </motion.div>
                     )}
 
-                    {credits === 0 && (
+                    {hasActivePlans && credits === 0 && (
                       <motion.div 
                         className="flex flex-col items-center justify-center p-6 sm:p-8 rounded-xl sm:rounded-2xl bg-gradient-to-r from-destructive/10 to-red-500/10 border border-destructive/20 text-center"
                         initial={{ opacity: 0, scale: 0.95 }}
