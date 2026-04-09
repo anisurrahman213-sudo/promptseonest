@@ -17,6 +17,7 @@ export function Header() {
   const { credits } = useCredits();
   const { theme, toggleTheme } = useTheme();
   const { data: isAdmin } = useIsAdmin();
+  const { data: hasActivePlans } = usePlansActive();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
