@@ -16,6 +16,7 @@ import { PullToRefresh } from '@/components/dashboard/PullToRefresh';
 import { VirtualGenerationList } from '@/components/dashboard/VirtualGenerationList';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
+import { usePlansActive } from '@/hooks/usePlansActive';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
 import { useBackgroundProcessor } from '@/contexts/BackgroundProcessorContext';
 import { Loader2, Sparkles, History, Zap } from 'lucide-react';
@@ -28,6 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function Dashboard() {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
+  const { data: hasActivePlans } = usePlansActive();
   const { credits, refreshCredits } = useCredits();
   const { 
     generations, 
@@ -109,7 +111,7 @@ export default function Dashboard() {
   const handleUpload = async (mediaFiles: MediaFile[]) => {
     if (!user) return;
     
-    if (credits !== null && credits < mediaFiles.length) {
+    if (hasActivePlans && credits !== null && credits < mediaFiles.length) {
       toast.error(t('errors.notEnoughCredits', { needed: mediaFiles.length, have: credits }));
       return;
     }
@@ -198,7 +200,7 @@ export default function Dashboard() {
           {/* Stats Cards */}
           <StatsCards 
             totalGenerations={totalCount}
-            credits={credits}
+            credits={hasActivePlans ? credits : null}
             todayGenerations={todayGenerations}
           />
 
@@ -248,13 +250,13 @@ export default function Dashboard() {
                     <MediaUploader 
                       onUpload={handleUpload} 
                       isProcessing={isProcessing}
-                      maxFiles={credits !== null ? Math.min(credits, 500) : 500}
+                      maxFiles={hasActivePlans && credits !== null ? Math.min(credits, 500) : 500}
                       selectedPlatform={metadataSettings.exportPlatform}
                     />
                   </motion.div>
                   
                   <AnimatePresence>
-                    {credits !== null && credits < 3 && credits > 0 && (
+                    {hasActivePlans && credits !== null && credits < 3 && credits > 0 && (
                       <motion.div 
                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-warning/10 to-orange-500/10 border border-warning/20"
                         initial={{ opacity: 0, y: 20 }}
@@ -285,7 +287,7 @@ export default function Dashboard() {
                       </motion.div>
                     )}
 
-                    {credits === 0 && (
+                    {hasActivePlans && credits === 0 && (
                       <motion.div 
                         className="flex flex-col items-center justify-center p-6 sm:p-8 rounded-xl sm:rounded-2xl bg-gradient-to-r from-destructive/10 to-red-500/10 border border-destructive/20 text-center"
                         initial={{ opacity: 0, scale: 0.95 }}

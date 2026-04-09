@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { useTheme } from '@/hooks/useTheme';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
+import { usePlansActive } from '@/hooks/usePlansActive';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle } from 'lucide-react';
 import { useState } from 'react';
@@ -16,6 +17,7 @@ export function Header() {
   const { credits } = useCredits();
   const { theme, toggleTheme } = useTheme();
   const { data: isAdmin } = useIsAdmin();
+  const { data: hasActivePlans } = usePlansActive();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -63,12 +65,14 @@ export function Header() {
 
           {user ? (
             <>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
-                <Coins className="h-4 w-4 text-warning" />
-                <span className="font-medium text-sm">
-                  {credits !== null ? credits : '...'} {t('common.credits')}
-                </span>
-              </div>
+              {hasActivePlans && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
+                  <Coins className="h-4 w-4 text-warning" />
+                  <span className="font-medium text-sm">
+                    {credits !== null ? credits : '...'} {t('common.credits')}
+                  </span>
+                </div>
+              )}
 
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/profile')}>
                 <User className="h-4 w-4 mr-1" />
@@ -130,7 +134,7 @@ export function Header() {
 
         {/* Mobile Navigation */}
         <div className="flex sm:hidden items-center gap-1.5">
-          {user && (
+          {user && hasActivePlans && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted text-xs">
               <Coins className="h-3.5 w-3.5 text-warning" />
               <span className="font-medium">
