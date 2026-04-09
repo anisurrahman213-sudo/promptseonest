@@ -48,10 +48,10 @@ export function useParallelUpload({
         console.log(`🎬 Video processing: ${file.name}`);
         
         base64 = await extractVideoFramesGrid(file, {
-          frameCount: 6,
-          gridCols: 3,
-          frameWidth: 640,
-          quality: 0.85
+          frameCount: 4,
+          gridCols: 2,
+          frameWidth: 320,
+          quality: 0.4
         });
         
         // Upload original video and frame grid in parallel
@@ -83,10 +83,10 @@ export function useParallelUpload({
         
         // Compress the image first
         const compressedFile = await compressImage(file, {
-          maxWidth: 2048,
-          maxHeight: 2048,
-          quality: 0.75,
-          maxSizeKB: 400,
+          maxWidth: 1024,
+          maxHeight: 1024,
+          quality: 0.3,
+          maxSizeKB: 100,
           aggressive: true
         });
         
