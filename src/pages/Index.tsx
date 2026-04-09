@@ -459,6 +459,68 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Chrome Extension CTA */}
+      <section aria-label="Chrome Extension" className="py-10 sm:py-16 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="mx-auto max-w-5xl">
+            <div className="grid gap-6 sm:gap-10 items-center grid-cols-1 md:grid-cols-2">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs sm:text-sm font-medium text-primary">
+                  <Chrome className="h-3.5 w-3.5" /> Chrome Extension
+                </div>
+                <h2 className="mb-3 text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+                  Optimize Metadata Right From Your Browser
+                </h2>
+                <p className="mb-4 text-sm sm:text-base text-muted-foreground">
+                  Fix titles, keywords & descriptions for Adobe Stock, Shutterstock & Freepik — directly on their upload pages. Auto-detect platform, auto-fill fields, and get instant compliance scoring.
+                </p>
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {["Auto-Detect Platform", "One-Click Fix", "49 Keywords", "Compliance Score"].map((tag) => (
+                    <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                      <CheckCircle2 className="h-3 w-3" /> {tag}
+                    </span>
+                  ))}
+                </div>
+                <Link to="/extension">
+                  <Button size="lg" className="gap-2 px-5 py-4 sm:px-6 sm:py-5 text-sm sm:text-base">
+                    <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+                    Download Extension
+                    <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  </Button>
+                </Link>
+                <p className="mt-2 text-xs text-muted-foreground">Works on Chrome, Edge, Brave, Arc & Opera</p>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="relative"
+              >
+                <div className="overflow-hidden rounded-xl border shadow-xl bg-card">
+                  <img
+                    src={extensionScreenshot}
+                    alt="PromptSEONest Chrome Extension popup showing metadata optimizer"
+                    className="w-full aspect-[4/3] object-cover"
+                    loading="lazy"
+                    width={800}
+                    height={600}
+                  />
+                </div>
+                <div className="absolute -bottom-3 -right-3 sm:-bottom-4 sm:-right-4 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold shadow-lg">
+                  100% Free
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section aria-label="Call to Action" className="py-12 sm:py-24">
         <div className="container mx-auto px-4 sm:px-6">
