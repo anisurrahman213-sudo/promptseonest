@@ -6,8 +6,9 @@ import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 
-// Optimized concurrent uploads - balanced for speed and stability
-const MAX_CONCURRENT = 25;
+// Reduced concurrency to avoid AI gateway rate limits
+const MAX_CONCURRENT = 5;
+const STAGGER_DELAY_MS = 500;
 
 interface UseParallelUploadOptions {
   userId: string;
