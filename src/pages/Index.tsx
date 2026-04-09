@@ -11,8 +11,9 @@ import { toast } from "@/hooks/use-toast";
 import { useFeatureCards } from "@/hooks/useFeatureCards";
 import { useSiteSettingsBatch, getSettingValue } from "@/hooks/useSiteSettings";
 import { motion } from "framer-motion";
-import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2, Calendar, LucideIcon, Loader2 } from "lucide-react";
+import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2, Calendar, Chrome, LucideIcon, Loader2 } from "lucide-react";
 import { getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/imageOptimization";
+import extensionScreenshot from "@/assets/extension-screenshot-1.jpg";
 
 // Lazy load below-fold components
 const DemoVideoSection = lazy(() => import("@/components/landing/DemoVideoSection"));
