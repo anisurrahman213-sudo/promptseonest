@@ -337,16 +337,16 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
   // Auto-apply platform limits when platform changes
   useEffect(() => {
     if (isAutoLimits && settings.exportPlatform !== prevPlatformRef.current) {
+      prevPlatformRef.current = settings.exportPlatform;
       const limits = platformLimits[settings.exportPlatform];
-      onSettingsChange({
-        ...settings,
+      onSettingsChange((prev: MetadataSettings) => ({
+        ...prev,
         titleLength: limits.title,
         descriptionLength: limits.description,
         keywordsCount: limits.keywords,
-      });
-      prevPlatformRef.current = settings.exportPlatform;
+      }));
     }
-  }, [settings.exportPlatform, isAutoLimits]);
+  }, [settings.exportPlatform, isAutoLimits, onSettingsChange]);
 
   // Reset to platform defaults
   const resetToDefaults = () => {
