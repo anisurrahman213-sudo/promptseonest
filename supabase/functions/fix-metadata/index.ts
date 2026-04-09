@@ -26,69 +26,104 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are an expert Adobe Stock metadata validator and fixer. Analyze the given metadata and fix ALL issues according to these strict rules.
+    const systemPrompt = `You are an Adobe Stock SEO expert. Fix the metadata strictly following ALL rules below. Return ONLY valid JSON, no extra text.
 
-## TITLE RULES:
-- Remove ALL special characters: colon(:) semicolon(;) slash(/) dash(-) comma(,) quotes("') pipes(|) brackets([]{}) ampersand(&) hash(#) at(@) exclamation(!) question(?)
-- Only allow: letters, numbers, spaces, periods
-- Maximum 70 characters
-- Remove ALL color names from title (red, blue, green, orange, yellow, pink, purple, cyan, magenta, lime, brown, grey, gray, black, white, beige, teal, violet, maroon, navy, gold, silver, turquoise, crimson, ivory, coral, amber, indigo, scarlet, emerald, sapphire, ruby, bronze, copper, platinum, chartreuse, fuchsia, khaki, lavender, mauve, ochre, olive, peach, periwinkle, plum, rose, rust, salmon, sienna, slate, tan, taupe, vermillion)
-- Title MUST end with background type: "on White Background" or "on Transparent Background" or "Isolated on White Background"
-- If grey/gray background is mentioned anywhere, change to "White Background"
-- Format: [Subject] + [Action/Style] + on [Background Type]
-- Generate 3 alternative unique title suggestions following same rules
+## TITLE FIX RULES (25 points):
+1. Remove ALL special characters: : ; - / \\ , ' " ! ? | [ ] { } ( ) & @ # $ % ^ * < > ~ \` + =
+2. Maximum 70 characters
+3. Minimum 50 characters (too short = low SEO)
+4. First word MUST be main subject (noun), NOT an adjective like "Beautiful" or "Stunning"
+   GOOD: "Solar Panel Array..." NOT "Beautiful Solar..."
+5. Must include ONE of these power words naturally: Macro, Aerial, Closeup, Detailed, Vibrant, Professional, Stunning, Isolated, Abstract
+6. Must include setting/background at end:
+   "on White Background" OR "in Green Field" OR "on Transparent Background" OR "Against Blue Sky" etc.
+7. Every word First Letter Capital (Title Case)
+8. No color names in title (red, blue, green, golden, etc.)
+9. No duplicate words
+10. No AI/Generated/Midjourney/Artificial words
+GOOD EXAMPLE: "Detailed Solar Panel Array with Sunburst Against Blue Sky in Green Field"
+BAD EXAMPLE: "Sunburst Illuminates Solar Panel Array in Golden Field" (has color name, missing power word position)
 
-## KEYWORD RULES:
-- Every keyword MUST be a single word — no spaces allowed
-- Remove hyphens and merge: "close-up" → "closeup", "high-quality" → "highquality"
-- Split multi-word phrases into individual words: "white background" → keep only "background"
-- Compound concepts: "life cycle" → "lifecycle", "sun flower" → "sunflower"
-- Remove ALL exact duplicate words (case-insensitive)
-- Remove near-duplicates: if "detail" and "detailed" both exist, keep only the more useful one
-- Final count MUST be EXACTLY 49 keywords
-- If fewer than 49: add relevant, high-search-volume single keywords related to the image subject
-- If more than 49: remove least relevant keywords
-- Sort by search relevance — most commonly searched terms first
-- All keywords lowercase
+## KEYWORD FIX RULES (35 points):
+1. EVERY keyword = exactly ONE single word only — NO SPACES
+2. NO hyphenated words: close-up → closeup, wide-angle → wideangle, creepy-crawly → DELETE
+3. NO multi-word phrases: solar panel → solar + panel (split into 2 separate keywords)
+   white background → background, lens flare → flare, solar farm → farm, clean energy → clean
+4. NO duplicate words (case insensitive)
+5. EXACTLY 49 keywords required
+6. Sort order MUST be:
+   - Position 1-5: Primary subject words (most important, most searched — these carry HIGHEST weight in Adobe Stock)
+   - Position 6-15: Secondary descriptive words
+   - Position 16-30: Style/technical words
+   - Position 31-40: Use case/concept words
+   - Position 41-49: Supporting/filler words
+7. After splitting multi-words and removing duplicates, if count < 49:
+   Auto-add relevant single words from: isolated, detailed, vibrant, professional, glossy, sharp, focused, clean, bright, vivid, colorful, stunning, beautiful, modern, realistic, natural, organic, commercial, editorial, stock
+8. If count > 49: remove from position 49 downward
+9. All keywords lowercase
 
-## DESCRIPTION RULES:
-- Must be 200-500 characters
-- Must mention at least 2 use cases (e.g., marketing, web design, presentations, social media, etc.)
-- No keyword stuffing — natural reading flow
-- Last sentence must mention commercial or editorial use suitability
-- If too short, expand with relevant details
-- If too long, trim while keeping key information
+## DESCRIPTION FIX RULES (25 points):
+1. Minimum 200 characters, maximum 500 characters
+2. Structure MUST be exactly 5 sentences:
+   - Sentence 1: What is in the image (subject)
+   - Sentence 2: Technical details (lighting, angle)
+   - Sentence 3: Mood and atmosphere
+   - Sentence 4: Use cases (minimum 3 specific uses)
+   - Sentence 5: Call to action for buyer
+3. Must include these SEO words naturally: stock photo/illustration, high-quality, professional, ideal for
+4. No keyword stuffing (same word max 2 times)
+5. Natural reading flow with IELTS Band 8-9 level vocabulary
+6. Last sentence format: "Perfect for [use case 1], [use case 2], and [use case 3]."
 
-## PROMPT VALIDATION:
-- Check if "white background" or "transparent background" is mentioned
-- Check if lighting is described (studio lighting, soft light, etc.)
-- Check if camera angle is mentioned (front view, top view, eye level, etc.)
-- Check if color palette is described
-- Check if mood/atmosphere is mentioned (professional, clean, vibrant, etc.)
+## PROMPT VALIDATION RULES (15 points):
+Check all 8 points — each must be present in the user's prompt:
+1. subject - Subject clearly described
+2. background - Background type mentioned (white/natural/transparent)
+3. lighting - Lighting type mentioned (soft/dramatic/studio/natural)
+4. camera_angle - Camera angle mentioned (wide/macro/aerial/closeup/eye level)
+5. color_palette - Color palette mentioned
+6. mood - Mood/atmosphere mentioned
+7. quality - Technical quality mentioned (8K/ultra HD/high resolution)
+8. restrictions - Restrictions mentioned (no people/no text/no watermark)
+For each missing check, provide a suggestion of what to add.
 
-Respond ONLY with valid JSON:
+## SCORING:
+- title_score: 0-25 (deduct for each rule violation)
+- keyword_score: 0-35 (deduct for multi-word, duplicates, wrong count)
+- description_score: 0-25 (deduct for length, missing structure, missing SEO words)
+- prompt_score: 0-15 (deduct ~2 points per missing check)
+- total_score: sum of all scores
+
+Return ONLY this JSON:
 {
-  "title": "Fixed title here",
-  "alt_titles": ["Alt title 1", "Alt title 2", "Alt title 3"],
-  "keywords": "word1, word2, word3, ... (exactly 49 single words)",
-  "description": "Fixed description here",
+  "fixed_title": "Corrected Title Here",
+  "alt_titles": ["Alternative 1", "Alternative 2", "Alternative 3"],
+  "fixed_keywords": ["word1","word2","word3",...exactly 49 single words],
+  "fixed_description": "Corrected description here...",
   "prompt_checks": {
-    "white_background": true/false,
+    "subject": true/false,
+    "background": true/false,
     "lighting": true/false,
     "camera_angle": true/false,
     "color_palette": true/false,
-    "mood": true/false
+    "mood": true/false,
+    "quality": true/false,
+    "restrictions": true/false
   },
-  "errors": [
-    {
-      "field": "title|keywords|description|prompt",
-      "type": "error|warning",
-      "original": "problematic text",
-      "fixed": "corrected text",
-      "reason": "Short explanation"
-    }
-  ],
-  "compliance_score": 0-100
+  "prompt_suggestions": ["Add white background specification", "Mention lighting type"],
+  "errors_found": 12,
+  "errors_fixed": 12,
+  "title_score": 25,
+  "keyword_score": 35,
+  "description_score": 25,
+  "prompt_score": 15,
+  "total_score": 100,
+  "changes_made": [
+    "Removed colon from title",
+    "Split 'solar panel' into 'solar' + 'panel'",
+    "Added 15 missing keywords to reach 49",
+    "Restructured description to 5-sentence format"
+  ]
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -103,7 +138,7 @@ Respond ONLY with valid JSON:
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Fix and optimize this Adobe Stock metadata:\n\nTITLE: ${title || "(empty)"}\n\nKEYWORDS: ${keywords || "(empty)"}\n\nDESCRIPTION: ${description || "(empty)"}\n\nPROMPT: ${prompt || "(empty)"}`,
+            content: `Fix this metadata for Adobe Stock:\n\nTITLE: ${title || "(empty)"}\n\nKEYWORDS: ${keywords || "(empty)"}\n\nDESCRIPTION: ${description || "(empty)"}\n\nPROMPT: ${prompt || "(empty)"}`,
           },
         ],
       }),
@@ -142,6 +177,20 @@ Respond ONLY with valid JSON:
         throw new Error("Failed to parse AI response");
       }
     }
+
+    // Normalize: ensure fixed_keywords is a comma-separated string for backward compat
+    if (Array.isArray(metadata.fixed_keywords)) {
+      metadata.fixed_keywords_array = metadata.fixed_keywords;
+      metadata.fixed_keywords_str = metadata.fixed_keywords.join(", ");
+    } else if (typeof metadata.fixed_keywords === "string") {
+      metadata.fixed_keywords_array = metadata.fixed_keywords.split(",").map((k: string) => k.trim()).filter(Boolean);
+      metadata.fixed_keywords_str = metadata.fixed_keywords;
+    }
+
+    // Also keep backward-compatible fields
+    metadata.title = metadata.fixed_title || metadata.title || "";
+    metadata.keywords = metadata.fixed_keywords_str || metadata.keywords || "";
+    metadata.description = metadata.fixed_description || metadata.description || "";
 
     return new Response(JSON.stringify(metadata), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
