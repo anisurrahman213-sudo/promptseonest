@@ -185,12 +185,20 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
 
       if (error) {
         console.error('Analysis error:', error);
-        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Analysis failed', endTime: Date.now() });
+        updateFileStatus(jobId, fileId, {
+          status: 'error',
+          errorMessage: error.message || 'Analysis failed',
+          endTime: Date.now()
+        });
         return false;
       }
 
-      if (data.error) {
-        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: data.error, endTime: Date.now() });
+      if (data?.success === false || data?.error) {
+        updateFileStatus(jobId, fileId, {
+          status: 'error',
+          errorMessage: data.error || 'Analysis failed',
+          endTime: Date.now()
+        });
         return false;
       }
 
