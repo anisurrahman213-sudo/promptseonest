@@ -569,21 +569,22 @@ export default function AdobeStockGenerator() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-primary" />
-                    Adobe Stock Guidelines
+                    {platformReq.icon} {platformReq.name} Guidelines
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {!selected?.metadata ? (
                     <div className="space-y-3 text-sm text-muted-foreground">
-                      <GuidelineItem text="Title: Max 70 chars, no commas/colons" />
-                      <GuidelineItem text="Description: 200-500 characters" />
-                      <GuidelineItem text="Keywords: Exactly 49 single words" />
+                      <GuidelineItem text={`Title: Max ${titleLimit} chars, no commas/colons`} />
+                      {descriptionLimit > 0 && <GuidelineItem text={`Description: Max ${descriptionLimit} characters`} />}
+                      <GuidelineItem text={`Keywords: Max ${keywordsLimit} single words`} />
                       <GuidelineItem text="No keyword stuffing" />
-                      <GuidelineItem text="Minimum 4MP resolution" />
-                      <GuidelineItem text="PNG transparent = auto-label" />
-                      <GuidelineItem text="AI content must be disclosed" />
-                      <GuidelineItem text="No trademarked terms" />
-                      <GuidelineItem text="Category must be 1-21" />
+                      <GuidelineItem text={`Min resolution: ${platformReq.minResolution}`} />
+                      <GuidelineItem text={`Formats: ${platformReq.formats.join(', ')}`} />
+                      <GuidelineItem text={platformReq.aiContentAllowed ? 'AI content accepted ✓' : 'AI content NOT accepted ✗'} />
+                      {platformReq.additionalNotes.map((note, i) => (
+                        <GuidelineItem key={i} text={note} />
+                      ))}
                     </div>
                   ) : (
                     <div className="space-y-2.5">
