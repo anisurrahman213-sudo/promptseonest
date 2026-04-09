@@ -6,9 +6,9 @@ import { MediaFile } from '@/components/MediaUploader';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { toast } from 'sonner';
 
-// Process multiple files concurrently for speed
-const MAX_CONCURRENT = 5;
-const STAGGER_DELAY_MS = 500;
+// Process many files concurrently for maximum speed
+const MAX_CONCURRENT = 50;
+const STAGGER_DELAY_MS = 100;
 
 export interface ProcessingFile {
   id: string;
