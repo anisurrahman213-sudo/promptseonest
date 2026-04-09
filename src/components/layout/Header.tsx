@@ -134,7 +134,7 @@ export function Header() {
 
         {/* Mobile Navigation */}
         <div className="flex sm:hidden items-center gap-1.5">
-          {user && (
+          {user && hasActivePlans && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted text-xs">
               <Coins className="h-3.5 w-3.5 text-warning" />
               <span className="font-medium">
