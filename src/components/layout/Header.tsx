@@ -271,6 +271,22 @@ export function Header() {
                   <Button 
                     variant="ghost" 
                     className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/metadata-fixer')}
+                  >
+                    <Wrench className="mr-2 h-4 w-4" />
+                    Metadata Fixer
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/extension')}
+                  >
+                    <Chrome className="mr-2 h-4 w-4" />
+                    Extension
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
                     onClick={() => handleNavigate('/tutorials')}
                   >
                     <HelpCircle className="mr-2 h-4 w-4" />
