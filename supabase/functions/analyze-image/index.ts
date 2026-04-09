@@ -374,64 +374,84 @@ Deno.serve(async (req) => {
 
     const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings);
 
-    // Call Lovable AI Gateway with Gemini vision model
-    console.log("Calling Lovable AI Gateway...");
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${lovableApiKey}`,
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite", // 10x faster - using lite model for speed
-          messages: [
-            {
-              role: "system",
-              content: systemPrompt,
-            },
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: userPrompt,
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: `data:image/jpeg;base64,${cleanedBase64}`,
-                  },
-                },
-              ],
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 2048,
-        }),
-      }
-    );
+    // Call Lovable AI Gateway with retry logic for rate limits
+    const MAX_RETRIES = 3;
+    let response: Response | null = null;
+    let lastError = "";
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Lovable AI API error:", response.status, errorText);
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      console.log(`Calling Lovable AI Gateway... (attempt ${attempt}/${MAX_RETRIES})`);
       
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      response = await fetch(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${lovableApiKey}`,
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash-lite",
+            messages: [
+              {
+                role: "system",
+                content: systemPrompt,
+              },
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: userPrompt,
+                  },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: `data:image/jpeg;base64,${cleanedBase64}`,
+                    },
+                  },
+                ],
+              },
+            ],
+            temperature: 0.7,
+            max_tokens: 2048,
+          }),
+        }
+      );
+
+      if (response.ok) break;
+
+      const errorText = await response.text();
+      lastError = errorText;
+      console.error(`AI Gateway error (attempt ${attempt}):`, response.status, errorText);
+
+      if (response.status === 429 && attempt < MAX_RETRIES) {
+        const backoffMs = 2000 * Math.pow(2, attempt - 1); // 2s, 4s, 8s
+        console.log(`Rate limited. Retrying in ${backoffMs}ms...`);
+        await new Promise(r => setTimeout(r, backoffMs));
+        continue;
       }
+
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: "AI credits exhausted. Please add more credits." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
+
+      // For non-retryable errors, break immediately
+      if (response.status !== 429) break;
+    }
+
+    if (!response || !response.ok) {
+      if (response?.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded after retries. Please try again in a minute." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       return new Response(
-        JSON.stringify({ error: "AI processing failed", details: errorText }),
+        JSON.stringify({ error: "AI processing failed", details: lastError }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
