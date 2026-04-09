@@ -111,7 +111,7 @@ export default function Dashboard() {
   const handleUpload = async (mediaFiles: MediaFile[]) => {
     if (!user) return;
     
-    if (credits !== null && credits < mediaFiles.length) {
+    if (hasActivePlans && credits !== null && credits < mediaFiles.length) {
       toast.error(t('errors.notEnoughCredits', { needed: mediaFiles.length, have: credits }));
       return;
     }
