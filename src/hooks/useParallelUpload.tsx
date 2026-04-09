@@ -198,7 +198,11 @@ export function useParallelUpload({
       
       // Process batch in parallel
       const batchResults = await Promise.all(
-        batch.map((file, batchIdx) => processFile(file, batchIndices[batchIdx]))
+        batch.map((file, batchIdx) => 
+          new Promise<boolean>(resolve => 
+            setTimeout(() => processFile(file, batchIndices[batchIdx]).then(resolve), batchIdx * STAGGER_DELAY_MS)
+          )
+        )
       );
       
       results.push(...batchResults);
