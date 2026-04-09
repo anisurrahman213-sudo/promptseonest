@@ -175,7 +175,7 @@ export default function AdobeStockGenerator() {
 
   return (
     <>
-      <SEOHead title="Adobe Stock Metadata Generator" description="Generate optimized metadata for Adobe Stock images with AI" />
+      <SEOHead title="Adobe Stock Metadata Generator" description="Generate optimized metadata for Adobe Stock images with AI" path="/adobe-stock-generator" />
       <Header />
       <main className="min-h-screen bg-background">
         <div className="container max-w-7xl mx-auto px-4 py-6 sm:py-10">

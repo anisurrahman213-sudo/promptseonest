@@ -26,6 +26,7 @@ const AdminPayments = lazy(() => import("./pages/AdminPayments"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Tutorials = lazy(() => import("./pages/Tutorials"));
+const AdobeStockGenerator = lazy(() => import("./pages/AdobeStockGenerator"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
