@@ -6,8 +6,9 @@ import { MediaFile } from '@/components/MediaUploader';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { toast } from 'sonner';
 
-// Optimized concurrent uploads - balanced for speed and stability
-const MAX_CONCURRENT = 25;
+// Limit burst traffic so AI requests stay under gateway rate limits
+const MAX_CONCURRENT = 5;
+const STAGGER_DELAY_MS = 1200;
 
 export interface ProcessingFile {
   id: string;
@@ -232,7 +233,8 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
       return true;
     } catch (error) {
       console.error('Processing error:', error);
-      updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Processing error', endTime: Date.now() });
+      const errorMessage = error instanceof Error ? error.message : 'Processing error';
+      updateFileStatus(jobId, fileId, { status: 'error', errorMessage, endTime: Date.now() });
       return false;
     }
   }, [updateFileStatus]);
@@ -278,10 +280,23 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
       const batch = mediaFiles.slice(i, Math.min(i + MAX_CONCURRENT, mediaFiles.length));
       const batchFileIds = initialFiles.slice(i, Math.min(i + MAX_CONCURRENT, mediaFiles.length)).map(f => f.id);
       
-      // Process batch in parallel
+      // Process each batch with a small stagger to avoid burst rate limiting
       await Promise.all(
-        batch.map((file, batchIdx) => 
-          processFile(jobId, file, batchFileIds[batchIdx], userId, metadataSettings, onSuccess, onCreditRefresh)
+        batch.map(
+          (file, batchIdx) =>
+            new Promise<boolean>((resolve) => {
+              setTimeout(() => {
+                processFile(
+                  jobId,
+                  file,
+                  batchFileIds[batchIdx],
+                  userId,
+                  metadataSettings,
+                  onSuccess,
+                  onCreditRefresh
+                ).then(resolve);
+              }, batchIdx * STAGGER_DELAY_MS);
+            })
         )
       );
     }
