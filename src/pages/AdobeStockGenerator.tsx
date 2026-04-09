@@ -118,8 +118,14 @@ const MAX_CONCURRENT = 5;
 export default function AdobeStockGenerator() {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedPlatform, setSelectedPlatform] = useState<ExportPlatform>('adobe_stock');
   const [isAiGenerated, setIsAiGenerated] = useState(false);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+
+  const platformReq = platformRequirements[selectedPlatform];
+  const titleLimit = platformReq.titleLimit;
+  const descriptionLimit = platformReq.descriptionLimit;
+  const keywordsLimit = platformReq.keywordsLimit;
 
   const updateImage = (id: string, updates: Partial<ImageItem>) => {
     setImages(prev => prev.map(img => img.id === id ? { ...img, ...updates } : img));
