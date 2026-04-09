@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle } from 'lucide-react';
+import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -84,6 +84,16 @@ export function Header() {
                 {t('header.history')}
               </Button>
 
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/metadata-fixer')}>
+                <Wrench className="h-4 w-4 mr-1" />
+                Metadata Fixer
+              </Button>
+
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/extension')}>
+                <Chrome className="h-4 w-4 mr-1" />
+                Extension
+              </Button>
+
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/tutorials')}>
                 <HelpCircle className="h-4 w-4 mr-1" />
                 {t('header.tutorials')}
@@ -114,6 +124,14 @@ export function Header() {
             </>
           ) : (
             <>
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/metadata-fixer')}>
+                <Wrench className="h-4 w-4 mr-1" />
+                Metadata Fixer
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => handleNavigate('/extension')}>
+                <Chrome className="h-4 w-4 mr-1" />
+                Extension
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/tutorials')}>
                 <HelpCircle className="h-4 w-4 mr-1" />
                 {t('header.tutorials')}
@@ -208,6 +226,22 @@ export function Header() {
                   <Button 
                     variant="ghost" 
                     className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/metadata-fixer')}
+                  >
+                    <Wrench className="mr-2 h-4 w-4" />
+                    Metadata Fixer
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/extension')}
+                  >
+                    <Chrome className="mr-2 h-4 w-4" />
+                    Extension
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
                     onClick={() => handleNavigate('/tutorials')}
                   >
                     <HelpCircle className="mr-2 h-4 w-4" />
@@ -234,6 +268,22 @@ export function Header() {
                 </>
               ) : (
                 <>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/metadata-fixer')}
+                  >
+                    <Wrench className="mr-2 h-4 w-4" />
+                    Metadata Fixer
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/extension')}
+                  >
+                    <Chrome className="mr-2 h-4 w-4" />
+                    Extension
+                  </Button>
                   <Button 
                     variant="ghost" 
                     className="w-full justify-center h-11"
