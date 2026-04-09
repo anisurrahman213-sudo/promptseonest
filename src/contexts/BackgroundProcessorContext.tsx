@@ -6,9 +6,9 @@ import { MediaFile } from '@/components/MediaUploader';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { toast } from 'sonner';
 
-// Limit burst traffic so AI requests stay under gateway rate limits
-const MAX_CONCURRENT = 5;
-const STAGGER_DELAY_MS = 1200;
+// Process one at a time to avoid AI gateway rate limits
+const MAX_CONCURRENT = 1;
+const STAGGER_DELAY_MS = 2000;
 
 export interface ProcessingFile {
   id: string;
