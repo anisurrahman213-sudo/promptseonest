@@ -353,6 +353,26 @@ export default function AdobeStockGenerator() {
                   {/* Stats Bar */}
                   <Card>
                     <CardContent className="p-4 space-y-3">
+                      {/* Platform Selector */}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Label className="text-xs font-medium">Platform:</Label>
+                        <Select value={selectedPlatform} onValueChange={(v) => setSelectedPlatform(v as ExportPlatform)}>
+                          <SelectTrigger className="w-[180px] h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(platformRequirements).map(([key, val]) => (
+                              <SelectItem key={key} value={key} className="text-xs">
+                                {val.icon} {val.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Badge variant="secondary" className="text-xs gap-1">
+                          T:{titleLimit} D:{descriptionLimit} K:{keywordsLimit}
+                        </Badge>
+                      </div>
+
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <Badge variant="outline" className="gap-1.5">
