@@ -13,7 +13,7 @@ interface StatsCardsProps {
 export function StatsCards({ totalGenerations, credits, todayGenerations }: StatsCardsProps) {
   const { t } = useTranslation();
 
-  const stats = [
+  const allStats = [
     {
       label: t('dashboard.totalGenerations'),
       shortLabel: t('dashboard.totalGenerations').split(' ')[0],
@@ -24,16 +24,16 @@ export function StatsCards({ totalGenerations, credits, todayGenerations }: Stat
       iconColor: 'text-primary',
       borderColor: 'border-primary/20',
     },
-    {
+    ...(credits !== null ? [{
       label: t('dashboard.creditsRemaining'),
       shortLabel: t('common.credits'),
-      value: credits ?? 0,
+      value: credits,
       icon: Zap,
       gradient: 'from-warning/20 to-warning/5',
       iconBg: 'bg-warning/15',
       iconColor: 'text-warning',
       borderColor: 'border-warning/20',
-    },
+    }] : []),
     {
       label: t('dashboard.todayUploads'),
       shortLabel: t('dashboard.todayUploads').split(' ')[0],
@@ -45,6 +45,8 @@ export function StatsCards({ totalGenerations, credits, todayGenerations }: Stat
       borderColor: 'border-accent/20',
     },
   ];
+
+  const stats = allStats;
 
   return (
     <div className="grid grid-cols-3 gap-2 sm:gap-4">
