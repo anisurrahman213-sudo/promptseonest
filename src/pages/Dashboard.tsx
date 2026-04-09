@@ -16,6 +16,7 @@ import { PullToRefresh } from '@/components/dashboard/PullToRefresh';
 import { VirtualGenerationList } from '@/components/dashboard/VirtualGenerationList';
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
+import { usePlansActive } from '@/hooks/usePlansActive';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
 import { useBackgroundProcessor } from '@/contexts/BackgroundProcessorContext';
 import { Loader2, Sparkles, History, Zap } from 'lucide-react';
