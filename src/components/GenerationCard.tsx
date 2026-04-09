@@ -144,7 +144,12 @@ interface GenerationCardProps {
 
       if (error) throw error;
 
-      if (data.success && onUpdateMetadata) {
+      if (data?.success === false || data?.error) {
+        toast.error(data.error || 'পুনরায় বিশ্লেষণে সমস্যা হয়েছে');
+        return;
+      }
+
+      if (data?.success && onUpdateMetadata) {
         const success = await onUpdateMetadata(generation.id, {
           prompt: data.data.prompt,
           title: data.data.title,
@@ -157,6 +162,8 @@ interface GenerationCardProps {
           setContentIssues([]);
           toast.success('পুনরায় বিশ্লেষণ সম্পন্ন হয়েছে');
         }
+      } else {
+        toast.error('পুনরায় বিশ্লেষণে সমস্যা হয়েছে');
       }
     } catch (error) {
       console.error('Re-analyze error:', error);
