@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Upload, Copy, CheckCircle, Loader2, Sparkles, AlertTriangle,
   ImageIcon, FileText, Tag, MessageSquare, ClipboardCopy, Info, XCircle, Check,
@@ -19,6 +20,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { platformRequirements } from '@/components/dashboard/PlatformChecklist';
+import type { ExportPlatform } from '@/components/dashboard/AdvancedMetadataControls';
 
 const ADOBE_CATEGORIES: Record<number, string> = {
   1: 'Animals', 2: 'Buildings/Architecture', 3: 'Business', 4: 'Drinks',
