@@ -236,6 +236,12 @@ Generate the following:
    - End with commercial applications (advertising, websites, social media, etc.)
 
 4. **Keywords/Tags** (exactly ${keywordCount} unique tags):${negativeKeywordsInstruction}
+   - **CRITICAL: The FIRST 10 keywords must be the HIGHEST-SELLING, MOST-SEARCHED terms** that buyers on ${platform} actually search for. These top 10 keywords are prioritized by stock platform search algorithms and directly impact sales ranking. Choose them based on:
+     * Highest search volume on stock platforms
+     * Most commercially valuable buyer intent terms
+     * Primary subject and its most popular synonyms
+     * Trending industry terms buyers use
+   - After the first 10, continue with more specific/niche keywords
    - NO DUPLICATE CONCEPTS (don't use "business" and "business concept")
    - Categories to cover:
      * Main subject (5-7 specific terms)
@@ -247,7 +253,7 @@ Generate the following:
      * Related concepts (5-7 terms)
      * Seasonal/temporal (2-3 if applicable)
      * ${mediaType === 'video' ? 'Motion/action terms (5-7 terms)' : 'Composition terms (3-5 terms)'}
-   - Arrange from MOST to LEAST specific
+   - Arrange: FIRST 10 = best-selling keywords, then MOST to LEAST specific
    - Use single words AND 2-3 word phrases
 
 5. **Category** (exactly one from list):
