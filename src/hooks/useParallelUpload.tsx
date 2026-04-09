@@ -6,9 +6,9 @@ import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 
-// Process multiple files concurrently for speed
-const MAX_CONCURRENT = 5;
-const STAGGER_DELAY_MS = 500;
+// Process many files concurrently for maximum speed
+const MAX_CONCURRENT = 50;
+const STAGGER_DELAY_MS = 100;
 
 interface UseParallelUploadOptions {
   userId: string;
