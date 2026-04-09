@@ -375,9 +375,9 @@ Deno.serve(async (req) => {
     const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings);
 
     // Call Lovable AI Gateway with retry logic for rate limits
-    const MAX_RETRIES = 5;
-    const INITIAL_BACKOFF_MS = 1500;
-    const MAX_BACKOFF_MS = 12000;
+    const MAX_RETRIES = 7;
+    const INITIAL_BACKOFF_MS = 3000;
+    const MAX_BACKOFF_MS = 30000;
     let response: Response | null = null;
     let lastError = "";
     let lastStatus: number | null = null;
