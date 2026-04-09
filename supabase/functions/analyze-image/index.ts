@@ -223,12 +223,16 @@ Generate the following:
    - Make it UNIQUE - avoid generic terms like "beautiful", "stunning", "amazing"
 
 2. **SEO Title** (max ${titleMax} characters):${prefixInstruction}${suffixInstruction}${negativeTitleInstruction}
+   - **CRITICAL: Title MUST perfectly and accurately describe EXACTLY what is visible in the image/video.** The title should read the image like a human viewer and describe the main subject precisely.
+   - Use IELTS Band 8-9 level academic/professional English — sophisticated vocabulary, natural collocations, precise word choices
    - ${imageTypePrefix ? `Start with "${imageTypePrefix}" after any prefix` : 'Lead with the MOST SPECIFIC, UNIQUE aspect'}
    - Include primary keyword naturally
-   - NO generic adjectives (beautiful, nice, good)
-   - Example: Instead of "Beautiful sunset" → "${settings.prefix ? settings.prefix + ' ' : ''}${imageTypePrefix}Golden Hour Silhouette Over Misty Mountains${settings.suffix ? ' ' + settings.suffix : ''}"
+   - NO generic adjectives (beautiful, nice, good, amazing, stunning) — use precise, descriptive words instead
+   - Example: Instead of "Beautiful sunset" → "${settings.prefix ? settings.prefix + ' ' : ''}${imageTypePrefix}Crimson Twilight Cascading Over Mist-Laden Mountain Ridges${settings.suffix ? ' ' + settings.suffix : ''}"
+   - Example: Instead of "Business meeting" → "Diverse Corporate Executives Deliberating in Contemporary Boardroom"
 
 3. **SEO Description** ${descLengthNote}:
+   - Use IELTS Band 8-9 level English — sophisticated, professional, articulate language
    - First sentence: Unique, specific description of the main subject
    - Include: setting, mood, style, potential use cases
    - Naturally integrate 8-10 keywords WITHOUT stuffing
@@ -236,11 +240,13 @@ Generate the following:
    - End with commercial applications (advertising, websites, social media, etc.)
 
 4. **Keywords/Tags** (exactly ${keywordCount} unique tags):${negativeKeywordsInstruction}
-   - **CRITICAL: The FIRST 10 keywords must be the HIGHEST-SELLING, MOST-SEARCHED terms** that buyers on ${platform} actually search for. These top 10 keywords are prioritized by stock platform search algorithms and directly impact sales ranking. Choose them based on:
-     * Highest search volume on stock platforms
+   - **ABSOLUTE CRITICAL: The FIRST 5 keywords are the MOST IMPORTANT — Adobe Stock gives them the HIGHEST weight in search ranking.**
+     * These 5 keywords must PERFECTLY and EXACTLY describe what is in the image — they should be the most accurate, literal descriptions of the main subject
+     * Example: For a photo of a golden retriever on grass → first 5: "golden retriever, dog, pet, grass, outdoor"
+     * Example: For a business meeting photo → first 5: "business meeting, corporate, teamwork, office, professionals"
+   - **Keywords 6-10: The next 5 highest-selling, most-searched commercial terms** on ${platform}:
      * Most commercially valuable buyer intent terms
-     * Primary subject and its most popular synonyms
-     * Trending industry terms buyers use
+     * Popular synonyms and trending industry terms buyers use
    - After the first 10, continue with more specific/niche keywords
    - NO DUPLICATE CONCEPTS (don't use "business" and "business concept")
    - Categories to cover:
@@ -253,7 +259,7 @@ Generate the following:
      * Related concepts (5-7 terms)
      * Seasonal/temporal (2-3 if applicable)
      * ${mediaType === 'video' ? 'Motion/action terms (5-7 terms)' : 'Composition terms (3-5 terms)'}
-   - Arrange: FIRST 10 = best-selling keywords, then MOST to LEAST specific
+   - Arrange: FIRST 5 = exact image description, 6-10 = best-selling terms, then MOST to LEAST specific
    - Use single words AND 2-3 word phrases
 
 5. **Category** (exactly one from list):
