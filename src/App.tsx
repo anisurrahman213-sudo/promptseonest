@@ -26,6 +26,7 @@ const AdminPayments = lazy(() => import("./pages/AdminPayments"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Tutorials = lazy(() => import("./pages/Tutorials"));
+const AdobeStockGenerator = lazy(() => import("./pages/AdobeStockGenerator"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -69,6 +70,7 @@ const App = () => (
                   <Route path="/admin-dashboard" element={<AdminDashboard />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/tutorials" element={<Tutorials />} />
+                  <Route path="/adobe-stock-generator" element={<AdobeStockGenerator />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
