@@ -49,7 +49,7 @@ export function StatsCards({ totalGenerations, credits, todayGenerations }: Stat
   const stats = allStats;
 
   return (
-    <div className="grid grid-cols-3 gap-2 sm:gap-4">
+    <div className={`grid gap-2 sm:gap-4 ${stats.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
       {stats.map((stat, index) => (
         <motion.div 
           key={stat.label}
