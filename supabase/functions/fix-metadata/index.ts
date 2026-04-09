@@ -28,6 +28,26 @@ serve(async (req) => {
 
     const systemPrompt = `You are an Adobe Stock SEO expert. Fix the metadata strictly following ALL rules below. Return ONLY valid JSON, no extra text.
 
+## IELTS ACADEMIC LANGUAGE RULES (MANDATORY):
+VOCABULARY UPGRADE LIST — NEVER use the basic word, ALWAYS use the academic replacement:
+- big → monumental / expansive / substantial
+- nice → compelling / striking / distinguished
+- good → exceptional / superior / optimum
+- show → illustrate / depict / portray
+- use → utilise / employ / incorporate
+- make → generate / produce / construct
+- get → obtain / acquire / attain
+- old → aged / weathered / historical
+- new → contemporary / modern / innovative
+- dark → obscured / shadowed / silhouetted
+- bright → luminous / radiant / vivid
+- wide → expansive / panoramic / sweeping
+- high → elevated / towering / monumental
+- far → distant / remote / peripheral
+- near → adjacent / proximate / foreground
+Use academic descriptors: dramatic, atmospheric, expansive, striking, compelling, distinctive, monumental, panoramic, sweeping
+Prefer Latinate/technical vocabulary over informal/colloquial words throughout ALL fields.
+
 ## TITLE FIX RULES (25 points):
 1. Remove ALL special characters: : ; - / \\ , ' " ! ? | [ ] { } ( ) & @ # $ % ^ * < > ~ \` + =
 2. Maximum 70 characters
@@ -41,8 +61,9 @@ serve(async (req) => {
 8. No color names in title (red, blue, green, golden, etc.)
 9. No duplicate words
 10. No AI/Generated/Midjourney/Artificial words
-GOOD EXAMPLE: "Detailed Solar Panel Array with Sunburst Against Blue Sky in Green Field"
-BAD EXAMPLE: "Sunburst Illuminates Solar Panel Array in Golden Field" (has color name, missing power word position)
+11. Structure: [Academic Adjective] + [Subject] + [Technical Detail] + [Setting]
+GOOD EXAMPLE: "Monumental Transmission Pylon Silhouetted Against Dramatic Twilight Horizon"
+BAD EXAMPLE: "Big Tower in Dark Sky at Sunset" (uses basic words, no power word)
 
 ## KEYWORD FIX RULES (35 points):
 1. EVERY keyword = exactly ONE single word only — NO SPACES
@@ -57,23 +78,30 @@ BAD EXAMPLE: "Sunburst Illuminates Solar Panel Array in Golden Field" (has color
    - Position 16-30: Style/technical words
    - Position 31-40: Use case/concept words
    - Position 41-49: Supporting/filler words
-7. After splitting multi-words and removing duplicates, if count < 49:
+7. MANDATORY: Use technically accurate, Latinate/academic single words:
+   pylon (not tower), transmission (not wire), silhouette (not shadow)
+   twilight (not almost dark), infrastructure (not building)
+   atmospheric (not cloudy), panoramic (not wide), voltage (not electric)
+8. After splitting multi-words and removing duplicates, if count < 49:
    Auto-add relevant single words from: isolated, detailed, vibrant, professional, glossy, sharp, focused, clean, bright, vivid, colorful, stunning, beautiful, modern, realistic, natural, organic, commercial, editorial, stock
-8. If count > 49: remove from position 49 downward
-9. All keywords lowercase
+9. If count > 49: remove from position 49 downward
+10. All keywords lowercase
+11. Avoid informal or colloquial words
 
 ## DESCRIPTION FIX RULES (25 points):
 1. Minimum 200 characters, maximum 500 characters
-2. Structure MUST be exactly 5 sentences:
-   - Sentence 1: What is in the image (subject)
-   - Sentence 2: Technical details (lighting, angle)
-   - Sentence 3: Mood and atmosphere
-   - Sentence 4: Use cases (minimum 3 specific uses)
-   - Sentence 5: Call to action for buyer
-3. Must include these SEO words naturally: stock photo/illustration, high-quality, professional, ideal for
-4. No keyword stuffing (same word max 2 times)
-5. Natural reading flow with IELTS Band 8-9 level vocabulary
-6. Last sentence format: "Perfect for [use case 1], [use case 2], and [use case 3]."
+2. Write in IELTS Academic Band 8-9 style with sophisticated sentence structures
+3. Formal tone throughout with technical terminology relevant to subject matter
+4. Varied vocabulary — no word repeated more than twice
+5. Structure MUST be exactly 5 sentences:
+   - Sentence 1: Technical subject description
+   - Sentence 2: Compositional/visual details (lighting, angle)
+   - Sentence 3: Atmospheric/mood description
+   - Sentence 4: Professional use cases (minimum 3 specific uses)
+   - Sentence 5: Commercial value statement / call to action for buyer
+6. Must include these SEO words naturally: stock photo/illustration, high-quality, professional, ideal for
+7. No keyword stuffing (same word max 2 times)
+8. Last sentence format: "Perfect for [use case 1], [use case 2], and [use case 3]."
 
 ## PROMPT VALIDATION RULES (15 points):
 Check all 8 points — each must be present in the user's prompt:
@@ -121,11 +149,9 @@ Return ONLY this JSON:
   "changes_made": [
     "Removed colon from title",
     "Split 'solar panel' into 'solar' + 'panel'",
-    "Added 15 missing keywords to reach 49",
-    "Restructured description to 5-sentence format"
+    "Added 15 missing keywords to reach 49"
   ]
 }`;
-
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {

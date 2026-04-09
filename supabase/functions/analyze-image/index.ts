@@ -223,32 +223,58 @@ Generate the following:
    - Make it UNIQUE - avoid generic terms like "beautiful", "stunning", "amazing"
 
 2. **SEO Title** (max ${titleMax} characters):${prefixInstruction}${suffixInstruction}${negativeTitleInstruction}
-   - **CRITICAL: Title MUST perfectly and accurately describe EXACTLY what is visible in the image/video.** The title should read the image like a human viewer and describe the main subject precisely.
-   - Use IELTS Band 8-9 level academic/professional English — sophisticated vocabulary, natural collocations, precise word choices
+   - **CRITICAL: Title MUST perfectly and accurately describe EXACTLY what is visible in the image/video.**
+   - Use IELTS Band 8-9 level academic/professional English
+   - MANDATORY VOCABULARY UPGRADES for title:
+     * big → monumental/expansive/substantial
+     * nice → compelling/striking/distinguished
+     * good → exceptional/superior/optimum
+     * show → illustrate/depict/portray
+     * old → aged/weathered/historical
+     * new → contemporary/modern/innovative
+     * dark → obscured/shadowed/silhouetted
+     * bright → luminous/radiant/vivid
+     * wide → expansive/panoramic/sweeping
+     * high → elevated/towering/monumental
+   - Use academic descriptors: dramatic, atmospheric, expansive, striking, compelling, distinctive, monumental, panoramic, sweeping
+   - Structure: [Academic Adjective] + [Subject] + [Technical Detail] + [Setting]
    - ${imageTypePrefix ? `Start with "${imageTypePrefix}" after any prefix` : 'Lead with the MOST SPECIFIC, UNIQUE aspect'}
    - Include primary keyword naturally
-   - NO generic adjectives (beautiful, nice, good, amazing, stunning) — use precise, descriptive words instead
-   - Example: Instead of "Beautiful sunset" → "${settings.prefix ? settings.prefix + ' ' : ''}${imageTypePrefix}Crimson Twilight Cascading Over Mist-Laden Mountain Ridges${settings.suffix ? ' ' + settings.suffix : ''}"
-   - Example: Instead of "Business meeting" → "Diverse Corporate Executives Deliberating in Contemporary Boardroom"
+   - NO generic adjectives (beautiful, nice, good, amazing, stunning) — use precise academic words
+   - Example: Instead of "Beautiful sunset" → "${settings.prefix ? settings.prefix + ' ' : ''}${imageTypePrefix}Atmospheric Twilight Cascading Over Mist-Laden Mountain Ridges${settings.suffix ? ' ' + settings.suffix : ''}"
+   - Example: Instead of "Big tower in dark sky" → "Monumental Transmission Pylon Silhouetted Against Dramatic Twilight Horizon"
 
 3. **SEO Description** ${descLengthNote}:
-   - Use IELTS Band 8-9 level English — sophisticated, professional, articulate language
-   - First sentence: Unique, specific description of the main subject
-   - Include: setting, mood, style, potential use cases
-   - Naturally integrate 8-10 keywords WITHOUT stuffing
+   - Write in IELTS Academic Band 8-9 style with sophisticated sentence structures
+   - Formal tone throughout with technical terminology relevant to subject matter
+   - Varied vocabulary — no word repeated more than twice
+   - MANDATORY VOCABULARY UPGRADES for description:
+     * use → utilise/employ/incorporate
+     * make → generate/produce/construct
+     * get → obtain/acquire/attain
+     * far → distant/remote/peripheral
+     * near → adjacent/proximate/foreground
+   - Structure:
+     * Sentence 1: Technical subject description
+     * Sentence 2: Compositional/visual details
+     * Sentence 3: Atmospheric/mood description
+     * Sentence 4: Professional use cases (3 minimum)
+     * Sentence 5: Commercial value statement
    - ${mediaType === 'video' ? 'Describe motion, transitions, and dynamic elements' : 'Describe visual elements, textures, and artistic qualities'}
-   - End with commercial applications (advertising, websites, social media, etc.)
 
 4. **Keywords/Tags** (exactly ${keywordCount} unique tags):${negativeKeywordsInstruction}
    - **ABSOLUTE CRITICAL: The FIRST 5 keywords are the MOST IMPORTANT — Adobe Stock gives them the HIGHEST weight in search ranking.**
-     * These 5 keywords must PERFECTLY and EXACTLY describe what is in the image — they should be the most accurate, literal descriptions of the main subject
-     * Example: For a photo of a golden retriever on grass → first 5: "golden retriever, dog, pet, grass, outdoor"
-     * Example: For a business meeting photo → first 5: "business meeting, corporate, teamwork, office, professionals"
-   - **Keywords 6-10: The next 5 highest-selling, most-searched commercial terms** on ${platform}:
-     * Most commercially valuable buyer intent terms
-     * Popular synonyms and trending industry terms buyers use
+     * These 5 keywords must PERFECTLY and EXACTLY describe what is in the image
+     * Example: For a power line photo → first 5: "pylon, transmission, voltage, infrastructure, silhouette"
+     * NOT: "tower, wire, shadow, building, electric" (too informal)
+   - **Keywords 6-10: The next 5 highest-selling, most-searched commercial terms** on ${platform}
+   - MANDATORY: Use technically accurate, Latinate/academic single words:
+     * pylon (not tower), transmission (not wire), silhouette (not shadow)
+     * twilight (not almost dark), infrastructure (not building)
+     * atmospheric (not cloudy), panoramic (not wide), voltage (not electric)
+   - Avoid informal or colloquial words throughout
    - After the first 10, continue with more specific/niche keywords
-   - NO DUPLICATE CONCEPTS (don't use "business" and "business concept")
+   - NO DUPLICATE CONCEPTS
    - Categories to cover:
      * Main subject (5-7 specific terms)
      * Style/aesthetic (5-7 terms)
