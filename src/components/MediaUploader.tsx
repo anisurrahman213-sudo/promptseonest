@@ -44,10 +44,54 @@ interface MediaUploaderProps {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setCompressionFiles([]);
     
+    // File size validation
+    const IMAGE_MIN_SIZE = 50 * 1024 * 1024; // 50MB
+    const IMAGE_MAX_SIZE = 100 * 1024 * 1024; // 100MB
+    const VIDEO_MIN_SIZE = 100 * 1024 * 1024; // 100MB
+    const VIDEO_MAX_SIZE = 500 * 1024 * 1024; // 500MB
+
+    const validFiles: File[] = [];
+    const rejected: string[] = [];
+
+    for (const file of acceptedFiles) {
+      const isVideo = file.type.startsWith('video/');
+      const isImage = file.type.startsWith('image/');
+      const isSvgOrEps = file.type === 'image/svg+xml' || file.type === 'application/postscript' || file.type === 'image/x-eps';
+
+      if (isSvgOrEps) {
+        // No size limits for SVG/EPS
+        validFiles.push(file);
+      } else if (isVideo) {
+        if (file.size < VIDEO_MIN_SIZE) {
+          rejected.push(`${file.name}: Video must be at least 100MB`);
+        } else if (file.size > VIDEO_MAX_SIZE) {
+          rejected.push(`${file.name}: Video must be under 500MB`);
+        } else {
+          validFiles.push(file);
+        }
+      } else if (isImage) {
+        if (file.size < IMAGE_MIN_SIZE) {
+          rejected.push(`${file.name}: Image must be at least 50MB`);
+        } else if (file.size > IMAGE_MAX_SIZE) {
+          rejected.push(`${file.name}: Image must be under 100MB`);
+        } else {
+          validFiles.push(file);
+        }
+      } else {
+        validFiles.push(file);
+      }
+    }
+
+    if (rejected.length > 0) {
+      toast.error(`${rejected.length} file(s) rejected:\n${rejected.slice(0, 3).join('\n')}${rejected.length > 3 ? `\n...and ${rejected.length - 3} more` : ''}`);
+    }
+
+    if (validFiles.length === 0) return;
+
     try {
       // Separate images and videos
-      const imageFiles = acceptedFiles.filter(f => f.type.startsWith('image/'));
-      const videoFiles = acceptedFiles.filter(f => f.type.startsWith('video/'));
+      const imageFiles = validFiles.filter(f => f.type.startsWith('image/'));
+      const videoFiles = validFiles.filter(f => f.type.startsWith('video/'));
 
       const hasMedia = imageFiles.length > 0 || videoFiles.length > 0;
       setIsCompressing(hasMedia);
