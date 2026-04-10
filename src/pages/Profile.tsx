@@ -79,6 +79,9 @@ export default function Profile() {
       toast.error(t('errors.profileUpdateFailed'));
     } else {
       toast.success(t('profile.profileUpdated'));
+      if (isSetupMode) {
+        navigate('/dashboard');
+      }
     }
   };
 
