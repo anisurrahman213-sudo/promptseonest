@@ -138,7 +138,7 @@ export default function AdminDashboard() {
           </TabsList>
 
           <TabsContent value="users" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -152,6 +152,30 @@ export default function AdminDashboard() {
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent><div className="text-2xl font-bold">{totalCredits.toLocaleString()}</div></CardContent>
+              </Card>
+              <Card className={pendingPayments.length > 0 ? 'border-destructive/30 bg-destructive/5' : ''}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
+                  <AlertCircle className={`h-4 w-4 ${pendingPayments.length > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{pendingPayments.length}</div>
+                  {pendingPayments.length > 0 && (
+                    <Button size="sm" variant="outline" className="mt-2 w-full gap-1.5" onClick={() => navigate('/admin/payments')}>
+                      Review Payments
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">৳{monthlyRevenue.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground mt-1">{approvedThisMonth.length} approved this month</p>
+                </CardContent>
               </Card>
             </div>
 
