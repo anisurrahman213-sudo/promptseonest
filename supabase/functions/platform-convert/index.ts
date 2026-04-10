@@ -156,51 +156,54 @@ You MUST respond using the provided tool call format only.`;
 
     const result = JSON.parse(toolCall.function.arguments);
 
-    // Post-process: enforce single-word keywords for Adobe Stock, remove duplicates for all
-    // Split compound words like "photovoltaicmodule" → "photovoltaic", "module"
+    // Post-process: enforce single-word keywords for Adobe Stock, remove duplicates
+    // Split compound/concatenated words where BOTH halves are recognized words
+    const knownWords = new Set([
+      'solar', 'panel', 'wind', 'turbine', 'energy', 'power', 'plant', 'climate',
+      'technology', 'module', 'background', 'landscape', 'nature', 'environment',
+      'green', 'clean', 'renewable', 'sustainable', 'industrial', 'urban', 'rural',
+      'aerial', 'macro', 'abstract', 'digital', 'modern', 'vintage', 'professional',
+      'commercial', 'creative', 'outdoor', 'indoor', 'transmission', 'generation',
+      'infrastructure', 'conservation', 'innovation', 'efficiency', 'ecological',
+      'biological', 'agricultural', 'architectural', 'atmospheric', 'panoramic',
+      'photovoltaic', 'electricity', 'voltage', 'pylon', 'grid', 'utility',
+      'structure', 'engineering', 'resource', 'concept', 'system', 'array',
+      'horizon', 'industry', 'ecology', 'carbon', 'neutral', 'emission',
+      'footprint', 'oriented', 'solution', 'farm', 'field', 'forest', 'mountain',
+      'ocean', 'river', 'desert', 'tropical', 'arctic', 'wildlife', 'animal',
+      'flower', 'tree', 'building', 'house', 'office', 'factory', 'bridge',
+      'road', 'vehicle', 'transport', 'food', 'health', 'medical', 'science',
+      'education', 'finance', 'business', 'market', 'global', 'world', 'city',
+      'night', 'light', 'shadow', 'texture', 'pattern', 'color', 'design',
+      'space', 'water', 'fire', 'earth', 'metal', 'glass', 'wood', 'stone',
+    ]);
+
     const splitCompound = (word: string): string[] => {
-      // Split on hyphens, underscores, spaces
       const parts = word.replace(/[-_]/g, ' ').split(/\s+/);
-      const result: string[] = [];
+      const out: string[] = [];
       for (const part of parts) {
         // Split camelCase: "solarPanel" → "solar", "panel"
         const camelSplit = part.replace(/([a-z])([A-Z])/g, '$1 $2').split(' ');
-        if (camelSplit.length > 1) {
-          result.push(...camelSplit);
-          continue;
-        }
-        // Detect concatenated known words (6+ chars, try splitting at every position)
-        if (part.length >= 8) {
-          // Common stock photography word list for splitting
-          const commonWords = [
-            'photo', 'voltaic', 'solar', 'panel', 'wind', 'turbine', 'energy',
-            'power', 'plant', 'climate', 'technology', 'electric', 'module',
-            'background', 'landscape', 'nature', 'environment', 'green', 'clean',
-            'renewable', 'sustainable', 'industrial', 'urban', 'rural', 'aerial',
-            'macro', 'closeup', 'abstract', 'digital', 'modern', 'vintage',
-            'professional', 'commercial', 'creative', 'outdoor', 'indoor',
-            'transmission', 'generation', 'infrastructure', 'conservation',
-            'innovation', 'efficiency', 'ecological', 'biological', 'agricultural',
-            'architectural', 'atmospheric', 'panoramic', 'photographic',
-          ];
-          const lower = part.toLowerCase();
+        if (camelSplit.length > 1) { out.push(...camelSplit); continue; }
+        // Try splitting concatenated words where BOTH halves are known
+        const lower = part.toLowerCase();
+        if (lower.length >= 8) {
           let found = false;
-          for (const w of commonWords) {
-            if (lower.startsWith(w) && lower.length > w.length) {
-              const remainder = lower.slice(w.length);
-              if (remainder.length >= 3) {
-                result.push(w, remainder);
-                found = true;
-                break;
-              }
+          for (let i = 4; i <= lower.length - 4; i++) {
+            const left = lower.slice(0, i);
+            const right = lower.slice(i);
+            if (knownWords.has(left) && knownWords.has(right)) {
+              out.push(left, right);
+              found = true;
+              break;
             }
           }
-          if (!found) result.push(part);
+          if (!found) out.push(part);
         } else {
-          result.push(part);
+          out.push(part);
         }
       }
-      return result;
+      return out;
     };
 
     if (result.adobe_stock?.keywords) {
