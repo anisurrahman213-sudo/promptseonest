@@ -30,6 +30,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { data: hasActivePlans } = usePlansActive();
   const { credits, refreshCredits } = useCredits();
@@ -50,10 +51,26 @@ export default function Dashboard() {
   const { startProcessing, isProcessing } = useBackgroundProcessor();
   const [activeTab, setActiveTab] = useState('upload');
   const [metadataSettings, setMetadataSettings] = useState<MetadataSettings>(defaultMetadataSettings);
+  const [isProfileIncomplete, setIsProfileIncomplete] = useState(false);
   
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+
+  // Check profile completeness
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('user_profiles')
+      .select('full_name, phone_number')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data && (!data.full_name || !data.phone_number)) {
+          setIsProfileIncomplete(true);
+        }
+      });
+  }, [user]);
 
   // Calculate today's generations (from current page data - approximation)
   const todayGenerations = useMemo(() => {
