@@ -30,6 +30,7 @@ const AdobeStockGenerator = lazy(() => import("./pages/AdobeStockGenerator"));
 const MetadataFixer = lazy(() => import("./pages/MetadataFixer"));
 const ExtensionDownload = lazy(() => import("./pages/ExtensionDownload"));
 const KeywordResearch = lazy(() => import("./pages/KeywordResearch"));
+const PlatformConverter = lazy(() => import("./pages/PlatformConverter"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({

@@ -238,7 +238,7 @@ export default function PlatformConverter() {
 
   return (
     <motion.div className="min-h-screen bg-background" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <SEOHead title="Platform Converter — PromptSEONest" description="Convert stock metadata between Adobe Stock, Shutterstock, and Freepik formats instantly" />
+      <SEOHead title="Platform Converter — PromptSEONest" description="Convert stock metadata between Adobe Stock, Shutterstock, and Freepik formats instantly" path="/platform-converter" />
       <Header />
       <main className="container max-w-7xl mx-auto px-4 py-6 sm:py-10">
         {/* Hero */}
