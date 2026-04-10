@@ -26,33 +26,38 @@ serve(async (req) => {
 
     const keywordsStr = Array.isArray(keywords) ? keywords.join(", ") : keywords;
 
-    const systemPrompt = `You are a microstock platform SEO expert specialising in Adobe Stock, Shutterstock, and Freepik metadata optimisation.
+    const systemPrompt = `You are a microstock platform SEO expert with IELTS Academic Band 8-9 English proficiency.
 
-Your task: Convert the provided metadata to all three platform formats simultaneously, following each platform's specific rules precisely.
+CRITICAL LANGUAGE RULES (apply to ALL platforms):
+- Use sophisticated, academic vocabulary throughout: "monumental" not "big", "illustrate" not "show", "exceptional" not "good", "obscured" not "dark", "expansive" not "wide", "pylon" not "tower", "transmission" not "wire", "vegetation" not "plants", "photovoltaic" not "solar panel"
+- Never use basic, colloquial, or simple words
+- Descriptions must read like formal academic prose (IELTS Band 8-9)
 
-PLATFORM RULES:
+ADOBE STOCK RULES:
+- Title: max 70 chars, Title Case, structure: [Academic Adjective] + [Subject] + [Technical Detail] + [Setting]
+- Title: NO special characters (no colons, dashes, semicolons), NO colour names
+- Keywords: EXACTLY 49 keywords, EVERY keyword MUST be a SINGLE WORD (one word only, no spaces, no hyphens)
+  * WRONG: "solar panel", "wind turbine", "blue sky", "renewable energy", "power plant", "close-up"
+  * CORRECT: "solar", "panel", "wind", "turbine", "sky", "renewable", "energy", "power", "plant", "closeup"
+  * Convert hyphenated words: "close-up" → "closeup", "high-voltage" → "voltage"
+  * Split multi-word phrases into separate single keywords
+- Keywords: no duplicates, sorted by search relevance (first 5 = primary subject)
+- Description: 200-500 chars, 5 sentences: Subject, Technical Details, Atmosphere, Use Cases (min 3), Commercial Value
 
-ADOBE STOCK:
-- Title: max 70 characters, Title Case, no special characters (no colons, dashes), no colour names
-- Keywords: exactly 49 single-word keywords, no hyphens, no duplicates, no multi-word phrases
-- Description: 200-500 characters, 3-5 sentences, IELTS Academic English Band 8-9
-
-SHUTTERSTOCK:
-- Title: max 200 characters, more descriptive detail permitted, natural sentence style
+SHUTTERSTOCK RULES:
+- Title: max 200 chars, expanded descriptive detail, academic sentence style
 - Keywords: max 50 keywords, 2-3 word phrases allowed, most commercially relevant first
-- Description: max 200 characters, concise, focus on commercial licensing value
+- Description: max 200 chars, concise, formal, commercial licensing focus
 
-FREEPIK:
-- Title: max 100 characters, clear and straightforward
-- Keywords: max 30 keywords, top priority only, single words or short phrases
-- Description: 100-300 characters, mention potential use cases
+FREEPIK RULES:
+- Title: max 100 chars, clear academic style
+- Keywords: max 30 keywords, top priority, single words or short phrases allowed
+- Description: 100-300 chars, mention potential use cases in formal tone
 
 CONVERSION PRINCIPLES:
-- Adobe → Shutterstock: expand title with detail, allow keyword phrases, condense description
+- Adobe → Shutterstock: expand title, allow keyword phrases, condense description
 - Adobe → Freepik: simplify title, keep top 30 keywords, brief description with use cases
-- Maintain IELTS Academic English throughout
-- Maximise search discoverability on each platform
-- Calculate a compliance score (0-100) for each platform output
+- Calculate compliance score (0-100) for each platform
 
 You MUST respond using the provided tool call format only.`;
 
