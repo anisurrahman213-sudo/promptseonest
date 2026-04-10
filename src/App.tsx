@@ -29,6 +29,7 @@ const Tutorials = lazy(() => import("./pages/Tutorials"));
 const AdobeStockGenerator = lazy(() => import("./pages/AdobeStockGenerator"));
 const MetadataFixer = lazy(() => import("./pages/MetadataFixer"));
 const ExtensionDownload = lazy(() => import("./pages/ExtensionDownload"));
+const KeywordResearch = lazy(() => import("./pages/KeywordResearch"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -75,6 +76,7 @@ const App = () => (
                   <Route path="/adobe-stock-generator" element={<AdobeStockGenerator />} />
                   <Route path="/metadata-fixer" element={<MetadataFixer />} />
                   <Route path="/extension" element={<ExtensionDownload />} />
+                  <Route path="/keyword-research" element={<KeywordResearch />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

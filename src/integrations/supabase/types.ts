@@ -128,6 +128,51 @@ export type Database = {
         }
         Relationships: []
       }
+      keyword_sets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          platform: string
+          primary_keywords: string[]
+          secondary_keywords: string[]
+          subject: string
+          subject_type: string
+          supporting_keywords: string[]
+          total_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          platform?: string
+          primary_keywords?: string[]
+          secondary_keywords?: string[]
+          subject: string
+          subject_type?: string
+          supporting_keywords?: string[]
+          total_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          platform?: string
+          primary_keywords?: string[]
+          secondary_keywords?: string[]
+          subject?: string
+          subject_type?: string
+          supporting_keywords?: string[]
+          total_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       login_attempts: {
         Row: {
           attempt_count: number
