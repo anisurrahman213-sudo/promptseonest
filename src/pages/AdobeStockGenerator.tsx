@@ -123,6 +123,9 @@ export default function AdobeStockGenerator() {
   const [selectedPlatform, setSelectedPlatform] = useState<ExportPlatform>('adobe_stock');
   const [isAiGenerated, setIsAiGenerated] = useState(false);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const platformReq = platformRequirements[selectedPlatform];
   const titleLimit = platformReq.titleLimit;
