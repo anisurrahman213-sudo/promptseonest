@@ -376,7 +376,7 @@ interface MediaUploaderProps {
                   : 'Drag & drop files here, or click to select'}
             </motion.p>
              <div className="text-xs sm:text-sm text-muted-foreground px-4 space-y-1">
-               <p><p>Supports common image (min 10KB, max 100MB), video (min 1MB, max 500MB), SVG, and EPS formats. Max {maxFiles} files.</p> Max {maxFiles} files.</p>
+               <p>Supports common image (min 10KB, max 100MB), video (min 1MB, max 500MB), SVG, and EPS formats. Max {maxFiles} files.</p>
                <p className="flex items-center justify-center gap-1.5 text-primary/70">
                  <Clipboard className="w-3 h-3" />
                  <span>Ctrl+V to paste from clipboard</span>
