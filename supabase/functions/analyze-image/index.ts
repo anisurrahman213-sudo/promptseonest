@@ -8,19 +8,16 @@ const corsHeaders = {
 
 // Simple in-memory rate limiter
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 100; // 10x faster - increased from 30 to 100 requests per window
-const RATE_WINDOW = 60 * 1000; // 1 minute in milliseconds
+const RATE_LIMIT = 200;
+const RATE_WINDOW = 60 * 1000;
 
 function checkRateLimit(identifier: string): { allowed: boolean; remaining: number; resetIn: number } {
   const now = Date.now();
   const record = rateLimitMap.get(identifier);
 
-  // Clean up old entries periodically
   if (rateLimitMap.size > 1000) {
     for (const [key, value] of rateLimitMap.entries()) {
-      if (now > value.resetTime) {
-        rateLimitMap.delete(key);
-      }
+      if (now > value.resetTime) rateLimitMap.delete(key);
     }
   }
 
@@ -60,6 +57,20 @@ interface MetadataSettings {
   categoryLanguage?: string;
 }
 
+interface BatchItem {
+  imageBase64: string;
+  imageName: string;
+  mediaType?: string;
+}
+
+interface BatchResult {
+  index: number;
+  success: boolean;
+  data?: any;
+  error?: string;
+  code?: string;
+}
+
 // Forbidden words that should NEVER appear in stock metadata
 const FORBIDDEN_WORDS = [
   'watermark', 'watermarked', 'logo', 'signature', 'copyright', 'copyrighted',
@@ -84,16 +95,13 @@ const FORBIDDEN_PATTERNS = [
 function removeForbiddenWords(text: string): string {
   if (!text) return text;
   let cleaned = text;
-  
   for (const word of FORBIDDEN_WORDS) {
     const regex = new RegExp(`\\b${word.replace(/\s+/g, '\\s+')}\\b`, 'gi');
     cleaned = cleaned.replace(regex, '');
   }
-  
   for (const pattern of FORBIDDEN_PATTERNS) {
     cleaned = cleaned.replace(pattern, '');
   }
-  
   return cleaned.replace(/,\s*,/g, ',').replace(/\s+/g, ' ').replace(/,\s*$/g, '').replace(/^\s*,/g, '').trim();
 }
 
@@ -126,7 +134,6 @@ const platformNames: Record<string, string> = {
   custom: "Stock Marketplaces",
 };
 
-// Stock photo categories based on major platforms (Adobe Stock, Shutterstock, etc.)
 const stockCategories = [
   "Abstract", "Animals/Wildlife", "Architecture", "Arts", "Backgrounds/Textures",
   "Beauty/Fashion", "Business", "Celebrities", "Editorial", "Education",
@@ -145,6 +152,67 @@ const imageTypePrefixes: Record<string, string> = {
   ai_generated: "AI Generated ",
 };
 
+// Known words dictionary for compound splitting
+const knownWords = new Set([
+  'solar', 'panel', 'wind', 'turbine', 'energy', 'power', 'plant', 'climate',
+  'technology', 'module', 'background', 'landscape', 'nature', 'environment',
+  'green', 'clean', 'renewable', 'sustainable', 'industrial', 'urban', 'rural',
+  'aerial', 'macro', 'abstract', 'digital', 'modern', 'vintage', 'professional',
+  'commercial', 'creative', 'outdoor', 'indoor', 'transmission', 'generation',
+  'infrastructure', 'conservation', 'innovation', 'efficiency', 'ecological',
+  'biological', 'agricultural', 'architectural', 'atmospheric', 'panoramic',
+  'photovoltaic', 'electricity', 'voltage', 'pylon', 'grid', 'utility',
+  'structure', 'engineering', 'resource', 'concept', 'system', 'array',
+  'horizon', 'industry', 'ecology', 'carbon', 'neutral', 'emission',
+  'footprint', 'oriented', 'solution', 'farm', 'field', 'forest', 'mountain',
+  'ocean', 'river', 'desert', 'tropical', 'arctic', 'wildlife', 'animal',
+  'flower', 'tree', 'building', 'house', 'office', 'factory', 'bridge',
+  'road', 'vehicle', 'transport', 'food', 'health', 'medical', 'science',
+  'education', 'finance', 'business', 'market', 'global', 'world', 'city',
+  'night', 'light', 'shadow', 'texture', 'pattern', 'color', 'design',
+  'space', 'water', 'fire', 'earth', 'metal', 'glass', 'wood', 'stone',
+]);
+
+function splitCompound(word: string): string[] {
+  const parts = word.replace(/[-_]/g, ' ').split(/\s+/);
+  const out: string[] = [];
+  for (const part of parts) {
+    const camelSplit = part.replace(/([a-z])([A-Z])/g, '$1 $2').split(' ');
+    if (camelSplit.length > 1) { out.push(...camelSplit); continue; }
+    const lower = part.toLowerCase();
+    if (lower.length >= 8) {
+      let found = false;
+      for (let i = 4; i <= lower.length - 4; i++) {
+        const left = lower.slice(0, i);
+        const right = lower.slice(i);
+        if (knownWords.has(left) && knownWords.has(right)) {
+          out.push(left, right);
+          found = true;
+          break;
+        }
+      }
+      if (!found) out.push(part);
+    } else {
+      out.push(part);
+    }
+  }
+  return out;
+}
+
+function postProcessTags(filteredTags: string, settings: MetadataSettings): string {
+  const isAdobeStock = !settings.exportPlatform || settings.exportPlatform === 'adobe_stock';
+  if (!isAdobeStock) return filteredTags;
+
+  const maxKw = settings.keywordsCount || 49;
+  const tagList = filteredTags.split(',').map((t: string) => t.trim()).filter(Boolean);
+  const processed = tagList
+    .flatMap((k: string) => splitCompound(k))
+    .map((k: string) => k.toLowerCase().trim())
+    .filter((k: string) => k.length > 1);
+  const unique = [...new Set(processed)].slice(0, maxKw);
+  return unique.join(', ');
+}
+
 function buildPrompt(mediaType: string, settings: MetadataSettings): { systemPrompt: string; userPrompt: string } {
   const platform = platformNames[settings.exportPlatform] || "Stock Marketplaces";
   const titleMax = settings.titleLength || 60;
@@ -152,24 +220,6 @@ function buildPrompt(mediaType: string, settings: MetadataSettings): { systemPro
   const keywordCount = settings.keywordsCount || 49;
   const imageTypePrefix = imageTypePrefixes[settings.imageType] || "";
   
-  // Build negative words instruction
-  const negativeTitleInstruction = settings.negativeTitleWords 
-    ? `\n   - AVOID these words in title: ${settings.negativeTitleWords}` 
-    : "";
-  
-  const negativeKeywordsInstruction = settings.negativeKeywords
-    ? `\n   - EXCLUDE these keywords: ${settings.negativeKeywords}`
-    : "";
-
-  // Build prefix/suffix instruction
-  const prefixInstruction = settings.prefix 
-    ? `\n   - START the title with: "${settings.prefix}"` 
-    : "";
-  
-  const suffixInstruction = settings.suffix 
-    ? `\n   - END the title with: "${settings.suffix}"` 
-    : "";
-
   const titleLengthNote = settings.titleLengthMix 
     ? `(${titleMax - 10} to ${titleMax} characters ideal)` 
     : `(exactly ${titleMax} characters)`;
@@ -177,6 +227,11 @@ function buildPrompt(mediaType: string, settings: MetadataSettings): { systemPro
   const descLengthNote = settings.descriptionLengthFixed 
     ? `(exactly ${descLength} characters)` 
     : `(${descLength - 50} to ${descLength} characters)`;
+
+  const prefixInstruction = settings.prefix ? `\n   - START the title with: "${settings.prefix}"` : "";
+  const suffixInstruction = settings.suffix ? `\n   - END the title with: "${settings.suffix}"` : "";
+  const negativeTitleInstruction = settings.negativeTitleWords ? `\n   - AVOID these words in title: ${settings.negativeTitleWords}` : "";
+  const negativeKeywordsInstruction = settings.negativeKeywords ? `\n   - EXCLUDE these keywords: ${settings.negativeKeywords}` : "";
 
   const systemPrompt = `You are a world-class stock content metadata specialist with deep expertise in ${platform}, Adobe Stock, Shutterstock, Freepik, Getty Images, iStock, Pond5, and other major stock marketplaces. You understand exactly what makes content discoverable and avoids rejection for "similar content" issues.
 
@@ -305,43 +360,253 @@ Respond ONLY with this exact JSON:
   return { systemPrompt, userPrompt };
 }
 
+function cleanBase64(imageBase64: string): string | null {
+  let cleaned = imageBase64.trim();
+  if (cleaned.includes(",") && cleaned.startsWith("data:")) {
+    cleaned = cleaned.split(",")[1];
+  }
+  cleaned = cleaned.replace(/\s/g, "");
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(cleaned)) return null;
+  if (cleaned.length < 100) return null;
+  return cleaned;
+}
+
+function processAnalysisResult(result: AnalysisResult, settings: MetadataSettings, imageName: string, mediaType: string) {
+  const filteredPrompt = removeForbiddenWords(result.prompt);
+  const filteredTitle = removeForbiddenWords(result.title);
+  const filteredDescription = removeForbiddenWords(result.description);
+  let filteredTags = cleanTags(result.tags);
+  filteredTags = postProcessTags(filteredTags, settings);
+  
+  const allFilteredWords = [
+    ...findForbiddenWords(result.prompt),
+    ...findForbiddenWords(result.title),
+    ...findForbiddenWords(result.description),
+    ...findForbiddenWords(result.tags),
+  ];
+  const uniqueFilteredWords = [...new Set(allFilteredWords)];
+  
+  if (uniqueFilteredWords.length > 0) {
+    console.log(`⚠️ Filtered forbidden words: ${uniqueFilteredWords.join(', ')}`);
+  }
+
+  return {
+    prompt: filteredPrompt,
+    title: filteredTitle,
+    description: filteredDescription,
+    tags: filteredTags,
+    category: stockCategories.includes(result.category) ? result.category : "Objects",
+    imageName: imageName || `uploaded-${mediaType}`,
+    mediaType,
+    wasFiltered: uniqueFilteredWords.length > 0,
+    filteredWords: uniqueFilteredWords,
+  };
+}
+
+function parseAIResponse(textContent: string): AnalysisResult {
+  let cleanedText = textContent
+    .replace(/```json\s*/gi, "")
+    .replace(/```\s*/g, "")
+    .trim();
+  
+  const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+  if (jsonMatch) cleanedText = jsonMatch[0];
+  
+  const result = JSON.parse(cleanedText);
+  if (!result.prompt || !result.title || !result.description || !result.tags) {
+    throw new Error("Missing required fields");
+  }
+  return result;
+}
+
+function parseAIResponseFallback(textContent: string): AnalysisResult | null {
+  const promptMatch = textContent.match(/"prompt"\s*:\s*"([^"]+)"/);
+  const titleMatch = textContent.match(/"title"\s*:\s*"([^"]+)"/);
+  const descMatch = textContent.match(/"description"\s*:\s*"([^"]+)"/);
+  const tagsMatch = textContent.match(/"tags"\s*:\s*"([^"]+)"/);
+  const categoryMatch = textContent.match(/"category"\s*:\s*"([^"]+)"/);
+  
+  if (promptMatch && titleMatch && descMatch && tagsMatch) {
+    return {
+      prompt: promptMatch[1],
+      title: titleMatch[1],
+      description: descMatch[1],
+      tags: tagsMatch[1],
+      category: categoryMatch ? categoryMatch[1] : "Objects",
+    };
+  }
+  return null;
+}
+
+async function callAIGateway(
+  lovableApiKey: string,
+  systemPrompt: string,
+  userPrompt: string,
+  cleanedBase64: string,
+): Promise<{ ok: boolean; data?: AnalysisResult; error?: string; code?: string }> {
+  const MAX_RETRIES = 5;
+  const INITIAL_BACKOFF_MS = 2000;
+  const MAX_BACKOFF_MS = 15000;
+  let response: Response | null = null;
+  let lastError = "";
+  let lastStatus: number | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${lovableApiKey}`,
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-lite",
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: userPrompt },
+                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${cleanedBase64}` } },
+              ],
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 2048,
+        }),
+      });
+
+      if (response.ok) break;
+
+      lastStatus = response.status;
+      const errorText = await response.text();
+      lastError = errorText;
+
+      if (response.status === 402) {
+        return { ok: false, error: "AI credits exhausted", code: "AI_CREDITS_EXHAUSTED" };
+      }
+
+      const isRetryable = response.status === 429 || response.status >= 500;
+      if (!isRetryable || attempt === MAX_RETRIES) break;
+
+      const backoffMs = Math.min(INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1), MAX_BACKOFF_MS);
+      const jitterMs = Math.floor(Math.random() * 300);
+      await new Promise((resolve) => setTimeout(resolve, backoffMs + jitterMs));
+    } catch (fetchError) {
+      lastError = fetchError instanceof Error ? fetchError.message : "AI gateway request failed";
+      if (attempt === MAX_RETRIES) break;
+      const backoffMs = Math.min(INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1), MAX_BACKOFF_MS);
+      await new Promise((resolve) => setTimeout(resolve, backoffMs + Math.floor(Math.random() * 300)));
+    }
+  }
+
+  if (!response || !response.ok) {
+    if (lastStatus === 429) {
+      return { ok: false, error: "Rate limited after retries", code: "RATE_LIMITED" };
+    }
+    return { ok: false, error: lastError || "AI processing failed", code: "AI_PROCESSING_FAILED" };
+  }
+
+  const aiResponse = await response.json();
+  const textContent = aiResponse.choices?.[0]?.message?.content;
+  if (!textContent) {
+    return { ok: false, error: "No response from AI" };
+  }
+
+  try {
+    const result = parseAIResponse(textContent);
+    return { ok: true, data: result };
+  } catch {
+    const fallback = parseAIResponseFallback(textContent);
+    if (fallback) return { ok: true, data: fallback };
+    return { ok: false, error: "Failed to parse AI response" };
+  }
+}
+
+// ============= BATCH PROCESSING =============
+async function processBatch(
+  items: BatchItem[],
+  settings: MetadataSettings,
+  lovableApiKey: string,
+): Promise<BatchResult[]> {
+  const { systemPrompt, userPrompt: baseUserPrompt } = buildPrompt('image', settings);
+  
+  // Process all items in parallel
+  const promises = items.map(async (item, index): Promise<BatchResult> => {
+    try {
+      const cleaned = cleanBase64(item.imageBase64);
+      if (!cleaned) {
+        return { index, success: false, error: "Invalid image data" };
+      }
+
+      const mediaType = item.mediaType || 'image';
+      const { systemPrompt: sp, userPrompt: up } = buildPrompt(mediaType, settings);
+      
+      const result = await callAIGateway(lovableApiKey, sp, up, cleaned);
+      
+      if (!result.ok || !result.data) {
+        return { index, success: false, error: result.error, code: result.code };
+      }
+
+      const processed = processAnalysisResult(result.data, settings, item.imageName, mediaType);
+      return { index, success: true, data: processed };
+    } catch (err) {
+      return { index, success: false, error: err instanceof Error ? err.message : "Processing error" };
+    }
+  });
+
+  return Promise.all(promises);
+}
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Get user identifier for rate limiting (from auth header or IP)
     const authHeader = req.headers.get("authorization") || "";
     const userIdentifier = authHeader.replace("Bearer ", "").slice(0, 20) || 
-                          req.headers.get("x-forwarded-for") || 
-                          "anonymous";
+                          req.headers.get("x-forwarded-for") || "anonymous";
 
-    // Check rate limit
     const rateLimit = checkRateLimit(userIdentifier);
-    
     if (!rateLimit.allowed) {
-      console.log(`Rate limit exceeded for: ${userIdentifier}`);
       return new Response(
-        JSON.stringify({ 
-          error: "Rate limit exceeded. Please wait before making more requests.",
-          retryAfter: Math.ceil(rateLimit.resetIn / 1000)
-        }),
-        { 
-          status: 429, 
-          headers: { 
-            ...corsHeaders, 
-            "Content-Type": "application/json",
-            "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000)),
-            "X-RateLimit-Remaining": "0",
-            "X-RateLimit-Reset": String(Math.ceil(rateLimit.resetIn / 1000))
-          } 
-        }
+        JSON.stringify({ error: "Rate limit exceeded", retryAfter: Math.ceil(rateLimit.resetIn / 1000) }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000)) } }
       );
     }
 
-    const { imageBase64, imageName, mediaType = 'image', settings } = await req.json();
+    const body = await req.json();
+
+    // ============= BATCH MODE =============
+    if (body.batch && Array.isArray(body.batch)) {
+      const items: BatchItem[] = body.batch;
+      const settings: MetadataSettings = body.settings || {
+        exportPlatform: 'adobe_stock', titleLength: 60, titleLengthMix: true,
+        descriptionLength: 200, descriptionLengthFixed: false, keywordsCount: 49,
+        imageType: 'none', prefix: '', suffix: '', negativeTitleWords: '', negativeKeywords: '',
+      };
+
+      const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+      if (!lovableApiKey) {
+        return new Response(
+          JSON.stringify({ error: "AI service not configured" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`📦 Batch processing ${items.length} items`);
+      const results = await processBatch(items, settings, lovableApiKey);
+      console.log(`✅ Batch complete: ${results.filter(r => r.success).length}/${items.length} succeeded`);
+
+      return new Response(
+        JSON.stringify({ success: true, batch: true, results }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ============= SINGLE MODE (backward compatible) =============
+    const { imageBase64, imageName, mediaType = 'image', settings } = body;
 
     if (!imageBase64) {
       return new Response(
@@ -350,44 +615,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Clean and validate base64 data
-    let cleanedBase64 = imageBase64.trim();
-    
-    // Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
-    if (cleanedBase64.includes(",") && cleanedBase64.startsWith("data:")) {
-      cleanedBase64 = cleanedBase64.split(",")[1];
-    }
-    
-    // Remove any whitespace/newlines that might have been introduced
-    cleanedBase64 = cleanedBase64.replace(/\s/g, "");
-    
-    // Basic validation - check if it looks like valid base64
-    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(cleanedBase64)) {
-      console.error("Invalid base64 string detected");
+    const cleanedBase64 = cleanBase64(imageBase64);
+    if (!cleanedBase64) {
       return new Response(
         JSON.stringify({ error: "Invalid image data format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    
-    // Check minimum size (a valid image should be at least a few KB)
-    if (cleanedBase64.length < 100) {
-      console.error("Base64 data too small:", cleanedBase64.length);
-      return new Response(
-        JSON.stringify({ error: "Image data is too small or corrupted" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
-    console.log(`Rate limit OK - Remaining: ${rateLimit.remaining}`);
-    console.log(`Base64 data length: ${cleanedBase64.length} chars`);
-
-    console.log(`Processing ${mediaType}: ${imageName}`);
-    console.log("Settings received:", JSON.stringify(settings));
-
-    // Use Lovable AI Gateway
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    
     if (!lovableApiKey) {
       return new Response(
         JSON.stringify({ error: "AI service not configured" }),
@@ -395,297 +631,39 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Use default settings if not provided
     const metadataSettings: MetadataSettings = settings || {
-      exportPlatform: 'adobe_stock',
-      titleLength: 60,
-      titleLengthMix: true,
-      descriptionLength: 200,
-      descriptionLengthFixed: false,
-      keywordsCount: 49,
-      imageType: 'none',
-      prefix: '',
-      suffix: '',
-      negativeTitleWords: '',
-      negativeKeywords: '',
+      exportPlatform: 'adobe_stock', titleLength: 60, titleLengthMix: true,
+      descriptionLength: 200, descriptionLengthFixed: false, keywordsCount: 49,
+      imageType: 'none', prefix: '', suffix: '', negativeTitleWords: '', negativeKeywords: '',
     };
 
+    console.log(`Processing ${mediaType}: ${imageName}`);
     const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings);
+    const aiResult = await callAIGateway(lovableApiKey, systemPrompt, userPrompt, cleanedBase64);
 
-    // Call Lovable AI Gateway with retry logic for rate limits
-    const MAX_RETRIES = 7;
-    const INITIAL_BACKOFF_MS = 3000;
-    const MAX_BACKOFF_MS = 30000;
-    let response: Response | null = null;
-    let lastError = "";
-    let lastStatus: number | null = null;
-
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      console.log(`Calling Lovable AI Gateway... (attempt ${attempt}/${MAX_RETRIES})`);
-
-      try {
-        response = await fetch(
-          "https://ai.gateway.lovable.dev/v1/chat/completions",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${lovableApiKey}`,
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash-lite",
-              messages: [
-                {
-                  role: "system",
-                  content: systemPrompt,
-                },
-                {
-                  role: "user",
-                  content: [
-                    {
-                      type: "text",
-                      text: userPrompt,
-                    },
-                    {
-                      type: "image_url",
-                      image_url: {
-                        url: `data:image/jpeg;base64,${cleanedBase64}`,
-                      },
-                    },
-                  ],
-                },
-              ],
-              temperature: 0.7,
-              max_tokens: 2048,
-            }),
-          }
-        );
-
-        if (response.ok) break;
-
-        lastStatus = response.status;
-        const errorText = await response.text();
-        lastError = errorText;
-        console.error(`AI Gateway error (attempt ${attempt}):`, response.status, errorText);
-
-        if (response.status === 402) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              code: "AI_CREDITS_EXHAUSTED",
-              error: "AI credits exhausted. Please add more credits.",
-            }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-
-        const isRetryable = response.status === 429 || response.status >= 500;
-        if (!isRetryable || attempt === MAX_RETRIES) {
-          break;
-        }
-
-        const backoffMs = Math.min(INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1), MAX_BACKOFF_MS);
-        const jitterMs = Math.floor(Math.random() * 400);
-        console.log(`Retrying AI request in ${backoffMs + jitterMs}ms...`);
-        await new Promise((resolve) => setTimeout(resolve, backoffMs + jitterMs));
-      } catch (fetchError) {
-        lastError = fetchError instanceof Error ? fetchError.message : "AI gateway request failed";
-        console.error(`AI Gateway request failed (attempt ${attempt}):`, fetchError);
-
-        if (attempt === MAX_RETRIES) {
-          break;
-        }
-
-        const backoffMs = Math.min(INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1), MAX_BACKOFF_MS);
-        const jitterMs = Math.floor(Math.random() * 400);
-        console.log(`Retrying failed AI request in ${backoffMs + jitterMs}ms...`);
-        await new Promise((resolve) => setTimeout(resolve, backoffMs + jitterMs));
-      }
-    }
-
-    if (!response || !response.ok) {
-      if (lastStatus === 429) {
+    if (!aiResult.ok || !aiResult.data) {
+      if (aiResult.code === "RATE_LIMITED") {
         return new Response(
-          JSON.stringify({
-            success: false,
-            code: "RATE_LIMITED",
-            error: "Rate limit exceeded after retries. Please wait a minute and try again.",
-            retryAfter: 60,
-          }),
+          JSON.stringify({ success: false, code: "RATE_LIMITED", error: aiResult.error, retryAfter: 60 }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
+      if (aiResult.code === "AI_CREDITS_EXHAUSTED") {
+        return new Response(
+          JSON.stringify({ success: false, code: "AI_CREDITS_EXHAUSTED", error: aiResult.error }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       return new Response(
-        JSON.stringify({
-          success: false,
-          code: "AI_PROCESSING_FAILED",
-          error: "AI processing is temporarily unavailable. Please try again shortly.",
-          details: lastError,
-        }),
+        JSON.stringify({ success: false, code: aiResult.code, error: aiResult.error }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("AI response received successfully");
-
-    const aiResponse = await response.json();
-    const textContent = aiResponse.choices?.[0]?.message?.content;
-
-    if (!textContent) {
-      return new Response(
-        JSON.stringify({ error: "No response from AI" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Parse the JSON response with robust handling
-    let analysisResult: AnalysisResult;
-    try {
-      // Remove markdown code blocks and clean up the response
-      let cleanedText = textContent
-        .replace(/```json\s*/gi, "")
-        .replace(/```\s*/g, "")
-        .trim();
-      
-      // Try to extract JSON if there's extra text before/after
-      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        cleanedText = jsonMatch[0];
-      }
-      
-      analysisResult = JSON.parse(cleanedText);
-      
-      // Validate required fields
-      if (!analysisResult.prompt || !analysisResult.title || !analysisResult.description || !analysisResult.tags) {
-        throw new Error("Missing required fields in AI response");
-      }
-    } catch (parseError) {
-      console.error("Failed to parse AI response:", textContent.substring(0, 500));
-      
-      // Attempt to extract data manually if JSON parse fails
-      try {
-        const promptMatch = textContent.match(/"prompt"\s*:\s*"([^"]+)"/);
-        const titleMatch = textContent.match(/"title"\s*:\s*"([^"]+)"/);
-        const descMatch = textContent.match(/"description"\s*:\s*"([^"]+)"/);
-        const tagsMatch = textContent.match(/"tags"\s*:\s*"([^"]+)"/);
-        const categoryMatch = textContent.match(/"category"\s*:\s*"([^"]+)"/);
-        
-        if (promptMatch && titleMatch && descMatch && tagsMatch) {
-          analysisResult = {
-            prompt: promptMatch[1],
-            title: titleMatch[1],
-            description: descMatch[1],
-            tags: tagsMatch[1],
-            category: categoryMatch ? categoryMatch[1] : "Objects",
-          };
-          console.log("Recovered data via regex extraction");
-        } else {
-          throw new Error("Could not extract fields");
-        }
-      } catch {
-        return new Response(
-          JSON.stringify({ error: "Failed to parse AI response. Please try again." }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    }
-
-    // Apply content quality filter - remove forbidden words
-    const filteredPrompt = removeForbiddenWords(analysisResult.prompt);
-    const filteredTitle = removeForbiddenWords(analysisResult.title);
-    const filteredDescription = removeForbiddenWords(analysisResult.description);
-    let filteredTags = cleanTags(analysisResult.tags);
-
-    // --- Adobe Stock keyword post-processing: split compounds, enforce single-word, dedup ---
-    const isAdobeStock = !metadataSettings.exportPlatform || metadataSettings.exportPlatform === 'adobe_stock';
-    if (isAdobeStock) {
-      const knownWords = new Set([
-        'solar', 'panel', 'wind', 'turbine', 'energy', 'power', 'plant', 'climate',
-        'technology', 'module', 'background', 'landscape', 'nature', 'environment',
-        'green', 'clean', 'renewable', 'sustainable', 'industrial', 'urban', 'rural',
-        'aerial', 'macro', 'abstract', 'digital', 'modern', 'vintage', 'professional',
-        'commercial', 'creative', 'outdoor', 'indoor', 'transmission', 'generation',
-        'infrastructure', 'conservation', 'innovation', 'efficiency', 'ecological',
-        'biological', 'agricultural', 'architectural', 'atmospheric', 'panoramic',
-        'photovoltaic', 'electricity', 'voltage', 'pylon', 'grid', 'utility',
-        'structure', 'engineering', 'resource', 'concept', 'system', 'array',
-        'horizon', 'industry', 'ecology', 'carbon', 'neutral', 'emission',
-        'footprint', 'oriented', 'solution', 'farm', 'field', 'forest', 'mountain',
-        'ocean', 'river', 'desert', 'tropical', 'arctic', 'wildlife', 'animal',
-        'flower', 'tree', 'building', 'house', 'office', 'factory', 'bridge',
-        'road', 'vehicle', 'transport', 'food', 'health', 'medical', 'science',
-        'education', 'finance', 'business', 'market', 'global', 'world', 'city',
-        'night', 'light', 'shadow', 'texture', 'pattern', 'color', 'design',
-        'space', 'water', 'fire', 'earth', 'metal', 'glass', 'wood', 'stone',
-      ]);
-
-      const splitCompound = (word: string): string[] => {
-        const parts = word.replace(/[-_]/g, ' ').split(/\s+/);
-        const out: string[] = [];
-        for (const part of parts) {
-          // Split camelCase
-          const camelSplit = part.replace(/([a-z])([A-Z])/g, '$1 $2').split(' ');
-          if (camelSplit.length > 1) { out.push(...camelSplit); continue; }
-          // Try splitting concatenated words where BOTH halves are known
-          const lower = part.toLowerCase();
-          if (lower.length >= 8) {
-            let found = false;
-            for (let i = 4; i <= lower.length - 4; i++) {
-              const left = lower.slice(0, i);
-              const right = lower.slice(i);
-              if (knownWords.has(left) && knownWords.has(right)) {
-                out.push(left, right);
-                found = true;
-                break;
-              }
-            }
-            if (!found) out.push(part);
-          } else {
-            out.push(part);
-          }
-        }
-        return out;
-      };
-
-      const maxKw = metadataSettings.keywordsCount || 49;
-      const tagList = filteredTags.split(',').map((t: string) => t.trim()).filter(Boolean);
-      const processed = tagList
-        .flatMap((k: string) => splitCompound(k))
-        .map((k: string) => k.toLowerCase().trim())
-        .filter((k: string) => k.length > 1);
-      const unique = [...new Set(processed)].slice(0, maxKw);
-      filteredTags = unique.join(', ');
-    }
-    
-    // Collect any words that were filtered
-    const allFilteredWords = [
-      ...findForbiddenWords(analysisResult.prompt),
-      ...findForbiddenWords(analysisResult.title),
-      ...findForbiddenWords(analysisResult.description),
-      ...findForbiddenWords(analysisResult.tags),
-    ];
-    const uniqueFilteredWords = [...new Set(allFilteredWords)];
-    
-    if (uniqueFilteredWords.length > 0) {
-      console.log(`⚠️ Filtered forbidden words: ${uniqueFilteredWords.join(', ')}`);
-    }
+    const processed = processAnalysisResult(aiResult.data, metadataSettings, imageName, mediaType);
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          prompt: filteredPrompt,
-          title: filteredTitle,
-          description: filteredDescription,
-          tags: filteredTags,
-          category: stockCategories.includes(analysisResult.category) ? analysisResult.category : "Objects",
-          imageName: imageName || `uploaded-${mediaType}`,
-          mediaType: mediaType,
-          wasFiltered: uniqueFilteredWords.length > 0,
-          filteredWords: uniqueFilteredWords,
-        },
-      }),
+      JSON.stringify({ success: true, data: processed }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
