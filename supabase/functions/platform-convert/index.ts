@@ -157,9 +157,55 @@ You MUST respond using the provided tool call format only.`;
     const result = JSON.parse(toolCall.function.arguments);
 
     // Post-process: enforce single-word keywords for Adobe Stock, remove duplicates for all
+    // Split compound words like "photovoltaicmodule" → "photovoltaic", "module"
+    const splitCompound = (word: string): string[] => {
+      // Split on hyphens, underscores, spaces
+      const parts = word.replace(/[-_]/g, ' ').split(/\s+/);
+      const result: string[] = [];
+      for (const part of parts) {
+        // Split camelCase: "solarPanel" → "solar", "panel"
+        const camelSplit = part.replace(/([a-z])([A-Z])/g, '$1 $2').split(' ');
+        if (camelSplit.length > 1) {
+          result.push(...camelSplit);
+          continue;
+        }
+        // Detect concatenated known words (6+ chars, try splitting at every position)
+        if (part.length >= 8) {
+          // Common stock photography word list for splitting
+          const commonWords = [
+            'photo', 'voltaic', 'solar', 'panel', 'wind', 'turbine', 'energy',
+            'power', 'plant', 'climate', 'technology', 'electric', 'module',
+            'background', 'landscape', 'nature', 'environment', 'green', 'clean',
+            'renewable', 'sustainable', 'industrial', 'urban', 'rural', 'aerial',
+            'macro', 'closeup', 'abstract', 'digital', 'modern', 'vintage',
+            'professional', 'commercial', 'creative', 'outdoor', 'indoor',
+            'transmission', 'generation', 'infrastructure', 'conservation',
+            'innovation', 'efficiency', 'ecological', 'biological', 'agricultural',
+            'architectural', 'atmospheric', 'panoramic', 'photographic',
+          ];
+          const lower = part.toLowerCase();
+          let found = false;
+          for (const w of commonWords) {
+            if (lower.startsWith(w) && lower.length > w.length) {
+              const remainder = lower.slice(w.length);
+              if (remainder.length >= 3) {
+                result.push(w, remainder);
+                found = true;
+                break;
+              }
+            }
+          }
+          if (!found) result.push(part);
+        } else {
+          result.push(part);
+        }
+      }
+      return result;
+    };
+
     if (result.adobe_stock?.keywords) {
       const split = result.adobe_stock.keywords
-        .flatMap((k: string) => k.replace(/[-_]/g, ' ').split(/\s+/))
+        .flatMap((k: string) => splitCompound(k))
         .map((k: string) => k.toLowerCase().trim())
         .filter((k: string) => k.length > 1);
       result.adobe_stock.keywords = [...new Set(split)].slice(0, 49);
