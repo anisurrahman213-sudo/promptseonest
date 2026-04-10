@@ -318,7 +318,7 @@ export default function KeywordResearch() {
 
   return (
     <>
-      <SEOHead title="Keyword Research — PromptSEONest" description="Generate optimised keywords for stock photography platforms" />
+      <SEOHead title="Keyword Research — PromptSEONest" description="Generate optimised keywords for stock photography platforms" path="/keyword-research" />
       <Header />
       <main className="container py-8 max-w-5xl space-y-8">
         {/* Title */}
