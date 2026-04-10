@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,13 +10,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { User, Phone, Mail, Shield, Loader2, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Phone, Mail, Shield, Loader2, Save, Eye, EyeOff, AlertTriangle, ArrowRight } from 'lucide-react';
 
 export default function Profile() {
   const { t } = useTranslation();
   const { user, loading: authLoading, updatePassword } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isSetupMode = searchParams.get('setup') === 'true';
   
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -122,6 +125,17 @@ export default function Profile() {
       <Header />
       
       <main className="container py-8 max-w-2xl">
+        {isSetupMode && (
+          <Alert className="mb-6 border-primary/30 bg-primary/5">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>{t('profile.completeSetup', 'Complete your profile to get started with PromptSEONest')}</span>
+              <Button size="sm" variant="outline" onClick={() => navigate('/dashboard')} className="ml-4 gap-1.5 shrink-0">
+                {t('common.skip', 'Skip')} <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="flex items-center gap-3 mb-8">
           <div className="h-12 w-12 rounded-full bg-gradient-primary flex items-center justify-center">
             <User className="h-6 w-6 text-primary-foreground" />
