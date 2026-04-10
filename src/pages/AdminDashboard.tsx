@@ -2,14 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useAdminUsers, useIsAdmin, useDeleteUser, useSendCustomEmail } from '@/hooks/usePaymentRequests';
+import { useAdminUsers, useIsAdmin, useDeleteUser, useSendCustomEmail, useAdminPaymentRequests } from '@/hooks/usePaymentRequests';
 import { supabase } from '@/integrations/supabase/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Video, Play } from 'lucide-react';
+import { Loader2, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Video, Play, AlertCircle, CheckCircle, DollarSign } from 'lucide-react';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { DemoVideoManagement } from '@/components/admin/DemoVideoManagement';
@@ -29,9 +29,18 @@ export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   const { data: users, isLoading: usersLoading } = useAdminUsers();
+  const { data: paymentRequests } = useAdminPaymentRequests();
   const deleteUserMutation = useDeleteUser();
   const sendEmailMutation = useSendCustomEmail();
   const queryClient = useQueryClient();
+
+  const pendingPayments = useMemo(() => paymentRequests?.filter(p => p.status === 'pending') || [], [paymentRequests]);
+  const approvedThisMonth = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    return paymentRequests?.filter(p => p.status === 'approved' && new Date(p.updated_at) >= startOfMonth) || [];
+  }, [paymentRequests]);
+  const monthlyRevenue = useMemo(() => approvedThisMonth.reduce((sum, p) => sum + Number(p.amount), 0), [approvedThisMonth]);
 
   const [addCreditsDialog, setAddCreditsDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ userId: string; email: string } | null>(null);
@@ -129,7 +138,7 @@ export default function AdminDashboard() {
           </TabsList>
 
           <TabsContent value="users" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -143,6 +152,30 @@ export default function AdminDashboard() {
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent><div className="text-2xl font-bold">{totalCredits.toLocaleString()}</div></CardContent>
+              </Card>
+              <Card className={pendingPayments.length > 0 ? 'border-destructive/30 bg-destructive/5' : ''}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
+                  <AlertCircle className={`h-4 w-4 ${pendingPayments.length > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{pendingPayments.length}</div>
+                  {pendingPayments.length > 0 && (
+                    <Button size="sm" variant="outline" className="mt-2 w-full gap-1.5" onClick={() => navigate('/admin/payments')}>
+                      Review Payments
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">৳{monthlyRevenue.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground mt-1">{approvedThisMonth.length} approved this month</p>
+                </CardContent>
               </Card>
             </div>
 

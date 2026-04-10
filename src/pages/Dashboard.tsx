@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { MediaUploader, MediaFile } from '@/components/MediaUploader';
@@ -19,15 +19,18 @@ import { useCredits } from '@/hooks/useCredits';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
 import { useBackgroundProcessor } from '@/contexts/BackgroundProcessorContext';
-import { Loader2, Sparkles, History, Zap } from 'lucide-react';
+import { Loader2, Sparkles, History, Zap, CreditCard, AlertTriangle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { data: hasActivePlans } = usePlansActive();
   const { credits, refreshCredits } = useCredits();
@@ -48,10 +51,26 @@ export default function Dashboard() {
   const { startProcessing, isProcessing } = useBackgroundProcessor();
   const [activeTab, setActiveTab] = useState('upload');
   const [metadataSettings, setMetadataSettings] = useState<MetadataSettings>(defaultMetadataSettings);
+  const [isProfileIncomplete, setIsProfileIncomplete] = useState(false);
   
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+
+  // Check profile completeness
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('user_profiles')
+      .select('full_name, phone_number')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data && (!data.full_name || !data.phone_number)) {
+          setIsProfileIncomplete(true);
+        }
+      });
+  }, [user]);
 
   // Calculate today's generations (from current page data - approximation)
   const todayGenerations = useMemo(() => {
@@ -193,9 +212,50 @@ export default function Dashboard() {
             </motion.p>
           </motion.div>
 
+          {/* Profile Incomplete Banner */}
+          {isProfileIncomplete && (
+            <Alert className="border-warning/30 bg-warning/5">
+              <User className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between flex-wrap gap-2">
+                <span className="text-sm">Complete your profile to enhance your experience</span>
+                <Button size="sm" variant="outline" onClick={() => navigate('/profile?setup=true')} className="gap-1.5 shrink-0">
+                  Complete Profile
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Auto-Delete Warning - Important for users */}
           <AutoDeleteWarning generations={generations} />
 
+          {/* Credit & Payment Widget */}
+          {hasActivePlans && credits !== null && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-muted/50 border border-border"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-primary/15">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Credits: {credits} remaining</p>
+                  <p className="text-xs text-muted-foreground">Manage your subscription and payment history</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => navigate('/payment-history')} className="gap-1.5">
+                  <History className="h-3.5 w-3.5" /> Payment History
+                </Button>
+                {credits < 50 && (
+                  <Button size="sm" onClick={() => navigate('/pricing')} className="gap-1.5 bg-gradient-primary hover:opacity-90">
+                    <Zap className="h-3.5 w-3.5" /> Upgrade
+                  </Button>
+                )}
+              </div>
+            </motion.div>
+          )}
 
           {/* Stats Cards */}
           <StatsCards 

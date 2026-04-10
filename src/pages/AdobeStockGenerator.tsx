@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
@@ -121,6 +123,9 @@ export default function AdobeStockGenerator() {
   const [selectedPlatform, setSelectedPlatform] = useState<ExportPlatform>('adobe_stock');
   const [isAiGenerated, setIsAiGenerated] = useState(false);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const platformReq = platformRequirements[selectedPlatform];
   const titleLimit = platformReq.titleLimit;
@@ -268,6 +273,65 @@ export default function AdobeStockGenerator() {
     a.click();
     URL.revokeObjectURL(url);
     toast.success(`Exported ${completed.length} items to CSV`);
+  };
+
+  const saveToDashboard = async () => {
+    if (!user) { toast.error('Please sign in to save generations'); return; }
+    const completed = images.filter(img => img.metadata);
+    if (completed.length === 0) { toast.error('No completed metadata to save'); return; }
+    
+    setIsSaving(true);
+    let savedCount = 0;
+    let failedCount = 0;
+
+    for (const img of completed) {
+      const m = img.metadata!;
+      try {
+        // Upload image to storage
+        const ext = img.file.name.split('.').pop() || 'jpg';
+        const storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(storagePath, img.file);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage
+          .from('images')
+          .getPublicUrl(storagePath);
+
+        const { error: insertError } = await supabase
+          .from('generations')
+          .insert({
+            user_id: user.id,
+            image_name: img.file.name,
+            image_url: urlData.publicUrl,
+            title: m.title,
+            description: m.description,
+            tags: m.keywords,
+            prompt: m.prompt,
+            category: ADOBE_CATEGORIES[m.category] || '',
+            media_type: 'image',
+          });
+
+        if (insertError) throw insertError;
+        savedCount++;
+      } catch (err: any) {
+        console.error('Save failed for', img.file.name, err);
+        failedCount++;
+      }
+    }
+
+    setIsSaving(false);
+    if (savedCount > 0) {
+      toast.success(`${savedCount} generation${savedCount > 1 ? 's' : ''} saved to dashboard`);
+      if (failedCount === 0) {
+        navigate('/dashboard');
+      }
+    }
+    if (failedCount > 0) {
+      toast.error(`${failedCount} failed to save`);
+    }
   };
 
   const selected = images[selectedIndex] ?? null;
@@ -422,9 +486,19 @@ export default function AdobeStockGenerator() {
                           </Button>
                         )}
                         {doneCount > 0 && (
-                          <Button variant="outline" onClick={exportCSV} className="gap-2">
-                            <Download className="h-4 w-4" /> Export CSV ({doneCount})
-                          </Button>
+                          <>
+                            <Button variant="outline" onClick={exportCSV} className="gap-2">
+                              <Download className="h-4 w-4" /> Export CSV ({doneCount})
+                            </Button>
+                            <Button 
+                              onClick={saveToDashboard} 
+                              disabled={isSaving || !user}
+                              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                              {isSaving ? 'Saving...' : `Save to Dashboard (${doneCount})`}
+                            </Button>
+                          </>
                         )}
                         <Button variant="ghost" size="sm" onClick={clearAll} className="text-destructive hover:text-destructive gap-1 ml-auto">
                           <Trash2 className="h-3.5 w-3.5" /> Clear All
