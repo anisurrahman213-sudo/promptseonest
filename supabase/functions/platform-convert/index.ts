@@ -159,9 +159,9 @@ You MUST respond using the provided tool call format only.`;
     // Post-process: enforce single-word keywords for Adobe Stock, remove duplicates for all
     if (result.adobe_stock?.keywords) {
       const split = result.adobe_stock.keywords
-        .flatMap((k: string) => k.replace(/-/g, '').split(/\s+/))
+        .flatMap((k: string) => k.replace(/[-_]/g, ' ').split(/\s+/))
         .map((k: string) => k.toLowerCase().trim())
-        .filter(Boolean);
+        .filter((k: string) => k.length > 1);
       result.adobe_stock.keywords = [...new Set(split)].slice(0, 49);
     }
     if (result.shutterstock?.keywords) {
