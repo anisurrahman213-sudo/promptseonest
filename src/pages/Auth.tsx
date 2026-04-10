@@ -78,9 +78,33 @@ export default function Auth() {
   };
 
   useEffect(() => {
-    const provider = searchParams.get('provider');
-    if (provider === 'google' && user) { toast.success(t('toast.welcomeBack')); navigate('/dashboard'); return; }
-    if (user && activeTab !== 'reset') navigate('/dashboard');
+    const checkProfileAndRedirect = async () => {
+      if (!user || activeTab === 'reset') return;
+      
+      // Check if profile is complete
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('full_name, phone_number')
+        .eq('user_id', user.id)
+        .single();
+      
+      const isProfileIncomplete = !profile?.full_name || !profile?.phone_number;
+      const provider = searchParams.get('provider');
+      
+      if (provider === 'google') {
+        toast.success(t('toast.welcomeBack'));
+      }
+      
+      if (isProfileIncomplete) {
+        navigate('/profile?setup=true');
+      } else {
+        navigate('/dashboard');
+      }
+    };
+    
+    if (user && activeTab !== 'reset') {
+      checkProfileAndRedirect();
+    }
   }, [user, activeTab, navigate, searchParams, t]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -92,7 +116,7 @@ export default function Auth() {
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) { await recordFailedAttempt(email); toast.error(error.message.includes('Invalid login credentials') ? t('errors.invalidCredentials') : error.message); }
-    else { await resetLoginAttempts(email); toast.success(t('toast.welcomeBack')); navigate('/dashboard'); }
+    else { await resetLoginAttempts(email); toast.success(t('toast.welcomeBack')); /* redirect handled by useEffect */ }
   };
 
   const handleGoogleSignIn = async () => { setGoogleLoading(true); const { error } = await signInWithGoogle(); if (error) { toast.error(error.message); setGoogleLoading(false); } };
@@ -114,7 +138,7 @@ export default function Auth() {
         else { retries--; if (retries === 0) console.error('Error updating profile after retries:', profileError); }
       }
     }
-    setLoading(false); toast.success(t('toast.accountCreated')); navigate('/dashboard');
+    setLoading(false); toast.success(t('toast.accountCreated')); navigate('/profile?setup=true');
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
