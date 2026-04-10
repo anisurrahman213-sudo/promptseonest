@@ -19,7 +19,7 @@ import { useCredits } from '@/hooks/useCredits';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
 import { useBackgroundProcessor } from '@/contexts/BackgroundProcessorContext';
-import { Loader2, Sparkles, History, Zap, CreditCard, AlertTriangle, User } from 'lucide-react';
+import { Loader2, Sparkles, History, Zap, CreditCard, AlertTriangle, User, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
