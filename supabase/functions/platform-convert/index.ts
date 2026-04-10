@@ -156,6 +156,37 @@ You MUST respond using the provided tool call format only.`;
 
     const result = JSON.parse(toolCall.function.arguments);
 
+    // Post-process: enforce single-word keywords for Adobe Stock, remove duplicates for all
+    if (result.adobe_stock?.keywords) {
+      const split = result.adobe_stock.keywords
+        .flatMap((k: string) => k.replace(/-/g, '').split(/\s+/))
+        .map((k: string) => k.toLowerCase().trim())
+        .filter(Boolean);
+      result.adobe_stock.keywords = [...new Set(split)].slice(0, 49);
+    }
+    if (result.shutterstock?.keywords) {
+      const seen = new Set<string>();
+      result.shutterstock.keywords = result.shutterstock.keywords
+        .map((k: string) => k.trim())
+        .filter((k: string) => {
+          const low = k.toLowerCase();
+          if (seen.has(low) || !k) return false;
+          seen.add(low);
+          return true;
+        }).slice(0, 50);
+    }
+    if (result.freepik?.keywords) {
+      const seen = new Set<string>();
+      result.freepik.keywords = result.freepik.keywords
+        .map((k: string) => k.trim())
+        .filter((k: string) => {
+          const low = k.toLowerCase();
+          if (seen.has(low) || !k) return false;
+          seen.add(low);
+          return true;
+        }).slice(0, 30);
+    }
+
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
