@@ -78,6 +78,7 @@ const App = () => (
                   <Route path="/metadata-fixer" element={<MetadataFixer />} />
                   <Route path="/extension" element={<ExtensionDownload />} />
                   <Route path="/keyword-research" element={<KeywordResearch />} />
+                  <Route path="/platform-converter" element={<PlatformConverter />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
