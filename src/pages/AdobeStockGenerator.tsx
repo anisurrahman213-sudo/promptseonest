@@ -275,6 +275,65 @@ export default function AdobeStockGenerator() {
     toast.success(`Exported ${completed.length} items to CSV`);
   };
 
+  const saveToDashboard = async () => {
+    if (!user) { toast.error('Please sign in to save generations'); return; }
+    const completed = images.filter(img => img.metadata);
+    if (completed.length === 0) { toast.error('No completed metadata to save'); return; }
+    
+    setIsSaving(true);
+    let savedCount = 0;
+    let failedCount = 0;
+
+    for (const img of completed) {
+      const m = img.metadata!;
+      try {
+        // Upload image to storage
+        const ext = img.file.name.split('.').pop() || 'jpg';
+        const storagePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(storagePath, img.file);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage
+          .from('images')
+          .getPublicUrl(storagePath);
+
+        const { error: insertError } = await supabase
+          .from('generations')
+          .insert({
+            user_id: user.id,
+            image_name: img.file.name,
+            image_url: urlData.publicUrl,
+            title: m.title,
+            description: m.description,
+            tags: m.keywords,
+            prompt: m.prompt,
+            category: ADOBE_CATEGORIES[m.category] || '',
+            media_type: 'image',
+          });
+
+        if (insertError) throw insertError;
+        savedCount++;
+      } catch (err: any) {
+        console.error('Save failed for', img.file.name, err);
+        failedCount++;
+      }
+    }
+
+    setIsSaving(false);
+    if (savedCount > 0) {
+      toast.success(`${savedCount} generation${savedCount > 1 ? 's' : ''} saved to dashboard`);
+      if (failedCount === 0) {
+        navigate('/dashboard');
+      }
+    }
+    if (failedCount > 0) {
+      toast.error(`${failedCount} failed to save`);
+    }
+  };
+
   const selected = images[selectedIndex] ?? null;
   const doneCount = images.filter(i => i.status === 'done').length;
   const errorCount = images.filter(i => i.status === 'error').length;
