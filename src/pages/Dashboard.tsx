@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { MediaUploader, MediaFile } from '@/components/MediaUploader';
@@ -19,12 +19,14 @@ import { useCredits } from '@/hooks/useCredits';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
 import { useBackgroundProcessor } from '@/contexts/BackgroundProcessorContext';
-import { Loader2, Sparkles, History, Zap } from 'lucide-react';
+import { Loader2, Sparkles, History, Zap, CreditCard, AlertTriangle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Dashboard() {
   const { t } = useTranslation();
