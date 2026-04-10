@@ -29,9 +29,18 @@ export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   const { data: users, isLoading: usersLoading } = useAdminUsers();
+  const { data: paymentRequests } = useAdminPaymentRequests();
   const deleteUserMutation = useDeleteUser();
   const sendEmailMutation = useSendCustomEmail();
   const queryClient = useQueryClient();
+
+  const pendingPayments = useMemo(() => paymentRequests?.filter(p => p.status === 'pending') || [], [paymentRequests]);
+  const approvedThisMonth = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    return paymentRequests?.filter(p => p.status === 'approved' && new Date(p.updated_at) >= startOfMonth) || [];
+  }, [paymentRequests]);
+  const monthlyRevenue = useMemo(() => approvedThisMonth.reduce((sum, p) => sum + Number(p.amount), 0), [approvedThisMonth]);
 
   const [addCreditsDialog, setAddCreditsDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ userId: string; email: string } | null>(null);
