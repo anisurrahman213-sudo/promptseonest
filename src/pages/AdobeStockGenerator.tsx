@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
