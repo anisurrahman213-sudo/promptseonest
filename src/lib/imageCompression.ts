@@ -20,18 +20,18 @@ export interface CompressionProgress {
 }
 
 const defaultOptions: CompressionOptions = {
-  maxWidth: 1400,
-  maxHeight: 1400,
-  quality: 0.5,
-  maxSizeKB: 200,
+  maxWidth: 1200,
+  maxHeight: 1200,
+  quality: 0.35,
+  maxSizeKB: 150,
   aggressive: true,
 };
 
 // Pre-calculate quality based on file size (no iterations needed)
 function estimateQuality(fileSizeKB: number, targetSizeKB: number): number {
-  if (fileSizeKB <= targetSizeKB) return 0.5;
+  if (fileSizeKB <= targetSizeKB) return 0.35;
   const ratio = targetSizeKB / fileSizeKB;
-  return Math.max(0.15, Math.min(0.5, ratio * 0.8));
+  return Math.max(0.1, Math.min(0.35, ratio * 0.7));
 }
 
 // Fast dimension calculation
@@ -43,10 +43,10 @@ function calculateDimensions(
 ): { width: number; height: number } {
   // Aggressive resize for very large files
   let targetMaxDim = maxDim;
-  if (fileSizeKB > 10000) targetMaxDim = 600;
-  else if (fileSizeKB > 5000) targetMaxDim = 800;
-  else if (fileSizeKB > 2000) targetMaxDim = 900;
-  else if (fileSizeKB > 1000) targetMaxDim = 1024;
+  if (fileSizeKB > 10000) targetMaxDim = 480;
+  else if (fileSizeKB > 5000) targetMaxDim = 640;
+  else if (fileSizeKB > 2000) targetMaxDim = 800;
+  else if (fileSizeKB > 1000) targetMaxDim = 960;
 
   if (width <= targetMaxDim && height <= targetMaxDim) {
     return { width, height };

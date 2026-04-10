@@ -7,8 +7,8 @@ import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 
 // Process many files concurrently for maximum speed
-const MAX_CONCURRENT = 50;
-const STAGGER_DELAY_MS = 100;
+const MAX_CONCURRENT = 80;
+const STAGGER_DELAY_MS = 50;
 
 interface UseParallelUploadOptions {
   userId: string;
@@ -83,10 +83,10 @@ export function useParallelUpload({
         
         // Compress the image first
         const compressedFile = await compressImage(file, {
-          maxWidth: 1400,
-          maxHeight: 1400,
-          quality: 0.5,
-          maxSizeKB: 200,
+          maxWidth: 1200,
+          maxHeight: 1200,
+          quality: 0.35,
+          maxSizeKB: 150,
           aggressive: true
         });
         
