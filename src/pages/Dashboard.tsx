@@ -283,6 +283,25 @@ export default function Dashboard() {
             <Button size="sm" variant="outline" className="shrink-0">Open Tool →</Button>
           </motion.div>
 
+          {/* Quick Link: Platform Converter */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 rounded-xl border border-border bg-muted/30 flex items-center justify-between gap-4 cursor-pointer hover:border-primary/30 transition-colors"
+            onClick={() => navigate('/platform-converter')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-accent/15">
+                <Zap className="h-5 w-5 text-accent" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Platform Converter</p>
+                <p className="text-xs text-muted-foreground">Convert Adobe metadata to Shutterstock and Freepik instantly</p>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" className="shrink-0">Open Tool →</Button>
+          </motion.div>
+
           {/* Recent Activity Feed */}
           <RecentActivity generations={generations} maxItems={5} />
 
