@@ -327,8 +327,12 @@ export function BulkConverter() {
           <div className="flex flex-col sm:flex-row gap-3">
             {!converting && completedCount < rows.length && (
               <Button className="flex-1" size="lg" onClick={handleBulkConvert}>
-                <Loader2 className={`w-4 h-4 mr-2 ${converting ? 'animate-spin' : 'hidden'}`} />
                 Convert All {rows.filter(r => r.status !== 'done').length} Rows
+              </Button>
+            )}
+            {!converting && errorCount > 0 && (
+              <Button className="flex-1" size="lg" variant="destructive" onClick={handleRetryFailed}>
+                <RefreshCw className="w-4 h-4 mr-2" /> Retry {errorCount} Failed Row{errorCount > 1 ? 's' : ''}
               </Button>
             )}
             {completedCount > 0 && !converting && (
