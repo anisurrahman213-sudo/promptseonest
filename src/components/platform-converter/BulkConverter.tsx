@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Upload, Download, Loader2, CheckCircle, XCircle, FileText, Trash2, Eye
+  Upload, Download, Loader2, CheckCircle, XCircle, FileText, Trash2, Eye, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -137,6 +137,35 @@ export function BulkConverter() {
   }, [rows, sourcePlatform]);
 
   const handleStop = () => { abortRef.current = true; };
+
+  const handleRetryFailed = useCallback(async () => {
+    const failedIndices = rows.map((r, i) => r.status === 'error' ? i : -1).filter(i => i >= 0);
+    if (failedIndices.length === 0) return;
+    setConverting(true);
+    abortRef.current = false;
+
+    for (const i of failedIndices) {
+      if (abortRef.current) break;
+      setRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: 'processing', error: undefined } : r));
+
+      try {
+        const keywordArray = rows[i].keywords.split(',').map(k => k.trim()).filter(Boolean);
+        const { data, error } = await supabase.functions.invoke('platform-convert', {
+          body: { title: rows[i].title, keywords: keywordArray, description: rows[i].description, source_platform: sourcePlatform },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        setRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: 'done', result: data as ConversionResult } : r));
+      } catch (err: any) {
+        setRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: 'error', error: err.message || 'Failed' } : r));
+      }
+
+      if (!abortRef.current) await new Promise(res => setTimeout(res, 1500));
+    }
+
+    setConverting(false);
+    toast.success('Retry completed');
+  }, [rows, sourcePlatform]);
 
   const handleClear = () => { setRows([]); setPreviewRow(null); };
 
@@ -298,8 +327,12 @@ export function BulkConverter() {
           <div className="flex flex-col sm:flex-row gap-3">
             {!converting && completedCount < rows.length && (
               <Button className="flex-1" size="lg" onClick={handleBulkConvert}>
-                <Loader2 className={`w-4 h-4 mr-2 ${converting ? 'animate-spin' : 'hidden'}`} />
                 Convert All {rows.filter(r => r.status !== 'done').length} Rows
+              </Button>
+            )}
+            {!converting && errorCount > 0 && (
+              <Button className="flex-1" size="lg" variant="destructive" onClick={handleRetryFailed}>
+                <RefreshCw className="w-4 h-4 mr-2" /> Retry {errorCount} Failed Row{errorCount > 1 ? 's' : ''}
               </Button>
             )}
             {completedCount > 0 && !converting && (
