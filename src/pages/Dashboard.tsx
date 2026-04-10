@@ -212,9 +212,50 @@ export default function Dashboard() {
             </motion.p>
           </motion.div>
 
+          {/* Profile Incomplete Banner */}
+          {isProfileIncomplete && (
+            <Alert className="border-warning/30 bg-warning/5">
+              <User className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between flex-wrap gap-2">
+                <span className="text-sm">Complete your profile to enhance your experience</span>
+                <Button size="sm" variant="outline" onClick={() => navigate('/profile?setup=true')} className="gap-1.5 shrink-0">
+                  Complete Profile
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Auto-Delete Warning - Important for users */}
           <AutoDeleteWarning generations={generations} />
 
+          {/* Credit & Payment Widget */}
+          {hasActivePlans && credits !== null && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-muted/50 border border-border"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-primary/15">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Credits: {credits} remaining</p>
+                  <p className="text-xs text-muted-foreground">Manage your subscription and payment history</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => navigate('/payment-history')} className="gap-1.5">
+                  <History className="h-3.5 w-3.5" /> Payment History
+                </Button>
+                {credits < 50 && (
+                  <Button size="sm" onClick={() => navigate('/pricing')} className="gap-1.5 bg-gradient-primary hover:opacity-90">
+                    <Zap className="h-3.5 w-3.5" /> Upgrade
+                  </Button>
+                )}
+              </div>
+            </motion.div>
+          )}
 
           {/* Stats Cards */}
           <StatsCards 
