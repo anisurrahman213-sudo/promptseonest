@@ -295,7 +295,7 @@ export default function Dashboard() {
                 <Zap className="h-5 w-5 text-accent" />
               </div>
               <div>
-                <p className="font-medium text-sm">Platform Converter</p>
+                <p className="font-medium text-sm flex items-center gap-1.5">Platform Converter <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-primary/15 text-primary leading-none">Bulk</span></p>
                 <p className="text-xs text-muted-foreground">Convert Adobe metadata to Shutterstock and Freepik instantly</p>
               </div>
             </div>
