@@ -486,9 +486,19 @@ export default function AdobeStockGenerator() {
                           </Button>
                         )}
                         {doneCount > 0 && (
-                          <Button variant="outline" onClick={exportCSV} className="gap-2">
-                            <Download className="h-4 w-4" /> Export CSV ({doneCount})
-                          </Button>
+                          <>
+                            <Button variant="outline" onClick={exportCSV} className="gap-2">
+                              <Download className="h-4 w-4" /> Export CSV ({doneCount})
+                            </Button>
+                            <Button 
+                              onClick={saveToDashboard} 
+                              disabled={isSaving || !user}
+                              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                              {isSaving ? 'Saving...' : `Save to Dashboard (${doneCount})`}
+                            </Button>
+                          </>
                         )}
                         <Button variant="ghost" size="sm" onClick={clearAll} className="text-destructive hover:text-destructive gap-1 ml-auto">
                           <Trash2 className="h-3.5 w-3.5" /> Clear All
