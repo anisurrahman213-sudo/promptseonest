@@ -138,6 +138,35 @@ export function BulkConverter() {
 
   const handleStop = () => { abortRef.current = true; };
 
+  const handleRetryFailed = useCallback(async () => {
+    const failedIndices = rows.map((r, i) => r.status === 'error' ? i : -1).filter(i => i >= 0);
+    if (failedIndices.length === 0) return;
+    setConverting(true);
+    abortRef.current = false;
+
+    for (const i of failedIndices) {
+      if (abortRef.current) break;
+      setRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: 'processing', error: undefined } : r));
+
+      try {
+        const keywordArray = rows[i].keywords.split(',').map(k => k.trim()).filter(Boolean);
+        const { data, error } = await supabase.functions.invoke('platform-convert', {
+          body: { title: rows[i].title, keywords: keywordArray, description: rows[i].description, source_platform: sourcePlatform },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        setRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: 'done', result: data as ConversionResult } : r));
+      } catch (err: any) {
+        setRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: 'error', error: err.message || 'Failed' } : r));
+      }
+
+      if (!abortRef.current) await new Promise(res => setTimeout(res, 1500));
+    }
+
+    setConverting(false);
+    toast.success('Retry completed');
+  }, [rows, sourcePlatform]);
+
   const handleClear = () => { setRows([]); setPreviewRow(null); };
 
   const downloadAllPlatformCsv = useCallback((platformKey: 'adobe_stock' | 'shutterstock' | 'freepik') => {
