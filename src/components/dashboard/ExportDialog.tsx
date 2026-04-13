@@ -307,15 +307,12 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       
       setExportProgress(60);
 
-      // Adobe Stock: enforce 5000 row limit and 1MB file size (official guideline)
+      // Adobe Stock: enforce 5000 row limit — auto-split into multiple CSVs
       const MAX_ROWS = 5000;
-      if (selectedFormat === 'adobe_stock' && dataToExport.length > MAX_ROWS) {
-        toast.warning(`Adobe Stock allows max ${MAX_ROWS} rows per CSV. Exporting first ${MAX_ROWS} of ${dataToExport.length} items. Split into multiple files for the rest.`, { duration: 6000 });
-        dataToExport = dataToExport.slice(0, MAX_ROWS);
-      }
+      const isAdobeStock = selectedFormat === 'adobe_stock';
 
       // Validate Adobe Stock export - prevent export if Title or Keywords are empty
-      if (selectedFormat === 'adobe_stock') {
+      if (isAdobeStock) {
         const validation = validateAdobeStockExport(dataToExport);
         if (!validation.isValid) {
           const errorMessages = validation.errors.slice(0, 3).map(e => e.message).join('\n');
@@ -329,38 +326,60 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
         }
       }
 
-      const exportData = generateExport(selectedFormat, dataToExport, exportOptions);
-
-      setExportProgress(80);
-      const csv = [
-        exportData.headers.join(','),
-        ...exportData.rows.map(r => r.join(',')),
-      ].join('\n');
-
-      // Add BOM for Excel UTF-8 compatibility
-      const BOM = '\uFEFF';
-      const csvContent = BOM + csv;
-      
-      // Adobe Stock: enforce 1MB file size limit
-      if (selectedFormat === 'adobe_stock' && new Blob([csvContent]).size > 1024 * 1024) {
-        toast.error('CSV file exceeds Adobe Stock 1MB limit. Please reduce the number of items and try again.', { duration: 6000 });
-        setIsExporting(false);
-        setExportProgress(0);
-        return;
+      // Split into chunks if Adobe Stock and over limit
+      const chunks: Generation[][] = [];
+      if (isAdobeStock && dataToExport.length > MAX_ROWS) {
+        for (let i = 0; i < dataToExport.length; i += MAX_ROWS) {
+          chunks.push(dataToExport.slice(i, i + MAX_ROWS));
+        }
+      } else {
+        chunks.push(dataToExport);
       }
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${exportData.filename}-${new Date().toISOString().split('T')[0]}.csv`;
-      
-      setExportProgress(100);
-      a.click();
-      URL.revokeObjectURL(url);
+      const BOM = '\uFEFF';
+      const dateStr = new Date().toISOString().split('T')[0];
+      let downloadedCount = 0;
+
+      for (let ci = 0; ci < chunks.length; ci++) {
+        const chunk = chunks[ci];
+        const exportData = generateExport(selectedFormat, chunk, exportOptions);
+
+        const csv = [
+          exportData.headers.join(','),
+          ...exportData.rows.map(r => r.join(',')),
+        ].join('\n');
+
+        const csvContent = BOM + csv;
+
+        // Adobe Stock: check 1MB per file
+        if (isAdobeStock && new Blob([csvContent]).size > 1024 * 1024) {
+          toast.warning(`Part ${ci + 1} exceeds 1MB. Some items may need smaller batches.`, { duration: 5000 });
+        }
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const partSuffix = chunks.length > 1 ? `-part${ci + 1}` : '';
+        a.download = `${exportData.filename}-${dateStr}${partSuffix}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        downloadedCount += chunk.length;
+
+        // Small delay between downloads so browser doesn't block them
+        if (chunks.length > 1 && ci < chunks.length - 1) {
+          await new Promise(r => setTimeout(r, 500));
+        }
+
+        setExportProgress(60 + Math.round(((ci + 1) / chunks.length) * 40));
+      }
 
       const platform = stockPlatforms.find(f => f.id === selectedFormat);
-      toast.success(`✅ ${dataToExport.length} items exported for ${platform?.name}`);
+      if (chunks.length > 1) {
+        toast.success(`✅ ${downloadedCount} items exported in ${chunks.length} CSV files for ${platform?.name}`);
+      } else {
+        toast.success(`✅ ${downloadedCount} items exported for ${platform?.name}`);
+      }
       setIsOpen(false);
     } catch (error) {
       console.error('Export error:', error);
