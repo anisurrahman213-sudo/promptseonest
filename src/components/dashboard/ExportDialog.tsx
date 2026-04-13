@@ -307,6 +307,13 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       
       setExportProgress(60);
 
+      // Adobe Stock: enforce 5000 row limit and 1MB file size (official guideline)
+      const MAX_ROWS = 5000;
+      if (selectedFormat === 'adobe_stock' && dataToExport.length > MAX_ROWS) {
+        toast.warning(`Adobe Stock allows max ${MAX_ROWS} rows per CSV. Exporting first ${MAX_ROWS} of ${dataToExport.length} items. Split into multiple files for the rest.`, { duration: 6000 });
+        dataToExport = dataToExport.slice(0, MAX_ROWS);
+      }
+
       // Validate Adobe Stock export - prevent export if Title or Keywords are empty
       if (selectedFormat === 'adobe_stock') {
         const validation = validateAdobeStockExport(dataToExport);
@@ -332,7 +339,17 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
 
       // Add BOM for Excel UTF-8 compatibility
       const BOM = '\uFEFF';
-      const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8' });
+      const csvContent = BOM + csv;
+      
+      // Adobe Stock: enforce 1MB file size limit
+      if (selectedFormat === 'adobe_stock' && new Blob([csvContent]).size > 1024 * 1024) {
+        toast.error('CSV file exceeds Adobe Stock 1MB limit. Please reduce the number of items and try again.', { duration: 6000 });
+        setIsExporting(false);
+        setExportProgress(0);
+        return;
+      }
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
