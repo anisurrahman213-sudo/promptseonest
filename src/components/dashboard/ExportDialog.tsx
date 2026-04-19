@@ -258,6 +258,15 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
   const [exportStatus, setExportStatus] = useState<string>('');
   const [bundleAsZip, setBundleAsZip] = useState(true);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [exportSummary, setExportSummary] = useState<{
+    platformName: string;
+    totalItems: number;
+    fileCount: number;
+    totalSizeBytes: number;
+    isZip: boolean;
+    files: { name: string; sizeBytes: number; rows: number }[];
+    generatedAt: string;
+  } | null>(null);
 
   // Memoized filtered platforms
   const filteredPlatforms = useMemo(() => 
@@ -347,7 +356,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       let downloadedCount = 0;
 
       // Build all CSV files first (collect into memory)
-      type CsvFile = { name: string; content: string };
+      type CsvFile = { name: string; content: string; rows: number; sizeBytes: number };
       const csvFiles: CsvFile[] = [];
       let baseFilename = '';
 
@@ -369,8 +378,9 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
         ].join('\n');
 
         const csvContent = BOM + csv;
+        const csvSize = new Blob([csvContent]).size;
 
-        if (isAdobeStock && new Blob([csvContent]).size > 1024 * 1024) {
+        if (isAdobeStock && csvSize > 1024 * 1024) {
           toast.warning(`Part ${ci + 1} exceeds 1MB. Some items may need smaller batches.`, { duration: 5000 });
         }
 
@@ -378,6 +388,8 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
         csvFiles.push({
           name: `${exportData.filename}-${dateStr}${partSuffix}.csv`,
           content: csvContent,
+          rows: exportData.rows.length,
+          sizeBytes: csvSize,
         });
         downloadedCount += chunk.length;
 
@@ -450,6 +462,17 @@ ${t('export.readme.footer')}
         const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
         triggerDownload(zipBlob, `${baseFilename}-${dateStr}.zip`);
         setExportProgress(100);
+
+        const platformInfoForSummary = stockPlatforms.find(p => p.id === selectedFormat);
+        setExportSummary({
+          platformName: platformInfoForSummary?.name || selectedFormat,
+          totalItems: downloadedCount,
+          fileCount: csvFiles.length,
+          totalSizeBytes: zipBlob.size,
+          isZip: true,
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+          generatedAt: new Date().toLocaleString(),
+        });
       } else {
         for (let i = 0; i < csvFiles.length; i++) {
           const f = csvFiles[i];
@@ -464,6 +487,18 @@ ${t('export.readme.footer')}
           }
           setExportProgress(90 + Math.round(((i + 1) / csvFiles.length) * 10));
         }
+
+        const platformInfoForSummary = stockPlatforms.find(p => p.id === selectedFormat);
+        const totalSize = csvFiles.reduce((sum, f) => sum + f.sizeBytes, 0);
+        setExportSummary({
+          platformName: platformInfoForSummary?.name || selectedFormat,
+          totalItems: downloadedCount,
+          fileCount: csvFiles.length,
+          totalSizeBytes: totalSize,
+          isZip: false,
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+          generatedAt: new Date().toLocaleString(),
+        });
       }
 
       const platform = stockPlatforms.find(f => f.id === selectedFormat);
@@ -657,7 +692,15 @@ ${t('export.readme.footer')}
     }
   }, []);
 
+  // Format bytes for display
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
@@ -1049,5 +1092,98 @@ ${t('export.readme.footer')}
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Export Summary Dialog */}
+    <Dialog open={!!exportSummary} onOpenChange={(open) => { if (!open) setExportSummary(null); }}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-primary" />
+            {t('export.summary.title', 'Export Complete')}
+          </DialogTitle>
+          <DialogDescription>
+            {t('export.summary.subtitle', 'Your metadata has been exported successfully.')}
+          </DialogDescription>
+        </DialogHeader>
+
+        {exportSummary && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                  {t('export.summary.platform', 'Platform')}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-1 truncate">
+                  {exportSummary.platformName}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                  {t('export.summary.totalItems', 'Total Items')}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-1">
+                  {exportSummary.totalItems.toLocaleString()}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                  {t('export.summary.files', 'Files')}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-1 flex items-center gap-2">
+                  {exportSummary.fileCount}
+                  {exportSummary.isZip && (
+                    <Badge variant="secondary" className="text-[10px] gap-1">
+                      <Archive className="h-3 w-3" />
+                      ZIP
+                    </Badge>
+                  )}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                  {exportSummary.isZip
+                    ? t('export.summary.zipSize', 'ZIP Size')
+                    : t('export.summary.totalSize', 'Total Size')}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-1">
+                  {formatBytes(exportSummary.totalSizeBytes)}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-xs text-muted-foreground">
+              {t('export.summary.generatedAt', 'Generated')}: {exportSummary.generatedAt}
+            </div>
+
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="bg-muted/40 px-3 py-2 border-b border-border">
+                <p className="text-xs font-semibold text-foreground">
+                  {t('export.summary.fileList', 'Files Included')}
+                </p>
+              </div>
+              <div className="max-h-48 overflow-y-auto divide-y divide-border">
+                {exportSummary.files.map((f, idx) => (
+                  <div key={idx} className="flex items-center gap-2 px-3 py-2 text-xs">
+                    <FileSpreadsheet className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span className="flex-1 truncate font-mono text-foreground">{f.name}</span>
+                    <Badge variant="outline" className="text-[10px] shrink-0">
+                      {f.rows.toLocaleString()} {t('export.summary.rows', 'rows')}
+                    </Badge>
+                    <span className="text-muted-foreground shrink-0 tabular-nums w-16 text-right">
+                      {formatBytes(f.sizeBytes)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Button onClick={() => setExportSummary(null)} className="w-full">
+              {t('common.close', 'Close')}
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
