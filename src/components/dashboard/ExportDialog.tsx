@@ -346,17 +346,22 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       const dateStr = new Date().toISOString().split('T')[0];
       let downloadedCount = 0;
 
+      // Build all CSV files first (collect into memory)
+      type CsvFile = { name: string; content: string };
+      const csvFiles: CsvFile[] = [];
+      let baseFilename = '';
+
       for (let ci = 0; ci < chunks.length; ci++) {
         const chunk = chunks[ci];
 
-        // Show batch status (e.g. "Downloading Part 2 of 3...")
         if (chunks.length > 1) {
-          setExportStatus(`Downloading Part ${ci + 1} of ${chunks.length}...`);
+          setExportStatus(`Generating Part ${ci + 1} of ${chunks.length}...`);
         } else {
-          setExportStatus('Downloading CSV...');
+          setExportStatus('Generating CSV...');
         }
 
         const exportData = generateExport(selectedFormat, chunk, exportOptions);
+        baseFilename = exportData.filename;
 
         const csv = [
           exportData.headers.join(','),
@@ -365,32 +370,59 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
 
         const csvContent = BOM + csv;
 
-        // Adobe Stock: check 1MB per file
         if (isAdobeStock && new Blob([csvContent]).size > 1024 * 1024) {
           toast.warning(`Part ${ci + 1} exceeds 1MB. Some items may need smaller batches.`, { duration: 5000 });
         }
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+        const partSuffix = chunks.length > 1 ? `-part${ci + 1}` : '';
+        csvFiles.push({
+          name: `${exportData.filename}-${dateStr}${partSuffix}.csv`,
+          content: csvContent,
+        });
+        downloadedCount += chunk.length;
+
+        setExportProgress(60 + Math.round(((ci + 1) / chunks.length) * 30));
+      }
+
+      const triggerDownload = (blob: Blob, filename: string) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const partSuffix = chunks.length > 1 ? `-part${ci + 1}` : '';
-        a.download = `${exportData.filename}-${dateStr}${partSuffix}.csv`;
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
-        downloadedCount += chunk.length;
+      };
 
-        // Small delay between downloads so browser doesn't block them
-        if (chunks.length > 1 && ci < chunks.length - 1) {
-          await new Promise(r => setTimeout(r, 500));
+      // ZIP bundling: only when multiple files AND user opted in
+      if (csvFiles.length > 1 && bundleAsZip) {
+        setExportStatus(`Bundling ${csvFiles.length} files into ZIP...`);
+        setExportProgress(92);
+        const zip = new JSZip();
+        csvFiles.forEach(f => zip.file(f.name, f.content));
+        const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+        triggerDownload(zipBlob, `${baseFilename}-${dateStr}.zip`);
+        setExportProgress(100);
+      } else {
+        for (let i = 0; i < csvFiles.length; i++) {
+          const f = csvFiles[i];
+          if (csvFiles.length > 1) {
+            setExportStatus(`Downloading Part ${i + 1} of ${csvFiles.length}...`);
+          } else {
+            setExportStatus('Downloading CSV...');
+          }
+          triggerDownload(new Blob([f.content], { type: 'text/csv;charset=utf-8' }), f.name);
+          if (csvFiles.length > 1 && i < csvFiles.length - 1) {
+            await new Promise(r => setTimeout(r, 500));
+          }
+          setExportProgress(90 + Math.round(((i + 1) / csvFiles.length) * 10));
         }
-
-        setExportProgress(60 + Math.round(((ci + 1) / chunks.length) * 40));
       }
 
       const platform = stockPlatforms.find(f => f.id === selectedFormat);
-      if (chunks.length > 1) {
-        toast.success(`✅ ${downloadedCount} items exported in ${chunks.length} CSV files for ${platform?.name}`);
+      if (csvFiles.length > 1 && bundleAsZip) {
+        toast.success(`✅ ${downloadedCount} items in ${csvFiles.length} CSVs bundled into ZIP for ${platform?.name}`);
+      } else if (csvFiles.length > 1) {
+        toast.success(`✅ ${downloadedCount} items exported in ${csvFiles.length} CSV files for ${platform?.name}`);
       } else {
         toast.success(`✅ ${downloadedCount} items exported for ${platform?.name}`);
       }
