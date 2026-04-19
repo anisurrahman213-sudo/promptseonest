@@ -258,14 +258,17 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
   const [exportStatus, setExportStatus] = useState<string>('');
   const [bundleAsZip, setBundleAsZip] = useState(true);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [isRedownloading, setIsRedownloading] = useState(false);
   const [exportSummary, setExportSummary] = useState<{
     platformName: string;
     totalItems: number;
     fileCount: number;
     totalSizeBytes: number;
     isZip: boolean;
-    files: { name: string; sizeBytes: number; rows: number }[];
+    files: { name: string; sizeBytes: number; rows: number; content: string }[];
     generatedAt: string;
+    zipBlob?: Blob;
+    zipFilename?: string;
   } | null>(null);
 
   // Memoized filtered platforms
