@@ -256,6 +256,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
   }> | null>(null);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportStatus, setExportStatus] = useState<string>('');
+  const [bundleAsZip, setBundleAsZip] = useState(true);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   // Memoized filtered platforms
