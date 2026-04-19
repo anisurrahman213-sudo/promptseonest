@@ -10,6 +10,7 @@ import { SearchFilter, SortOption } from '@/components/dashboard/SearchFilter';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { ExportDialog } from '@/components/dashboard/ExportDialog';
+import { RecentExports } from '@/components/dashboard/RecentExports';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { AutoDeleteWarning } from '@/components/dashboard/AutoDeleteWarning';
 import { PullToRefresh } from '@/components/dashboard/PullToRefresh';
@@ -423,6 +424,7 @@ export default function Dashboard() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
                   >
+                    <RecentExports />
                     {totalCount > 0 && (
                       <motion.div 
                         className="flex flex-col sm:flex-row gap-3 sm:gap-4"
