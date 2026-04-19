@@ -104,7 +104,7 @@ export const RecentExports = memo(() => {
 
             <div className="text-right shrink-0">
               <p className="text-[11px] text-muted-foreground tabular-nums">
-                {formatRelative(entry.createdAt, t)}
+                {formatRelative(entry.createdAt)}
               </p>
             </div>
 
