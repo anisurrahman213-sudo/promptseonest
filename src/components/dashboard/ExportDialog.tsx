@@ -254,6 +254,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
     value: string;
   }> | null>(null);
   const [exportProgress, setExportProgress] = useState(0);
+  const [exportStatus, setExportStatus] = useState<string>('');
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   // Memoized filtered platforms
@@ -284,6 +285,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
 
     setIsExporting(true);
     setExportProgress(10);
+    setExportStatus('Preparing export...');
 
     try {
       let dataToExport = generations;
@@ -292,6 +294,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       if (!filterSearchQuery?.trim() && fetchAllForExport) {
         setIsLoadingAll(true);
         setExportProgress(20);
+        setExportStatus('Loading all items...');
         try {
           const allGenerations = await fetchAllForExport();
           setExportProgress(50);
@@ -306,6 +309,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       }
       
       setExportProgress(60);
+      setExportStatus('Generating CSV...');
 
       // Auto-split limit applied to ALL platforms (Adobe Stock guideline = 5000 max)
       const MAX_ROWS = 5000;
@@ -342,6 +346,14 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
 
       for (let ci = 0; ci < chunks.length; ci++) {
         const chunk = chunks[ci];
+
+        // Show batch status (e.g. "Downloading Part 2 of 3...")
+        if (chunks.length > 1) {
+          setExportStatus(`Downloading Part ${ci + 1} of ${chunks.length}...`);
+        } else {
+          setExportStatus('Downloading CSV...');
+        }
+
         const exportData = generateExport(selectedFormat, chunk, exportOptions);
 
         const csv = [
@@ -388,6 +400,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       setIsExporting(false);
       setIsLoadingAll(false);
       setExportProgress(0);
+      setExportStatus('');
     }
   }, [generations, filterSearchQuery, fetchAllForExport, selectedFormat, exportOptions]);
 
@@ -886,7 +899,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
             className="space-y-1"
           >
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Exporting...</span>
+              <span className="font-medium">{exportStatus || 'Exporting...'}</span>
               <span>{exportProgress}%</span>
             </div>
             <Progress value={exportProgress} className="h-1.5" />
