@@ -462,6 +462,17 @@ ${t('export.readme.footer')}
         const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
         triggerDownload(zipBlob, `${baseFilename}-${dateStr}.zip`);
         setExportProgress(100);
+
+        const platformInfoForSummary = stockPlatforms.find(p => p.id === selectedFormat);
+        setExportSummary({
+          platformName: platformInfoForSummary?.name || selectedFormat,
+          totalItems: downloadedCount,
+          fileCount: csvFiles.length,
+          totalSizeBytes: zipBlob.size,
+          isZip: true,
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+          generatedAt: new Date().toLocaleString(),
+        });
       } else {
         for (let i = 0; i < csvFiles.length; i++) {
           const f = csvFiles[i];
@@ -476,6 +487,18 @@ ${t('export.readme.footer')}
           }
           setExportProgress(90 + Math.round(((i + 1) / csvFiles.length) * 10));
         }
+
+        const platformInfoForSummary = stockPlatforms.find(p => p.id === selectedFormat);
+        const totalSize = csvFiles.reduce((sum, f) => sum + f.sizeBytes, 0);
+        setExportSummary({
+          platformName: platformInfoForSummary?.name || selectedFormat,
+          totalItems: downloadedCount,
+          fileCount: csvFiles.length,
+          totalSizeBytes: totalSize,
+          isZip: false,
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+          generatedAt: new Date().toLocaleString(),
+        });
       }
 
       const platform = stockPlatforms.find(f => f.id === selectedFormat);
