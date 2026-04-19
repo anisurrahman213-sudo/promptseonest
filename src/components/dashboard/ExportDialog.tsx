@@ -467,14 +467,17 @@ ${t('export.readme.footer')}
         setExportProgress(100);
 
         const platformInfoForSummary = stockPlatforms.find(p => p.id === selectedFormat);
+        const zipFilename = `${baseFilename}-${dateStr}.zip`;
         setExportSummary({
           platformName: platformInfoForSummary?.name || selectedFormat,
           totalItems: downloadedCount,
           fileCount: csvFiles.length,
           totalSizeBytes: zipBlob.size,
           isZip: true,
-          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows, content: f.content })),
           generatedAt: new Date().toLocaleString(),
+          zipBlob,
+          zipFilename,
         });
       } else {
         for (let i = 0; i < csvFiles.length; i++) {
