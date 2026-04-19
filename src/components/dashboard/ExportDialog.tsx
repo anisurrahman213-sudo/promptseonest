@@ -436,7 +436,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       setExportProgress(0);
       setExportStatus('');
     }
-  }, [generations, filterSearchQuery, fetchAllForExport, selectedFormat, exportOptions]);
+  }, [generations, filterSearchQuery, fetchAllForExport, selectedFormat, exportOptions, bundleAsZip]);
 
   // Handle format selection
   const handleFormatSelect = useCallback((format: ExportFormat) => {
