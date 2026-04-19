@@ -564,6 +564,16 @@ ${t('export.readme.footer')}
           zipBlob,
           zipFilename,
         });
+        addExportHistoryEntry({
+          platformId: selectedFormat,
+          platformName: platformInfoForSummary?.name || selectedFormat,
+          totalItems: downloadedCount,
+          fileCount: csvFiles.length,
+          totalSizeBytes: zipBlob.size,
+          isZip: true,
+          zipFilename,
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+        });
       } else {
         for (let i = 0; i < csvFiles.length; i++) {
           const f = csvFiles[i];
