@@ -12,7 +12,7 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-function formatRelative(iso: string, t: (k: string, opts?: Record<string, unknown>) => string): string {
+function formatRelative(iso: string, t: (key: string, defaultValue?: string, opts?: Record<string, unknown>) => string): string {
   const then = new Date(iso).getTime();
   if (Number.isNaN(then)) return '';
   const diff = Date.now() - then;
