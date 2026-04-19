@@ -258,14 +258,17 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
   const [exportStatus, setExportStatus] = useState<string>('');
   const [bundleAsZip, setBundleAsZip] = useState(true);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [isRedownloading, setIsRedownloading] = useState(false);
   const [exportSummary, setExportSummary] = useState<{
     platformName: string;
     totalItems: number;
     fileCount: number;
     totalSizeBytes: number;
     isZip: boolean;
-    files: { name: string; sizeBytes: number; rows: number }[];
+    files: { name: string; sizeBytes: number; rows: number; content: string }[];
     generatedAt: string;
+    zipBlob?: Blob;
+    zipFilename?: string;
   } | null>(null);
 
   // Memoized filtered platforms
@@ -464,14 +467,17 @@ ${t('export.readme.footer')}
         setExportProgress(100);
 
         const platformInfoForSummary = stockPlatforms.find(p => p.id === selectedFormat);
+        const zipFilename = `${baseFilename}-${dateStr}.zip`;
         setExportSummary({
           platformName: platformInfoForSummary?.name || selectedFormat,
           totalItems: downloadedCount,
           fileCount: csvFiles.length,
           totalSizeBytes: zipBlob.size,
           isZip: true,
-          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows, content: f.content })),
           generatedAt: new Date().toLocaleString(),
+          zipBlob,
+          zipFilename,
         });
       } else {
         for (let i = 0; i < csvFiles.length; i++) {
@@ -496,7 +502,7 @@ ${t('export.readme.footer')}
           fileCount: csvFiles.length,
           totalSizeBytes: totalSize,
           isZip: false,
-          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows, content: f.content })),
           generatedAt: new Date().toLocaleString(),
         });
       }
@@ -698,6 +704,40 @@ ${t('export.readme.footer')}
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
+
+  // Re-download the same export from the cached summary (no regeneration)
+  const handleReDownload = useCallback(async () => {
+    if (!exportSummary) return;
+    setIsRedownloading(true);
+    try {
+      const triggerDownload = (blob: Blob, filename: string) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      if (exportSummary.isZip && exportSummary.zipBlob && exportSummary.zipFilename) {
+        triggerDownload(exportSummary.zipBlob, exportSummary.zipFilename);
+      } else {
+        for (let i = 0; i < exportSummary.files.length; i++) {
+          const f = exportSummary.files[i];
+          triggerDownload(new Blob([f.content], { type: 'text/csv;charset=utf-8' }), f.name);
+          if (i < exportSummary.files.length - 1) {
+            await new Promise(r => setTimeout(r, 500));
+          }
+        }
+      }
+      toast.success(t('export.summary.redownloadSuccess', 'Download started again'));
+    } catch (e) {
+      console.error('Re-download error:', e);
+      toast.error(t('export.summary.redownloadFailed', 'Failed to re-download'));
+    } finally {
+      setIsRedownloading(false);
+    }
+  }, [exportSummary, t]);
 
   return (
     <>
@@ -1177,9 +1217,32 @@ ${t('export.readme.footer')}
               </div>
             </div>
 
-            <Button onClick={() => setExportSummary(null)} className="w-full">
-              {t('common.close', 'Close')}
-            </Button>
+            <div className="flex flex-col-reverse sm:flex-row gap-2">
+              <Button
+                onClick={() => setExportSummary(null)}
+                variant="outline"
+                className="flex-1"
+              >
+                {t('common.close', 'Close')}
+              </Button>
+              <Button
+                onClick={handleReDownload}
+                disabled={isRedownloading}
+                className="flex-1 gap-2"
+              >
+                {isRedownloading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t('export.summary.redownloading', 'Re-downloading...')}
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    {t('export.summary.redownload', 'Re-download')}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>
