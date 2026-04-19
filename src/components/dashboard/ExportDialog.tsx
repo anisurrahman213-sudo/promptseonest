@@ -32,6 +32,7 @@ import {
   type ExportOptions
 } from '@/lib/stockPlatformFormats';
 import { platformCategories, type ExportPlatform } from './AdvancedMetadataControls';
+import { useExportHistory } from '@/hooks/useExportHistory';
 
 interface ExportDialogProps {
   generations: Generation[];
@@ -267,6 +268,7 @@ SummaryFileRow.displayName = 'SummaryFileRow';
 export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery, exportOptions, onUpdateMetadata }: ExportDialogProps) {
   const { t } = useTranslation();
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('adobe_stock');
+  const { addEntry: addExportHistoryEntry } = useExportHistory();
 
   // ===== DEV-ONLY: window.__seedFakeGenerations(count) =====
   // Lets you inject N synthetic generations from the browser console to verify
@@ -562,6 +564,16 @@ ${t('export.readme.footer')}
           zipBlob,
           zipFilename,
         });
+        addExportHistoryEntry({
+          platformId: selectedFormat,
+          platformName: platformInfoForSummary?.name || selectedFormat,
+          totalItems: downloadedCount,
+          fileCount: csvFiles.length,
+          totalSizeBytes: zipBlob.size,
+          isZip: true,
+          zipFilename,
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+        });
       } else {
         for (let i = 0; i < csvFiles.length; i++) {
           const f = csvFiles[i];
@@ -587,6 +599,15 @@ ${t('export.readme.footer')}
           isZip: false,
           files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows, content: f.content })),
           generatedAt: new Date().toLocaleString(),
+        });
+        addExportHistoryEntry({
+          platformId: selectedFormat,
+          platformName: platformInfoForSummary?.name || selectedFormat,
+          totalItems: downloadedCount,
+          fileCount: csvFiles.length,
+          totalSizeBytes: totalSize,
+          isZip: false,
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
         });
       }
 
