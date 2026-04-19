@@ -244,25 +244,24 @@ type SummaryFileRowProps = {
   rowsLabel: string;
   formatBytes: (bytes: number) => string;
 };
-const SummaryFileRow = memo(({ index, style, files, rowsLabel, formatBytes }: RowComponentProps<SummaryFileRowProps>) => {
+const SummaryFileRow = ({ index, style, files, rowsLabel, formatBytes }: RowComponentProps<SummaryFileRowProps>) => {
   const f = files[index];
-  if (!f) return null;
   return (
     <div
       style={style}
       className="flex items-center gap-2 px-3 text-xs border-b border-border last:border-b-0"
     >
       <FileSpreadsheet className="h-3.5 w-3.5 text-primary shrink-0" />
-      <span className="flex-1 truncate font-mono text-foreground">{f.name}</span>
+      <span className="flex-1 truncate font-mono text-foreground">{f?.name ?? ''}</span>
       <Badge variant="outline" className="text-[10px] shrink-0">
-        {f.rows.toLocaleString()} {rowsLabel}
+        {(f?.rows ?? 0).toLocaleString()} {rowsLabel}
       </Badge>
       <span className="text-muted-foreground shrink-0 tabular-nums w-16 text-right">
-        {formatBytes(f.sizeBytes)}
+        {f ? formatBytes(f.sizeBytes) : ''}
       </span>
     </div>
   );
-});
+};
 SummaryFileRow.displayName = 'SummaryFileRow';
 
 export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery, exportOptions, onUpdateMetadata }: ExportDialogProps) {
