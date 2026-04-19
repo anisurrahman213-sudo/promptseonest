@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import JSZip from 'jszip';
 import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image as ImageIcon, CheckCircle2, ShieldCheck, XCircle, RefreshCw, Wrench, Archive, FolderOpen, Info } from 'lucide-react';
+import { List as VirtualList, type RowComponentProps } from 'react-window';
 import { findForbiddenWords, removeForbiddenWords, cleanTags, type ContentIssue } from '@/lib/contentQualityFilter';
 import {
   Dialog,
@@ -235,6 +236,33 @@ const PreviewRow = memo(({
   );
 });
 PreviewRow.displayName = 'PreviewRow';
+
+// Virtualized row for the export summary file list (used when 50+ files)
+const SUMMARY_ROW_HEIGHT = 36;
+type SummaryFileRowProps = {
+  files: { name: string; sizeBytes: number; rows: number }[];
+  rowsLabel: string;
+  formatBytes: (bytes: number) => string;
+};
+const SummaryFileRow = ({ index, style, files, rowsLabel, formatBytes }: RowComponentProps<SummaryFileRowProps>) => {
+  const f = files[index];
+  return (
+    <div
+      style={style}
+      className="flex items-center gap-2 px-3 text-xs border-b border-border last:border-b-0"
+    >
+      <FileSpreadsheet className="h-3.5 w-3.5 text-primary shrink-0" />
+      <span className="flex-1 truncate font-mono text-foreground">{f?.name ?? ''}</span>
+      <Badge variant="outline" className="text-[10px] shrink-0">
+        {(f?.rows ?? 0).toLocaleString()} {rowsLabel}
+      </Badge>
+      <span className="text-muted-foreground shrink-0 tabular-nums w-16 text-right">
+        {f ? formatBytes(f.sizeBytes) : ''}
+      </span>
+    </div>
+  );
+};
+SummaryFileRow.displayName = 'SummaryFileRow';
 
 export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery, exportOptions, onUpdateMetadata }: ExportDialogProps) {
   const { t } = useTranslation();
@@ -1256,20 +1284,37 @@ ${t('export.readme.footer')}
                   {t('export.summary.fileList', 'Files Included')}
                 </p>
               </div>
-              <div className="max-h-48 overflow-y-auto divide-y divide-border">
-                {exportSummary.files.map((f, idx) => (
-                  <div key={idx} className="flex items-center gap-2 px-3 py-2 text-xs">
-                    <FileSpreadsheet className="h-3.5 w-3.5 text-primary shrink-0" />
-                    <span className="flex-1 truncate font-mono text-foreground">{f.name}</span>
-                    <Badge variant="outline" className="text-[10px] shrink-0">
-                      {f.rows.toLocaleString()} {t('export.summary.rows', 'rows')}
-                    </Badge>
-                    <span className="text-muted-foreground shrink-0 tabular-nums w-16 text-right">
-                      {formatBytes(f.sizeBytes)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {exportSummary.files.length > 50 ? (
+                <div style={{ height: 240 }}>
+                  <VirtualList<SummaryFileRowProps>
+                    rowComponent={SummaryFileRow}
+                    rowCount={exportSummary.files.length}
+                    rowHeight={SUMMARY_ROW_HEIGHT}
+                    rowProps={{
+                      files: exportSummary.files,
+                      rowsLabel: t('export.summary.rows', 'rows'),
+                      formatBytes,
+                    }}
+                    overscanCount={8}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              ) : (
+                <div className="max-h-48 overflow-y-auto divide-y divide-border">
+                  {exportSummary.files.map((f, idx) => (
+                    <div key={idx} className="flex items-center gap-2 px-3 py-2 text-xs">
+                      <FileSpreadsheet className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span className="flex-1 truncate font-mono text-foreground">{f.name}</span>
+                      <Badge variant="outline" className="text-[10px] shrink-0">
+                        {f.rows.toLocaleString()} {t('export.summary.rows', 'rows')}
+                      </Badge>
+                      <span className="text-muted-foreground shrink-0 tabular-nums w-16 text-right">
+                        {formatBytes(f.sizeBytes)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Where to find downloaded files hint */}
