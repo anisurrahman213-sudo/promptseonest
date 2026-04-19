@@ -345,20 +345,22 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
 
   // Optimized export handler with progress tracking and validation
   const handleExport = useCallback(async () => {
-    if (generations.length === 0) {
+    const seeded = seededDataRef.current;
+
+    if (!seeded && generations.length === 0) {
       toast.error('No generations to export');
       return;
     }
 
     setIsExporting(true);
     setExportProgress(10);
-    setExportStatus('Preparing export...');
+    setExportStatus(seeded ? `Preparing seeded export (${seeded.length.toLocaleString()} items)...` : 'Preparing export...');
 
     try {
-      let dataToExport = generations;
-      
-      // If there's no search filter and we have fetchAllForExport, fetch ALL generations
-      if (!filterSearchQuery?.trim() && fetchAllForExport) {
+      let dataToExport: Generation[] = seeded ?? generations;
+
+      // If using seeded data, skip fetchAll and validation fetch
+      if (!seeded && !filterSearchQuery?.trim() && fetchAllForExport) {
         setIsLoadingAll(true);
         setExportProgress(20);
         setExportStatus('Loading all items...');
@@ -374,7 +376,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
           setIsLoadingAll(false);
         }
       }
-      
+
       setExportProgress(60);
       setExportStatus('Generating CSV...');
 
