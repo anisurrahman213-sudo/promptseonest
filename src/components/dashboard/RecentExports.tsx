@@ -12,19 +12,22 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-function formatRelative(iso: string, t: (key: string, defaultValue?: string, opts?: Record<string, unknown>) => string): string {
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return '';
-  const diff = Date.now() - then;
-  const sec = Math.max(1, Math.floor(diff / 1000));
-  if (sec < 60) return t('recentExports.justNow', 'Just now');
-  const min = Math.floor(sec / 60);
-  if (min < 60) return t('recentExports.minutesAgo', '{{count}}m ago', { count: min });
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return t('recentExports.hoursAgo', '{{count}}h ago', { count: hr });
-  const day = Math.floor(hr / 24);
-  if (day < 7) return t('recentExports.daysAgo', '{{count}}d ago', { count: day });
-  return new Date(iso).toLocaleDateString();
+function useFormatRelative() {
+  const { t } = useTranslation();
+  return (iso: string): string => {
+    const then = new Date(iso).getTime();
+    if (Number.isNaN(then)) return '';
+    const diff = Date.now() - then;
+    const sec = Math.max(1, Math.floor(diff / 1000));
+    if (sec < 60) return t('recentExports.justNow', 'Just now');
+    const min = Math.floor(sec / 60);
+    if (min < 60) return t('recentExports.minutesAgo', { defaultValue: '{{count}}m ago', count: min });
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return t('recentExports.hoursAgo', { defaultValue: '{{count}}h ago', count: hr });
+    const day = Math.floor(hr / 24);
+    if (day < 7) return t('recentExports.daysAgo', { defaultValue: '{{count}}d ago', count: day });
+    return new Date(iso).toLocaleDateString();
+  };
 }
 
 export const RecentExports = memo(() => {
