@@ -241,7 +241,27 @@
     "downloadCsv": "CSV डाउनलोड करें",
     "copyToClipboard": "क्लिपबोर्ड पर कॉपी करें",
     "exportSuccess": "सफलतापूर्वक एक्सपोर्ट हो गया",
-    "noData": "एक्सपोर्ट करने के लिए कोई डेटा नहीं"
+    "noData": "एक्सपोर्ट करने के लिए कोई डेटा नहीं",
+    "readme": {
+      "heading": "{{platform}} मेटाडेटा एक्सपोर्ट",
+      "generated": "तैयार किया गया",
+      "platform": "प्लेटफ़ॉर्म",
+      "totalItems": "कुल आइटम",
+      "totalFiles": "कुल CSV फ़ाइलें",
+      "filesInZip": "इस ZIP में फ़ाइलें",
+      "uploadInstructions": "अपलोड निर्देश",
+      "importantNotes": "महत्वपूर्ण नोट्स",
+      "note1": "सभी CSV फ़ाइलें UTF-8 BOM के साथ encoded हैं (Excel में \"CSV UTF-8\" के रूप में खोलें)।",
+      "note2": "Excel/Google Sheets में edit करने पर encoding बनाए रखने के लिए \"CSV UTF-8\" के रूप में सेव करें।",
+      "note3": "प्रत्येक CSV में अधिकतम 5,000 rows होती हैं (platform-safe limit)।",
+      "note4": "CSV से पहले अपनी मीडिया फ़ाइलें अपलोड करें।",
+      "note5": "CSV में filenames आपकी अपलोड की गई फ़ाइलों के नाम से बिल्कुल मेल खाने चाहिए।",
+      "footer": "PromptSEONest द्वारा तैयार — https://promptseonest.com",
+      "instructionsAdobe": "1. Adobe Stock Contributor portal में लॉगिन करें: https://contributor.stock.adobe.com\n2. पहले अपनी IMAGE फ़ाइलें अपलोड करें (drag & drop या FTP द्वारा)।\n3. Images की processing पूरी होने तक प्रतीक्षा करें।\n4. \"Upload\" → \"Upload spreadsheet\" पर क्लिक करें और प्रत्येक CSV चुनें।\n5. CSV में filenames अपलोड की गई image filenames से बिल्कुल मेल खाने चाहिए।\n6. प्रति CSV अधिकतम 5,000 rows (यह export पहले से इसका पालन करता है)।",
+      "instructionsShutterstock": "1. Shutterstock Contributor में लॉगिन करें: https://submit.shutterstock.com\n2. Upload page से पहले अपनी IMAGE फ़ाइलें अपलोड करें।\n3. अपलोड के बाद \"Edit\" → \"Bulk edit via CSV\" का उपयोग करें।\n4. इस ZIP की प्रत्येक CSV फ़ाइल एक-एक करके अपलोड करें।\n5. Filenames बिल्कुल मेल खाने चाहिए।",
+      "instructionsFreepik": "1. Freepik Contributor में लॉगिन करें: https://contributor.freepik.com\n2. पहले अपनी image/vector फ़ाइलें अपलोड करें।\n3. Bulk metadata import option का उपयोग करें।\n4. इस ZIP की प्रत्येक CSV अपलोड करें।\n5. सुनिश्चित करें कि filenames बिल्कुल मेल खाते हैं।",
+      "instructionsGeneric": "1. अपने {{platform}} contributor account में लॉगिन करें।\n2. पहले अपनी मीडिया फ़ाइलें अपलोड करें।\n3. Bulk metadata / CSV import option का उपयोग करें।\n4. इस ZIP की प्रत्येक CSV फ़ाइल अपलोड करें।\n5. CSV में filenames अपलोड की गई फ़ाइलों से बिल्कुल मेल खाने चाहिए।"
+    }
   },
   "calendar": {
     "title": "इवेंट कैलेंडर 2026",
