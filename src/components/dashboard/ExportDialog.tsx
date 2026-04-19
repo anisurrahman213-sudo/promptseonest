@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import JSZip from 'jszip';
-import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image as ImageIcon, CheckCircle2, ShieldCheck, XCircle, RefreshCw, Wrench, Archive } from 'lucide-react';
+import { Download, FileSpreadsheet, Check, Search, Eye, List, Loader2, Zap, AlertCircle, FileText, Image as ImageIcon, CheckCircle2, ShieldCheck, XCircle, RefreshCw, Wrench, Archive, FolderOpen, Info } from 'lucide-react';
 import { findForbiddenWords, removeForbiddenWords, cleanTags, type ContentIssue } from '@/lib/contentQualityFilter';
 import {
   Dialog,
@@ -1216,6 +1216,88 @@ ${t('export.readme.footer')}
                 ))}
               </div>
             </div>
+
+            {/* Where to find downloaded files hint */}
+            {(() => {
+              const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+              const isChromium = /Chrome|Edg|Brave|Opera|OPR/.test(ua) && !/Firefox/.test(ua);
+              const isFirefox = /Firefox/.test(ua);
+              const isMac = /Mac|iPhone|iPad/.test(ua);
+              const shortcut = isMac ? '⇧ + ⌘ + J' : 'Ctrl + J';
+              const downloadsUrl = isChromium
+                ? 'chrome://downloads'
+                : isFirefox
+                  ? 'about:downloads'
+                  : '';
+
+              const openDownloads = () => {
+                if (downloadsUrl) {
+                  try {
+                    navigator.clipboard?.writeText(downloadsUrl);
+                    toast.success(
+                      t('export.summary.downloadsHintCopied', 'Downloads URL copied'),
+                      {
+                        description: t(
+                          'export.summary.downloadsHintCopiedDesc',
+                          'Paste it in your browser address bar, or press {{shortcut}}.',
+                          { shortcut }
+                        ),
+                      }
+                    );
+                  } catch {
+                    toast.info(
+                      t('export.summary.downloadsHintTitle', 'Open Downloads'),
+                      {
+                        description: t(
+                          'export.summary.downloadsHintShortcut',
+                          'Press {{shortcut}} to open your browser Downloads.',
+                          { shortcut }
+                        ),
+                      }
+                    );
+                  }
+                } else {
+                  toast.info(
+                    t('export.summary.downloadsHintTitle', 'Open Downloads'),
+                    {
+                      description: t(
+                        'export.summary.downloadsHintShortcut',
+                        'Press {{shortcut}} to open your browser Downloads.',
+                        { shortcut }
+                      ),
+                    }
+                  );
+                }
+              };
+
+              return (
+                <div className="rounded-lg border border-border bg-muted/30 p-3 flex items-start gap-3">
+                  <FolderOpen className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <p className="text-xs font-semibold text-foreground">
+                      {t('export.summary.downloadsHintTitle', 'Where is my file?')}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      {t(
+                        'export.summary.downloadsHintBody',
+                        'Saved to your browser\'s default Downloads folder. Open it with {{shortcut}}.',
+                        { shortcut }
+                      )}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      onClick={openDownloads}
+                      className="h-auto p-0 text-[11px] gap-1"
+                    >
+                      <Info className="h-3 w-3" />
+                      {t('export.summary.showInDownloads', 'Show in Downloads')}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="flex flex-col-reverse sm:flex-row gap-2">
               <Button
