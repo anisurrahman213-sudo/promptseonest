@@ -502,7 +502,7 @@ ${t('export.readme.footer')}
           fileCount: csvFiles.length,
           totalSizeBytes: totalSize,
           isZip: false,
-          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows, content: f.content })),
           generatedAt: new Date().toLocaleString(),
         });
       }
