@@ -959,7 +959,26 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
               </Badge>
             )}
           </div>
-          
+
+          {/* ZIP bundle toggle */}
+          <label className="flex items-start gap-2 p-3 rounded-lg border border-border bg-muted/30 cursor-pointer hover:border-primary/30 transition-colors">
+            <input
+              type="checkbox"
+              checked={bundleAsZip}
+              onChange={(e) => setBundleAsZip(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-border accent-primary cursor-pointer"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 text-sm font-medium">
+                <Archive className="h-3.5 w-3.5 text-primary" />
+                Bundle multiple CSVs into a single ZIP
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Recommended when export splits into 2+ files (over 5,000 rows). One download instead of many.
+              </p>
+            </div>
+          </label>
+
           {/* Large prominent Download button */}
           <Button 
             onClick={handleExport} 
@@ -970,7 +989,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
             {isExporting || isLoadingAll ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                {isLoadingAll ? 'Loading all data...' : 'Exporting CSV...'}
+                {isLoadingAll ? 'Loading all data...' : 'Exporting...'}
               </>
             ) : (
               <>
