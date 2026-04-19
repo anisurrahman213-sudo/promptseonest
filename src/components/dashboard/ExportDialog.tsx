@@ -356,7 +356,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       let downloadedCount = 0;
 
       // Build all CSV files first (collect into memory)
-      type CsvFile = { name: string; content: string };
+      type CsvFile = { name: string; content: string; rows: number; sizeBytes: number };
       const csvFiles: CsvFile[] = [];
       let baseFilename = '';
 
@@ -378,8 +378,9 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
         ].join('\n');
 
         const csvContent = BOM + csv;
+        const csvSize = new Blob([csvContent]).size;
 
-        if (isAdobeStock && new Blob([csvContent]).size > 1024 * 1024) {
+        if (isAdobeStock && csvSize > 1024 * 1024) {
           toast.warning(`Part ${ci + 1} exceeds 1MB. Some items may need smaller batches.`, { duration: 5000 });
         }
 
@@ -387,6 +388,8 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
         csvFiles.push({
           name: `${exportData.filename}-${dateStr}${partSuffix}.csv`,
           content: csvContent,
+          rows: exportData.rows.length,
+          sizeBytes: csvSize,
         });
         downloadedCount += chunk.length;
 
