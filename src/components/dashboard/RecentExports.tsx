@@ -32,6 +32,7 @@ function useFormatRelative() {
 
 export const RecentExports = memo(() => {
   const { t } = useTranslation();
+  const formatRelative = useFormatRelative();
   const { entries, removeEntry, clearAll, maxEntries } = useExportHistory();
 
   if (entries.length === 0) return null;
