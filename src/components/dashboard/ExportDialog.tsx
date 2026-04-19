@@ -600,6 +600,15 @@ ${t('export.readme.footer')}
           files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows, content: f.content })),
           generatedAt: new Date().toLocaleString(),
         });
+        addExportHistoryEntry({
+          platformId: selectedFormat,
+          platformName: platformInfoForSummary?.name || selectedFormat,
+          totalItems: downloadedCount,
+          fileCount: csvFiles.length,
+          totalSizeBytes: totalSize,
+          isZip: false,
+          files: csvFiles.map(f => ({ name: f.name, sizeBytes: f.sizeBytes, rows: f.rows })),
+        });
       }
 
       const platform = stockPlatforms.find(f => f.id === selectedFormat);
