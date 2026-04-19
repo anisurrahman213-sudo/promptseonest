@@ -241,7 +241,27 @@
     "downloadCsv": "Descargar CSV",
     "copyToClipboard": "Copiar al Portapapeles",
     "exportSuccess": "Exportado correctamente",
-    "noData": "Sin datos para exportar"
+    "noData": "Sin datos para exportar",
+    "readme": {
+      "heading": "Exportación de Metadatos para {{platform}}",
+      "generated": "Generado",
+      "platform": "Plataforma",
+      "totalItems": "Total de elementos",
+      "totalFiles": "Total de archivos CSV",
+      "filesInZip": "Archivos en este ZIP",
+      "uploadInstructions": "Instrucciones de Subida",
+      "importantNotes": "Notas Importantes",
+      "note1": "Todos los CSV están codificados en UTF-8 con BOM (abrir en Excel como \"CSV UTF-8\").",
+      "note2": "Si editas en Excel/Google Sheets, guarda como \"CSV UTF-8\" para mantener la codificación.",
+      "note3": "Cada CSV contiene como máximo 5.000 filas (límite seguro de la plataforma).",
+      "note4": "Sube tus archivos multimedia ANTES del CSV.",
+      "note5": "Los nombres de archivo en el CSV deben coincidir exactamente con los archivos subidos.",
+      "footer": "Generado por PromptSEONest — https://promptseonest.com",
+      "instructionsAdobe": "1. Inicia sesión en Adobe Stock Contributor: https://contributor.stock.adobe.com\n2. Sube tus archivos de IMAGEN PRIMERO (arrastrar y soltar o por FTP).\n3. Espera a que las imágenes terminen de procesarse.\n4. Ve a \"Upload\" → haz clic en \"Upload spreadsheet\" y selecciona cada CSV.\n5. Los nombres de archivo en el CSV deben coincidir EXACTAMENTE con los nombres de las imágenes subidas.\n6. Máximo 5.000 filas por CSV (esta exportación ya cumple).",
+      "instructionsShutterstock": "1. Inicia sesión en Shutterstock Contributor: https://submit.shutterstock.com\n2. Sube tus archivos de IMAGEN primero desde la página Upload.\n3. Una vez subidos, ve a \"Edit\" → usa \"Bulk edit via CSV\".\n4. Sube cada archivo CSV de este ZIP uno por uno.\n5. Los nombres deben coincidir exactamente.",
+      "instructionsFreepik": "1. Inicia sesión en Freepik Contributor: https://contributor.freepik.com\n2. Sube tus archivos de imagen/vector primero.\n3. Usa la opción de importación masiva de metadatos.\n4. Sube cada CSV de este ZIP.\n5. Asegúrate de que los nombres coincidan exactamente.",
+      "instructionsGeneric": "1. Inicia sesión en tu cuenta de contribuidor de {{platform}}.\n2. Sube tus archivos multimedia primero.\n3. Usa la opción de importación masiva de metadatos / CSV.\n4. Sube cada archivo CSV de este ZIP.\n5. Los nombres en el CSV deben coincidir exactamente con los archivos subidos."
+    }
   },
   "calendar": {
     "title": "Calendario de Eventos 2026",

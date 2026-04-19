@@ -265,7 +265,27 @@
     "utf8Encoding": "CSV ফাইল অবশ্যই UTF-8 encoded হতে হবে",
     "excelSheets": "Save as → CSV UTF-8 (Comma delimited)",
     "uploadOrder": "ছবি আগে আপলোড করুন, তারপর CSV",
-    "filenameMatch": "Filename না মিললে metadata apply হবে না"
+    "filenameMatch": "Filename না মিললে metadata apply হবে না",
+    "readme": {
+      "heading": "{{platform}} মেটাডেটা এক্সপোর্ট",
+      "generated": "তৈরি হয়েছে",
+      "platform": "প্ল্যাটফর্ম",
+      "totalItems": "মোট আইটেম",
+      "totalFiles": "মোট CSV ফাইল",
+      "filesInZip": "এই ZIP-এর ভিতরের ফাইলসমূহ",
+      "uploadInstructions": "আপলোড নির্দেশাবলী",
+      "importantNotes": "গুরুত্বপূর্ণ নোট",
+      "note1": "সব CSV ফাইল UTF-8 BOM সহ encoded (Excel-এ \"CSV UTF-8\" হিসেবে খুলুন)।",
+      "note2": "Excel/Google Sheets-এ edit করলে \"CSV UTF-8\" হিসেবে save করুন।",
+      "note3": "প্রতিটি CSV-তে সর্বোচ্চ ৫,০০০ row থাকে (platform-safe limit)।",
+      "note4": "CSV আপলোডের আগে অবশ্যই media files আপলোড করুন।",
+      "note5": "CSV-এর filenames আপলোড করা ফাইলের নামের সাথে হুবহু মিলতে হবে।",
+      "footer": "PromptSEONest দ্বারা তৈরি — https://promptseonest.com",
+      "instructionsAdobe": "১. Adobe Stock Contributor portal-এ লগইন করুন: https://contributor.stock.adobe.com\n২. প্রথমে আপনার IMAGE files আপলোড করুন (drag & drop বা FTP দিয়ে)।\n৩. Image processing শেষ হওয়া পর্যন্ত অপেক্ষা করুন।\n৪. \"Upload\" → \"Upload spreadsheet\" এ ক্লিক করে প্রতিটি CSV select করুন।\n৫. CSV-এর filenames আপলোড করা image filenames-এর সাথে হুবহু মিলতে হবে।\n৬. প্রতি CSV-তে সর্বোচ্চ ৫,০০০ row (এই export ইতিমধ্যে মেনে চলছে)।",
+      "instructionsShutterstock": "১. Shutterstock Contributor-এ লগইন করুন: https://submit.shutterstock.com\n২. Upload page থেকে প্রথমে IMAGE files আপলোড করুন।\n৩. আপলোড শেষে \"Edit\" → \"Bulk edit via CSV\" ব্যবহার করুন।\n৪. এই ZIP-এর প্রতিটি CSV একটি একটি করে আপলোড করুন।\n৫. Filenames হুবহু মিলতে হবে।",
+      "instructionsFreepik": "১. Freepik Contributor-এ লগইন করুন: https://contributor.freepik.com\n২. প্রথমে আপনার image/vector files আপলোড করুন।\n৩. Bulk metadata import option ব্যবহার করুন।\n৪. এই ZIP-এর প্রতিটি CSV আপলোড করুন।\n৫. Filenames হুবহু মিলে আছে কিনা নিশ্চিত করুন।",
+      "instructionsGeneric": "১. আপনার {{platform}} contributor account-এ লগইন করুন।\n২. প্রথমে media files আপলোড করুন।\n৩. Bulk metadata / CSV import option ব্যবহার করুন।\n৪. এই ZIP-এর প্রতিটি CSV আপলোড করুন।\n৫. CSV-এর filenames আপলোড করা ফাইলের সাথে হুবহু মিলতে হবে।"
+    }
   },
   "calendar": {
     "title": "ইভেন্ট ক্যালেন্ডার ২০২৬",
