@@ -268,6 +268,7 @@ SummaryFileRow.displayName = 'SummaryFileRow';
 export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery, exportOptions, onUpdateMetadata }: ExportDialogProps) {
   const { t } = useTranslation();
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('adobe_stock');
+  const { addEntry: addExportHistoryEntry } = useExportHistory();
 
   // ===== DEV-ONLY: window.__seedFakeGenerations(count) =====
   // Lets you inject N synthetic generations from the browser console to verify
