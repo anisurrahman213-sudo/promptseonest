@@ -307,7 +307,7 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
       
       setExportProgress(60);
 
-      // Adobe Stock: enforce 5000 row limit — auto-split into multiple CSVs
+      // Auto-split limit applied to ALL platforms (Adobe Stock guideline = 5000 max)
       const MAX_ROWS = 5000;
       const isAdobeStock = selectedFormat === 'adobe_stock';
 
@@ -326,9 +326,9 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
         }
       }
 
-      // Split into chunks if Adobe Stock and over limit
+      // Split into chunks for ANY platform if over the row limit
       const chunks: Generation[][] = [];
-      if (isAdobeStock && dataToExport.length > MAX_ROWS) {
+      if (dataToExport.length > MAX_ROWS) {
         for (let i = 0; i < dataToExport.length; i += MAX_ROWS) {
           chunks.push(dataToExport.slice(i, i + MAX_ROWS));
         }
