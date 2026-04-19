@@ -705,6 +705,40 @@ ${t('export.readme.footer')}
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
+  // Re-download the same export from the cached summary (no regeneration)
+  const handleReDownload = useCallback(async () => {
+    if (!exportSummary) return;
+    setIsRedownloading(true);
+    try {
+      const triggerDownload = (blob: Blob, filename: string) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      if (exportSummary.isZip && exportSummary.zipBlob && exportSummary.zipFilename) {
+        triggerDownload(exportSummary.zipBlob, exportSummary.zipFilename);
+      } else {
+        for (let i = 0; i < exportSummary.files.length; i++) {
+          const f = exportSummary.files[i];
+          triggerDownload(new Blob([f.content], { type: 'text/csv;charset=utf-8' }), f.name);
+          if (i < exportSummary.files.length - 1) {
+            await new Promise(r => setTimeout(r, 500));
+          }
+        }
+      }
+      toast.success(t('export.summary.redownloadSuccess', 'Download started again'));
+    } catch (e) {
+      console.error('Re-download error:', e);
+      toast.error(t('export.summary.redownloadFailed', 'Failed to re-download'));
+    } finally {
+      setIsRedownloading(false);
+    }
+  }, [exportSummary, t]);
+
   return (
     <>
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
