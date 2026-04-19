@@ -1092,5 +1092,98 @@ ${t('export.readme.footer')}
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Export Summary Dialog */}
+    <Dialog open={!!exportSummary} onOpenChange={(open) => { if (!open) setExportSummary(null); }}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            {t('export.summary.title', 'Export Complete')}
+          </DialogTitle>
+          <DialogDescription>
+            {t('export.summary.subtitle', 'Your metadata has been exported successfully.')}
+          </DialogDescription>
+        </DialogHeader>
+
+        {exportSummary && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                  {t('export.summary.platform', 'Platform')}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-1 truncate">
+                  {exportSummary.platformName}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                  {t('export.summary.totalItems', 'Total Items')}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-1">
+                  {exportSummary.totalItems.toLocaleString()}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                  {t('export.summary.files', 'Files')}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-1 flex items-center gap-2">
+                  {exportSummary.fileCount}
+                  {exportSummary.isZip && (
+                    <Badge variant="secondary" className="text-[10px] gap-1">
+                      <Archive className="h-3 w-3" />
+                      ZIP
+                    </Badge>
+                  )}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/40 p-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                  {exportSummary.isZip
+                    ? t('export.summary.zipSize', 'ZIP Size')
+                    : t('export.summary.totalSize', 'Total Size')}
+                </p>
+                <p className="text-sm font-semibold text-foreground mt-1">
+                  {formatBytes(exportSummary.totalSizeBytes)}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-xs text-muted-foreground">
+              {t('export.summary.generatedAt', 'Generated')}: {exportSummary.generatedAt}
+            </div>
+
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="bg-muted/40 px-3 py-2 border-b border-border">
+                <p className="text-xs font-semibold text-foreground">
+                  {t('export.summary.fileList', 'Files Included')}
+                </p>
+              </div>
+              <div className="max-h-48 overflow-y-auto divide-y divide-border">
+                {exportSummary.files.map((f, idx) => (
+                  <div key={idx} className="flex items-center gap-2 px-3 py-2 text-xs">
+                    <FileSpreadsheet className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span className="flex-1 truncate font-mono text-foreground">{f.name}</span>
+                    <Badge variant="outline" className="text-[10px] shrink-0">
+                      {f.rows.toLocaleString()} {t('export.summary.rows', 'rows')}
+                    </Badge>
+                    <span className="text-muted-foreground shrink-0 tabular-nums w-16 text-right">
+                      {formatBytes(f.sizeBytes)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Button onClick={() => setExportSummary(null)} className="w-full">
+              {t('common.close', 'Close')}
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
