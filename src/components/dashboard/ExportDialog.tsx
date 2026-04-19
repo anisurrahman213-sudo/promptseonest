@@ -258,6 +258,15 @@ export function ExportDialog({ generations, disabled, fetchAllForExport, searchQ
   const [exportStatus, setExportStatus] = useState<string>('');
   const [bundleAsZip, setBundleAsZip] = useState(true);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [exportSummary, setExportSummary] = useState<{
+    platformName: string;
+    totalItems: number;
+    fileCount: number;
+    totalSizeBytes: number;
+    isZip: boolean;
+    files: { name: string; sizeBytes: number; rows: number }[];
+    generatedAt: string;
+  } | null>(null);
 
   // Memoized filtered platforms
   const filteredPlatforms = useMemo(() => 
