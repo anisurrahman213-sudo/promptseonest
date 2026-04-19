@@ -239,6 +239,59 @@ PreviewRow.displayName = 'PreviewRow';
 export function ExportDialog({ generations, disabled, fetchAllForExport, searchQuery: filterSearchQuery, exportOptions, onUpdateMetadata }: ExportDialogProps) {
   const { t } = useTranslation();
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('adobe_stock');
+
+  // ===== DEV-ONLY: window.__seedFakeGenerations(count) =====
+  // Lets you inject N synthetic generations from the browser console to verify
+  // the auto-split + summary dialog UI (ZIP badge, multiple file rows, cached re-download).
+  // Usage in console:  __seedFakeGenerations(6500)
+  // Then open the Export dialog and click Export — synthetic data is used instead.
+  // Call __seedFakeGenerations(0) to clear.
+  const seededDataRef = useRef<Generation[] | null>(null);
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const w = window as unknown as {
+      __seedFakeGenerations?: (count: number) => string;
+      __clearSeededGenerations?: () => string;
+    };
+
+    const make = (count: number): Generation[] =>
+      Array.from({ length: count }, (_, i) => ({
+        id: `seed-${i}`,
+        user_id: 'seed-user',
+        image_name: `seed-image-${String(i + 1).padStart(5, '0')}.jpg`,
+        image_url: `https://example.com/seed-${i}.jpg`,
+        title: `Seeded sunset over the mountains number ${i + 1}`,
+        description: `A stunning seeded landscape photograph showing scenic vista ${i + 1} with vibrant natural colors and atmospheric lighting`,
+        tags: 'nature,sunset,mountain,landscape,sky,outdoor,beautiful,scenic,travel,golden,seed,test,bulk,export,demo',
+        prompt: 'mountain sunset landscape',
+        media_type: 'image',
+        category: '1',
+        is_editorial: false,
+        created_at: new Date().toISOString(),
+      }) as Generation);
+
+    w.__seedFakeGenerations = (count: number) => {
+      if (!Number.isFinite(count) || count <= 0) {
+        seededDataRef.current = null;
+        return '🧹 Seeded data cleared';
+      }
+      seededDataRef.current = make(count);
+      return `🌱 Seeded ${count.toLocaleString()} fake generations. Open Export dialog → click Export.`;
+    };
+    w.__clearSeededGenerations = () => {
+      seededDataRef.current = null;
+      return '🧹 Seeded data cleared';
+    };
+
+     
+    console.info('[ExportDialog] Dev helper ready: __seedFakeGenerations(count)');
+
+    return () => {
+      delete w.__seedFakeGenerations;
+      delete w.__clearSeededGenerations;
+    };
+  }, []);
+
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isLoadingAll, setIsLoadingAll] = useState(false);
