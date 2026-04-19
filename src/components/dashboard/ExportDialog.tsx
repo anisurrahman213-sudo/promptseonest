@@ -1232,37 +1232,41 @@ ${t('export.readme.footer')}
 
               const openDownloads = () => {
                 if (downloadsUrl) {
-                  // Browsers block programmatic navigation to chrome:// URLs,
-                  // so copy to clipboard as a fallback and show toast.
                   try {
                     navigator.clipboard?.writeText(downloadsUrl);
-                    toast({
-                      title: t('export.summary.downloadsHintCopied', 'URL copied'),
-                      description: t(
-                        'export.summary.downloadsHintCopiedDesc',
-                        'Paste it in your browser address bar to open Downloads ({{shortcut}}).',
-                        { shortcut }
-                      ),
-                    });
+                    toast.success(
+                      t('export.summary.downloadsHintCopied', 'Downloads URL copied'),
+                      {
+                        description: t(
+                          'export.summary.downloadsHintCopiedDesc',
+                          'Paste it in your browser address bar, or press {{shortcut}}.',
+                          { shortcut }
+                        ),
+                      }
+                    );
                   } catch {
-                    toast({
-                      title: t('export.summary.downloadsHintTitle', 'Open Downloads'),
+                    toast.info(
+                      t('export.summary.downloadsHintTitle', 'Open Downloads'),
+                      {
+                        description: t(
+                          'export.summary.downloadsHintShortcut',
+                          'Press {{shortcut}} to open your browser Downloads.',
+                          { shortcut }
+                        ),
+                      }
+                    );
+                  }
+                } else {
+                  toast.info(
+                    t('export.summary.downloadsHintTitle', 'Open Downloads'),
+                    {
                       description: t(
                         'export.summary.downloadsHintShortcut',
                         'Press {{shortcut}} to open your browser Downloads.',
                         { shortcut }
                       ),
-                    });
-                  }
-                } else {
-                  toast({
-                    title: t('export.summary.downloadsHintTitle', 'Open Downloads'),
-                    description: t(
-                      'export.summary.downloadsHintShortcut',
-                      'Press {{shortcut}} to open your browser Downloads.',
-                      { shortcut }
-                    ),
-                  });
+                    }
+                  );
                 }
               };
 
