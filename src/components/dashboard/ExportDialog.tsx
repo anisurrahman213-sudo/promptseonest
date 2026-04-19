@@ -1217,9 +1217,32 @@ ${t('export.readme.footer')}
               </div>
             </div>
 
-            <Button onClick={() => setExportSummary(null)} className="w-full">
-              {t('common.close', 'Close')}
-            </Button>
+            <div className="flex flex-col-reverse sm:flex-row gap-2">
+              <Button
+                onClick={() => setExportSummary(null)}
+                variant="outline"
+                className="flex-1"
+              >
+                {t('common.close', 'Close')}
+              </Button>
+              <Button
+                onClick={handleReDownload}
+                disabled={isRedownloading}
+                className="flex-1 gap-2"
+              >
+                {isRedownloading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t('export.summary.redownloading', 'Re-downloading...')}
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    {t('export.summary.redownload', 'Re-download')}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>
