@@ -32,6 +32,7 @@ import {
   type ExportOptions
 } from '@/lib/stockPlatformFormats';
 import { platformCategories, type ExportPlatform } from './AdvancedMetadataControls';
+import { useExportHistory } from '@/hooks/useExportHistory';
 
 interface ExportDialogProps {
   generations: Generation[];
