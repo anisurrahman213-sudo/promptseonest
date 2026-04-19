@@ -67,7 +67,7 @@ export function MaskedEmail({ email, className = '' }: MaskedEmailProps) {
         onClick={handleCopy}
         title="Copy email"
       >
-        {copied ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+        {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
       </Button>
     </span>
   );

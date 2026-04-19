@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Users, Mail, Phone, User, MessageCircle, History, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Users, Mail, Phone, User, MessageCircle, History, Trash2, MessageSquare } from 'lucide-react';
 import { UserFiltersComponent, filterUsers, UserFilters } from '@/components/admin/UserFilters';
 import { UserListExport } from '@/components/admin/UserListExport';
+import { MaskedEmail } from '@/components/admin/MaskedEmail';
 
 interface AdminUserListProps {
   users: any[] | undefined;
@@ -84,10 +85,10 @@ export function AdminUserList({
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <User className="h-5 w-5 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-medium">{u.full_name || 'No name'}</p>
-                      <p className="text-sm text-muted-foreground">{u.email}</p>
-                      {u.created_at && <p className="text-xs text-muted-foreground">Joined {format(new Date(u.created_at), 'MMM d, yyyy')}</p>}
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{u.full_name || 'No name'}</p>
+                      <MaskedEmail email={u.email} />
+                      {u.created_at && <p className="text-xs text-muted-foreground mt-0.5">Joined {format(new Date(u.created_at), 'MMM d, yyyy')}</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
@@ -105,14 +106,17 @@ export function AdminUserList({
                       {u.phone_number && (
                         <>
                           <a href={`tel:${u.phone_number}`}>
-                            <Button variant="outline" size="icon" title="Call"><Phone className="h-4 w-4" /></Button>
+                            <Button variant="outline" size="icon" title={`Call ${u.phone_number}`}><Phone className="h-4 w-4" /></Button>
+                          </a>
+                          <a href={`sms:${u.phone_number}`}>
+                            <Button variant="outline" size="icon" title={`SMS ${u.phone_number}`}><MessageSquare className="h-4 w-4" /></Button>
                           </a>
                           <a href={`https://wa.me/${u.phone_number.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer">
                             <Button variant="outline" size="icon" className="text-green-600 hover:text-green-700" title="WhatsApp"><MessageCircle className="h-4 w-4" /></Button>
                           </a>
                         </>
                       )}
-                      <Button variant="outline" size="icon" onClick={() => onOpenEmail(u.email)} title="Email">
+                      <Button variant="outline" size="icon" onClick={() => onOpenEmail(u.email)} title="Send Email" disabled={!u.email}>
                         <Mail className="h-4 w-4" />
                       </Button>
                       <Button size="icon" variant="destructive" onClick={() => onOpenDelete(u.user_id, u.email || 'Unknown')} title="Delete User">
