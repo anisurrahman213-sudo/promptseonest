@@ -312,6 +312,7 @@ export default function AdobeStockGenerator() {
     images.forEach(img => URL.revokeObjectURL(img.preview));
     setImages([]);
     setSelectedIndex(0);
+    try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
   };
 
   const exportCSV = () => {
