@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench } from 'lucide-react';
+import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,7 +19,17 @@ export function Header() {
   const { data: isAdmin } = useIsAdmin();
   const { data: hasActivePlans } = usePlansActive();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const showBackButton = location.pathname !== '/';
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -35,15 +45,28 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 glass" role="banner">
       <div className="container flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6">
-        <button 
-          onClick={() => navigate('/')} 
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-        >
-          <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-primary">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
-          </div>
-          <span className="font-display font-bold text-lg sm:text-xl">Prompt SEO Nest</span>
-        </button>
+        <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+          {showBackButton && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBack}
+              className="rounded-full h-9 w-9 sm:h-10 sm:w-10 shrink-0"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+          )}
+          <button 
+            onClick={() => navigate('/')} 
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
+          >
+            <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-primary shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
+            </div>
+            <span className="font-display font-bold text-base sm:text-xl truncate">Prompt SEO Nest</span>
+          </button>
+        </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden sm:flex items-center gap-3" aria-label="Main navigation">
