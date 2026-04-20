@@ -173,9 +173,9 @@ export default function MetadataFixer() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold truncate flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Adobe Stock SEO Metadata Generator & Fixer
+            <h1 className="text-sm sm:text-lg font-bold truncate flex items-center gap-2">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+              <span className="truncate">Adobe Stock SEO Fixer</span>
             </h1>
             <p className="text-xs text-muted-foreground hidden sm:block">100% Adobe Stock SEO guideline compliant</p>
           </div>
