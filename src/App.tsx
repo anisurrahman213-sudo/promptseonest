@@ -8,7 +8,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { BackgroundProcessorProvider } from "@/contexts/BackgroundProcessorContext";
-import Index from "./pages/Index";
+
+// Lazy load all routes including Index for fastest initial bundle
+const Index = lazy(() => import("./pages/Index"));
 
 // Lazy load global components that aren't needed for initial render
 const BackgroundProcessingIndicator = lazy(() => import("@/components/BackgroundProcessingIndicator").then(m => ({ default: m.BackgroundProcessingIndicator })));
@@ -36,13 +38,15 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Cache data for offline use
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 60 * 24, // 24 hours (previously cacheTime)
+      // Aggressive caching for maximum speed
+      staleTime: 1000 * 60 * 10, // 10 minutes - serve cached instantly
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours
+      refetchOnWindowFocus: false, // Don't refetch when tab regains focus
+      refetchOnReconnect: 'always',
+      refetchOnMount: false, // Use cache if available
       retry: (failureCount, error: any) => {
-        // Don't retry if offline
         if (!navigator.onLine) return false;
-        return failureCount < 3;
+        return failureCount < 2; // Reduced retries for faster failure
       },
     },
   },
