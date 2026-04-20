@@ -173,9 +173,9 @@ export default function MetadataFixer() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold truncate flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Adobe Stock SEO Metadata Generator & Fixer
+            <h1 className="text-sm sm:text-lg font-bold truncate flex items-center gap-2">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+              <span className="truncate">Adobe Stock SEO Fixer</span>
             </h1>
             <p className="text-xs text-muted-foreground hidden sm:block">100% Adobe Stock SEO guideline compliant</p>
           </div>
@@ -198,14 +198,14 @@ export default function MetadataFixer() {
         {/* Compliance Score Bar - TOP CENTER */}
         {score !== null && result && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
               <span className="text-sm font-semibold">Compliance Score</span>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:gap-4">
                 <ScoreBadge label="Title" score={result.title_score} max={25} />
                 <ScoreBadge label="Keywords" score={result.keyword_score} max={35} />
                 <ScoreBadge label="Description" score={result.description_score} max={25} />
                 <ScoreBadge label="Prompt" score={result.prompt_score} max={15} />
-                <span className={`text-lg font-bold ${scoreColor}`}>{score}%</span>
+                <span className={`text-lg font-bold ${scoreColor} ml-auto sm:ml-0`}>{score}%</span>
               </div>
             </div>
             <div className="relative h-4 bg-muted rounded-full overflow-hidden">

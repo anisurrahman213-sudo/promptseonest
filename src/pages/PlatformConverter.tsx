@@ -103,10 +103,10 @@ export default function PlatformConverter() {
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase mb-2 block">Source Platform</label>
                   <Tabs value={sourcePlatform} onValueChange={v => setSourcePlatform(v as SourcePlatform)}>
-                    <TabsList className="grid grid-cols-3 w-full max-w-sm">
-                      <TabsTrigger value="adobe_stock">Adobe Stock</TabsTrigger>
-                      <TabsTrigger value="shutterstock">Shutterstock</TabsTrigger>
-                      <TabsTrigger value="freepik">Freepik</TabsTrigger>
+                    <TabsList className="grid grid-cols-3 w-full max-w-sm h-auto">
+                      <TabsTrigger value="adobe_stock" className="text-xs sm:text-sm px-1 sm:px-3 py-2 truncate">Adobe Stock</TabsTrigger>
+                      <TabsTrigger value="shutterstock" className="text-xs sm:text-sm px-1 sm:px-3 py-2 truncate">Shutterstock</TabsTrigger>
+                      <TabsTrigger value="freepik" className="text-xs sm:text-sm px-1 sm:px-3 py-2 truncate">Freepik</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
