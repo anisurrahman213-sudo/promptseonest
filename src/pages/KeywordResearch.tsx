@@ -582,7 +582,7 @@ function KeywordPanel({ title, icon, description, keywords, category, onRemove, 
         <CardDescription className="text-xs">{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <SortableContext items={keywords} strategy={horizontalListSortingStrategy}>
+        <SortableContext items={keywords} strategy={rectSortingStrategy}>
           <div className="flex flex-wrap gap-1.5">
             <AnimatePresence>
               {keywords.map(kw => (
