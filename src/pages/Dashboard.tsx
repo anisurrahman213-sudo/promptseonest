@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -9,12 +9,15 @@ import { UpgradeBanner } from '@/components/dashboard/UpgradeBanner';
 import { SearchFilter, SortOption } from '@/components/dashboard/SearchFilter';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
-import { ExportDialog } from '@/components/dashboard/ExportDialog';
-import { RecentExports } from '@/components/dashboard/RecentExports';
-import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { AutoDeleteWarning } from '@/components/dashboard/AutoDeleteWarning';
 import { PullToRefresh } from '@/components/dashboard/PullToRefresh';
-import { VirtualGenerationList } from '@/components/dashboard/VirtualGenerationList';
+
+// Lazy load heavy below-fold components for faster initial paint
+const ExportDialog = lazy(() => import('@/components/dashboard/ExportDialog').then(m => ({ default: m.ExportDialog })));
+const RecentExports = lazy(() => import('@/components/dashboard/RecentExports').then(m => ({ default: m.RecentExports })));
+const RecentActivity = lazy(() => import('@/components/dashboard/RecentActivity').then(m => ({ default: m.RecentActivity })));
+const VirtualGenerationList = lazy(() => import('@/components/dashboard/VirtualGenerationList').then(m => ({ default: m.VirtualGenerationList })));
+
 import { useAuth } from '@/hooks/useAuth';
 import { useCredits } from '@/hooks/useCredits';
 import { usePlansActive } from '@/hooks/usePlansActive';
@@ -304,7 +307,9 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Recent Activity Feed */}
-          <RecentActivity generations={generations} maxItems={5} />
+          <Suspense fallback={<Skeleton className="h-32 w-full rounded-xl" />}>
+            <RecentActivity generations={generations} maxItems={5} />
+          </Suspense>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <motion.div
@@ -424,7 +429,9 @@ export default function Dashboard() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
                   >
-                    <RecentExports />
+                    <Suspense fallback={<Skeleton className="h-20 w-full rounded-xl" />}>
+                      <RecentExports />
+                    </Suspense>
                     {totalCount > 0 && (
                       <motion.div 
                         className="flex flex-col sm:flex-row gap-3 sm:gap-4"
@@ -440,16 +447,18 @@ export default function Dashboard() {
                             onSortChange={setSortBy}
                           />
                         </div>
-                        <ExportDialog 
-                          generations={filteredGenerations} 
-                          fetchAllForExport={fetchAllForExport}
-                          searchQuery={searchQuery}
-                          exportOptions={{
-                            overrideCategory: metadataSettings.category,
-                            editorialStatus: metadataSettings.editorialStatus,
-                          }}
-                          onUpdateMetadata={handleUpdateMetadata}
-                        />
+                        <Suspense fallback={<Skeleton className="h-10 w-32 rounded-md" />}>
+                          <ExportDialog 
+                            generations={filteredGenerations} 
+                            fetchAllForExport={fetchAllForExport}
+                            searchQuery={searchQuery}
+                            exportOptions={{
+                              overrideCategory: metadataSettings.category,
+                              editorialStatus: metadataSettings.editorialStatus,
+                            }}
+                            onUpdateMetadata={handleUpdateMetadata}
+                          />
+                        </Suspense>
                       </motion.div>
                     )}
                     
@@ -482,16 +491,24 @@ export default function Dashboard() {
                       </motion.div>
                     ) : (
                       <PullToRefresh onRefresh={refreshGenerations}>
-                        <VirtualGenerationList
-                          generations={filteredGenerations}
-                          onDelete={handleDelete}
-                          onBulkDelete={handleBulkDelete}
-                           onUpdateCategory={handleUpdateCategory}
-                          onUpdateMetadata={handleUpdateMetadata}
-                          hasMore={hasMore}
-                          loadMore={loadMore}
-                          loadingMore={loadingMore}
-                        />
+                        <Suspense fallback={
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                            {[...Array(6)].map((_, i) => (
+                              <Skeleton key={i} className="aspect-[4/5] w-full rounded-xl" />
+                            ))}
+                          </div>
+                        }>
+                          <VirtualGenerationList
+                            generations={filteredGenerations}
+                            onDelete={handleDelete}
+                            onBulkDelete={handleBulkDelete}
+                             onUpdateCategory={handleUpdateCategory}
+                            onUpdateMetadata={handleUpdateMetadata}
+                            hasMore={hasMore}
+                            loadMore={loadMore}
+                            loadingMore={loadingMore}
+                          />
+                        </Suspense>
                       </PullToRefresh>
                     )}
                   </motion.div>
