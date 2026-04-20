@@ -342,9 +342,9 @@ export default function KeywordResearch() {
               className="text-lg h-12"
               onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
             />
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
               <Select value={subjectType} onValueChange={(v) => setSubjectType(v as SubjectType)}>
-                <SelectTrigger className="w-[220px]">
+                <SelectTrigger className="w-full sm:w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -356,11 +356,11 @@ export default function KeywordResearch() {
                 </SelectContent>
               </Select>
 
-              <Tabs value={platform} onValueChange={(v) => setPlatform(v as Platform)} className="flex-1">
-                <TabsList className="w-full grid grid-cols-3">
-                  <TabsTrigger value="adobe_stock">Adobe Stock</TabsTrigger>
-                  <TabsTrigger value="shutterstock">Shutterstock</TabsTrigger>
-                  <TabsTrigger value="freepik">Freepik</TabsTrigger>
+              <Tabs value={platform} onValueChange={(v) => setPlatform(v as Platform)} className="w-full sm:flex-1 sm:w-auto min-w-0">
+                <TabsList className="w-full grid grid-cols-3 h-auto">
+                  <TabsTrigger value="adobe_stock" className="text-xs sm:text-sm px-1 sm:px-3 py-2 truncate">Adobe Stock</TabsTrigger>
+                  <TabsTrigger value="shutterstock" className="text-xs sm:text-sm px-1 sm:px-3 py-2 truncate">Shutterstock</TabsTrigger>
+                  <TabsTrigger value="freepik" className="text-xs sm:text-sm px-1 sm:px-3 py-2 truncate">Freepik</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
