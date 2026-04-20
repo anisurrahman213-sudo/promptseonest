@@ -10,6 +10,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
+    <!-- LCP Optimization: Preload cached hero image immediately during HTML parse (before any JS bundle).
+         This shaves 500ms-1s off LCP by skipping React hydration + settings query for repeat visitors. -->
+    <script>
+      (function() {
+        try {
+          var url = localStorage.getItem('hero_preload_url');
+          if (url && /^https:\/\/[^/]+\/storage\/v1\/render\/image\/public\//.test(url)) {
+            var l = document.createElement('link');
+            l.rel = 'preload';
+            l.as = 'image';
+            l.href = url;
+            l.fetchPriority = 'high';
+            document.head.appendChild(l);
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Primary Meta Tags -->
     <title>Prompt SEO Nest - AI-Powered Image SEO Generator</title>
     <meta name="title" content="Prompt SEO Nest - AI-Powered Image SEO Generator" />

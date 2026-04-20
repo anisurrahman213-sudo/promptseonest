@@ -70,13 +70,25 @@ const Index = () => {
   const heroTextColor = getSettingValue(heroSettings, 'hero_text_color') || '';
   const heroTextShadow = parseInt(getSettingValue(heroSettings, 'hero_text_shadow') || '0');
 
-  // Preload hero background image for LCP optimization with responsive sizes
+  // Preload hero background image for LCP optimization with responsive sizes.
+  // Also caches the URL in localStorage so repeat visitors get instant preload via index.html script.
   useEffect(() => {
-    if (heroVideoUrl || !heroBackgroundUrl) return;
-    
+    if (heroVideoUrl || !heroBackgroundUrl) {
+      // Clear cache if hero changed to video or removed
+      try { localStorage.removeItem('hero_preload_url'); } catch {}
+      return;
+    }
+
     const isMobile = window.innerWidth < 768;
     const width = isMobile ? 800 : 1920;
     const url = getOptimizedImageUrl(heroBackgroundUrl, width, 80);
+
+    // Cache for next visit (instant preload from index.html inline script)
+    try { localStorage.setItem('hero_preload_url', url); } catch {}
+
+    // Skip injecting preload tag if already preloaded by inline script in index.html
+    const existing = document.querySelector(`link[rel="preload"][href="${url}"]`);
+    if (existing) return;
 
     const link = document.createElement('link');
     link.rel = 'preload';
@@ -84,7 +96,9 @@ const Index = () => {
     link.href = url;
     link.fetchPriority = 'high';
     document.head.appendChild(link);
-    return () => { document.head.removeChild(link); };
+    return () => {
+      try { document.head.removeChild(link); } catch {}
+    };
   }, [heroBackgroundUrl, heroVideoUrl]);
 
   const heroTextStyle = {
