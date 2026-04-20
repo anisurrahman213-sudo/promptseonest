@@ -26,40 +26,26 @@ serve(async (req) => {
 
     const keywordsStr = Array.isArray(keywords) ? keywords.join(", ") : keywords;
 
-    const systemPrompt = `You are a microstock platform SEO expert with IELTS Academic Band 8-9 English proficiency.
+    const systemPrompt = `Microstock SEO expert. IELTS Band 8-9 academic English. Convert metadata for 3 platforms.
 
-CRITICAL LANGUAGE RULES (apply to ALL platforms):
-- Use sophisticated, academic vocabulary throughout: "monumental" not "big", "illustrate" not "show", "exceptional" not "good", "obscured" not "dark", "expansive" not "wide", "pylon" not "tower", "transmission" not "wire", "vegetation" not "plants", "photovoltaic" not "solar panel"
-- Never use basic, colloquial, or simple words
-- Descriptions must read like formal academic prose (IELTS Band 8-9)
+LANGUAGE: Sophisticated vocab ("monumental" not "big", "photovoltaic" not "solar panel", "vegetation" not "plants"). Formal academic prose.
 
-ADOBE STOCK RULES:
-- Title: max 70 chars, Title Case, structure: [Academic Adjective] + [Subject] + [Technical Detail] + [Setting]
-- Title: NO special characters (no colons, dashes, semicolons), NO colour names
-- Keywords: EXACTLY 49 keywords, EVERY keyword MUST be a SINGLE WORD (one word only, no spaces, no hyphens)
-  * WRONG: "solar panel", "wind turbine", "blue sky", "renewable energy", "power plant", "close-up"
-  * CORRECT: "solar", "panel", "wind", "turbine", "sky", "renewable", "energy", "power", "plant", "closeup"
-  * Convert hyphenated words: "close-up" → "closeup", "high-voltage" → "voltage"
-  * Split multi-word phrases into separate single keywords
-- Keywords: no duplicates, sorted by search relevance (first 5 = primary subject)
-- Description: 200-500 chars, 5 sentences: Subject, Technical Details, Atmosphere, Use Cases (min 3), Commercial Value
+ADOBE STOCK:
+- Title: ≤70 chars, Title Case, no colons/dashes/colours
+- Keywords: EXACTLY 49 SINGLE words (no spaces, no hyphens). Split phrases: "solar panel"→"solar","panel". Convert: "close-up"→"closeup"
+- Description: 200-500 chars, 5 sentences (Subject, Tech, Atmosphere, Use Cases ≥3, Commercial)
 
-SHUTTERSTOCK RULES:
-- Title: max 200 chars, expanded descriptive detail, academic sentence style
-- Keywords: max 50 keywords, 2-3 word phrases allowed, most commercially relevant first
-- Description: max 200 chars, concise, formal, commercial licensing focus
+SHUTTERSTOCK:
+- Title: ≤200 chars, expanded descriptive
+- Keywords: ≤50, 2-3 word phrases allowed
+- Description: ≤200 chars, formal commercial
 
-FREEPIK RULES:
-- Title: max 100 chars, clear academic style
-- Keywords: max 30 keywords, top priority, single words or short phrases allowed
-- Description: 100-300 chars, mention potential use cases in formal tone
+FREEPIK:
+- Title: ≤100 chars
+- Keywords: ≤30, single or short phrases
+- Description: 100-300 chars with use cases
 
-CONVERSION PRINCIPLES:
-- Adobe → Shutterstock: expand title, allow keyword phrases, condense description
-- Adobe → Freepik: simplify title, keep top 30 keywords, brief description with use cases
-- Calculate compliance score (0-100) for each platform
-
-You MUST respond using the provided tool call format only.`;
+Score each platform 0-100 for compliance. Use the tool format.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -68,7 +54,9 @@ You MUST respond using the provided tool call format only.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash-lite",
+        temperature: 0,
+        max_tokens: 2000,
         messages: [
           { role: "system", content: systemPrompt },
           {
