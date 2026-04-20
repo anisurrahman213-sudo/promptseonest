@@ -418,10 +418,10 @@ export default function AdobeStockGenerator() {
                   <Card>
                     <CardContent className="p-4 space-y-3">
                       {/* Platform Selector */}
-                      <div className="flex flex-wrap items-center gap-3">
-                        <Label className="text-xs font-medium">Platform:</Label>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <Label className="text-xs font-medium shrink-0">Platform:</Label>
                         <Select value={selectedPlatform} onValueChange={(v) => setSelectedPlatform(v as ExportPlatform)}>
-                          <SelectTrigger className="w-[180px] h-8 text-xs">
+                          <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
