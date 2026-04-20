@@ -22,7 +22,8 @@ import {
   DndContext,
   closestCenter,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -32,7 +33,7 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
-  horizontalListSortingStrategy,
+  rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -139,7 +140,10 @@ export default function KeywordResearch() {
 
   // DnD
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // Mouse: small distance threshold for desktop drag
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    // Touch: long-press (250ms) before drag activates so vertical scroll keeps working on mobile
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -578,7 +582,7 @@ function KeywordPanel({ title, icon, description, keywords, category, onRemove, 
         <CardDescription className="text-xs">{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <SortableContext items={keywords} strategy={horizontalListSortingStrategy}>
+        <SortableContext items={keywords} strategy={rectSortingStrategy}>
           <div className="flex flex-wrap gap-1.5">
             <AnimatePresence>
               {keywords.map(kw => (
