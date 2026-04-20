@@ -62,48 +62,16 @@ Subject type "${subject_type}" guides technical vocabulary.`;
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash-lite",
+          temperature: 0,
+          max_tokens: 800,
+          response_format: { type: "json_object" },
           messages: [
-            { role: "system", content: systemPrompt },
+            { role: "system", content: systemPrompt + `\n\nRespond with ONLY a JSON object: {"primary":[${primaryCount} words],"secondary":[${secondaryCount} words],"supporting":[${supportingCount} words]}. No prose, no markdown.` },
             {
               role: "user",
-              content: `Generate ${maxKeywords} single-word keywords for: "${subject.trim()}" (type: ${subject_type}, platform: ${platform})`,
+              content: `Subject: "${subject.trim()}" | type: ${subject_type} | platform: ${platform}`,
             },
           ],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "return_keywords",
-                description: `Return exactly ${maxKeywords} categorised single-word keywords`,
-                parameters: {
-                  type: "object",
-                  properties: {
-                    primary: {
-                      type: "array",
-                      items: { type: "string" },
-                      description: `Top ${primaryCount} highest-priority subject keywords`,
-                    },
-                    secondary: {
-                      type: "array",
-                      items: { type: "string" },
-                      description: `${secondaryCount} descriptive and technical keywords`,
-                    },
-                    supporting: {
-                      type: "array",
-                      items: { type: "string" },
-                      description: `${supportingCount} conceptual and use-case keywords`,
-                    },
-                  },
-                  required: ["primary", "secondary", "supporting"],
-                  additionalProperties: false,
-                },
-              },
-            },
-          ],
-          tool_choice: {
-            type: "function",
-            function: { name: "return_keywords" },
-          },
         }),
       }
     );
@@ -127,12 +95,12 @@ Subject type "${subject_type}" guides technical vocabulary.`;
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) {
-      throw new Error("No tool call in AI response");
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error("No content in AI response");
     }
-
-    const keywords = JSON.parse(toolCall.function.arguments);
+    const cleaned = content.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+    const keywords = JSON.parse(cleaned);
 
     // Validate: enforce single-word, remove duplicates
     const clean = (arr: string[]) =>
