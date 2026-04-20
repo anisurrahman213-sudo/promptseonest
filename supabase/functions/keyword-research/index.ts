@@ -41,25 +41,16 @@ serve(async (req) => {
     const supportingCount = Math.min(14, Math.floor(maxKeywords * 0.28));
     const secondaryCount = maxKeywords - primaryCount - supportingCount;
 
-    const systemPrompt = `You are an Adobe Stock and stock photography SEO expert with deep understanding of search algorithms on major stock platforms.
+    const systemPrompt = `Stock photography SEO expert. Generate exactly ${maxKeywords} single-word English keywords for "${platform.replace("_", " ")}".
 
-Your task: Generate exactly ${maxKeywords} single-word keywords for the given subject, optimised for ${platform.replace("_", " ")} search ranking.
+Rules: ${rules} No duplicates. No spaces/hyphens. IELTS Band 8-9 vocab. Sort by commercial search value.
 
-STRICT RULES:
-- ${rules}
-- Every keyword must be exactly ONE English word (no spaces, no hyphens, no compound phrases)
-- No duplicates allowed
-- Use IELTS Academic Band 8-9 vocabulary where appropriate
-- Sort by search relevance: highest commercial value first
+Categorise:
+- primary (${primaryCount}): literal subject words, highest weight
+- secondary (${secondaryCount}): descriptive, technical, buyer-intent
+- supporting (${supportingCount}): conceptual, mood, use-case
 
-KEYWORD PRIORITY ORDER:
-- Primary (1-${primaryCount}): Literal subject words — the exact thing in the image. These carry highest search weight.
-- Secondary (${primaryCount + 1}-${primaryCount + secondaryCount}): Descriptive, technical, visual attributes, commercial buyer-intent terms.
-- Supporting (${primaryCount + secondaryCount + 1}-${maxKeywords}): Conceptual, scientific, mood, use-case terms.
-
-Subject type "${subject_type}" should inform which scientific/technical vocabulary to prioritise.
-
-You MUST respond with ONLY a valid JSON object using this exact tool call format.`;
+Subject type "${subject_type}" guides technical vocabulary.`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -70,7 +61,7 @@ You MUST respond with ONLY a valid JSON object using this exact tool call format
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: "google/gemini-2.5-flash-lite",
           messages: [
             { role: "system", content: systemPrompt },
             {
