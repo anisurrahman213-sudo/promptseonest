@@ -117,15 +117,75 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 
 const MAX_CONCURRENT = 5;
 
+const STORAGE_KEY = 'adobe-stock-generator-state';
+
+interface PersistedImage {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  preview: string;
+  hasTransparency: boolean;
+  resolution: { width: number; height: number; megapixels: number };
+  status: ImageStatus;
+  metadata: Metadata | null;
+  error?: string;
+}
+
+function loadPersisted(): { images: PersistedImage[]; selectedIndex: number; selectedPlatform: ExportPlatform; isAiGenerated: boolean } | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
 export default function AdobeStockGenerator() {
-  const [images, setImages] = useState<ImageItem[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [selectedPlatform, setSelectedPlatform] = useState<ExportPlatform>('adobe_stock');
-  const [isAiGenerated, setIsAiGenerated] = useState(false);
+  const [images, setImages] = useState<ImageItem[]>(() => {
+    const p = loadPersisted();
+    if (!p?.images?.length) return [];
+    return p.images.map((pi) => ({
+      id: pi.id,
+      file: new File([new Blob()], pi.fileName, { type: pi.fileType }),
+      preview: pi.preview,
+      hasTransparency: pi.hasTransparency,
+      resolution: pi.resolution,
+      // If something was mid-processing when user navigated away, mark as error so they can retry
+      status: pi.status === 'processing' ? 'error' : pi.status,
+      metadata: pi.metadata,
+      error: pi.status === 'processing' ? 'Interrupted — please retry' : pi.error,
+    }));
+  });
+  const [selectedIndex, setSelectedIndex] = useState(() => loadPersisted()?.selectedIndex ?? 0);
+  const [selectedPlatform, setSelectedPlatform] = useState<ExportPlatform>(() => loadPersisted()?.selectedPlatform ?? 'adobe_stock');
+  const [isAiGenerated, setIsAiGenerated] = useState(() => !!loadPersisted()?.isAiGenerated);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Persist state on every change so navigation back restores the work
+  useEffect(() => {
+    try {
+      const persisted: PersistedImage[] = images.map((img) => ({
+        id: img.id,
+        fileName: img.file.name,
+        fileSize: img.file.size,
+        fileType: img.file.type,
+        preview: img.preview,
+        hasTransparency: img.hasTransparency,
+        resolution: img.resolution,
+        status: img.status,
+        metadata: img.metadata,
+        error: img.error,
+      }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ images: persisted, selectedIndex, selectedPlatform, isAiGenerated })
+      );
+    } catch {
+      // sessionStorage quota or serialization failure — silent
+    }
+  }, [images, selectedIndex, selectedPlatform, isAiGenerated]);
 
   const platformReq = platformRequirements[selectedPlatform];
   const titleLimit = platformReq.titleLimit;
@@ -252,6 +312,7 @@ export default function AdobeStockGenerator() {
     images.forEach(img => URL.revokeObjectURL(img.preview));
     setImages([]);
     setSelectedIndex(0);
+    try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
   };
 
   const exportCSV = () => {
