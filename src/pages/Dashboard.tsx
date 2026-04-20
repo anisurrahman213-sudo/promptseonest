@@ -307,7 +307,9 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Recent Activity Feed */}
-          <RecentActivity generations={generations} maxItems={5} />
+          <Suspense fallback={<Skeleton className="h-32 w-full rounded-xl" />}>
+            <RecentActivity generations={generations} maxItems={5} />
+          </Suspense>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <motion.div
@@ -427,7 +429,9 @@ export default function Dashboard() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
                   >
-                    <RecentExports />
+                    <Suspense fallback={<Skeleton className="h-20 w-full rounded-xl" />}>
+                      <RecentExports />
+                    </Suspense>
                     {totalCount > 0 && (
                       <motion.div 
                         className="flex flex-col sm:flex-row gap-3 sm:gap-4"
@@ -443,16 +447,18 @@ export default function Dashboard() {
                             onSortChange={setSortBy}
                           />
                         </div>
-                        <ExportDialog 
-                          generations={filteredGenerations} 
-                          fetchAllForExport={fetchAllForExport}
-                          searchQuery={searchQuery}
-                          exportOptions={{
-                            overrideCategory: metadataSettings.category,
-                            editorialStatus: metadataSettings.editorialStatus,
-                          }}
-                          onUpdateMetadata={handleUpdateMetadata}
-                        />
+                        <Suspense fallback={<Skeleton className="h-10 w-32 rounded-md" />}>
+                          <ExportDialog 
+                            generations={filteredGenerations} 
+                            fetchAllForExport={fetchAllForExport}
+                            searchQuery={searchQuery}
+                            exportOptions={{
+                              overrideCategory: metadataSettings.category,
+                              editorialStatus: metadataSettings.editorialStatus,
+                            }}
+                            onUpdateMetadata={handleUpdateMetadata}
+                          />
+                        </Suspense>
                       </motion.div>
                     )}
                     
@@ -485,16 +491,24 @@ export default function Dashboard() {
                       </motion.div>
                     ) : (
                       <PullToRefresh onRefresh={refreshGenerations}>
-                        <VirtualGenerationList
-                          generations={filteredGenerations}
-                          onDelete={handleDelete}
-                          onBulkDelete={handleBulkDelete}
-                           onUpdateCategory={handleUpdateCategory}
-                          onUpdateMetadata={handleUpdateMetadata}
-                          hasMore={hasMore}
-                          loadMore={loadMore}
-                          loadingMore={loadingMore}
-                        />
+                        <Suspense fallback={
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                            {[...Array(6)].map((_, i) => (
+                              <Skeleton key={i} className="aspect-[4/5] w-full rounded-xl" />
+                            ))}
+                          </div>
+                        }>
+                          <VirtualGenerationList
+                            generations={filteredGenerations}
+                            onDelete={handleDelete}
+                            onBulkDelete={handleBulkDelete}
+                             onUpdateCategory={handleUpdateCategory}
+                            onUpdateMetadata={handleUpdateMetadata}
+                            hasMore={hasMore}
+                            loadMore={loadMore}
+                            loadingMore={loadingMore}
+                          />
+                        </Suspense>
                       </PullToRefresh>
                     )}
                   </motion.div>
