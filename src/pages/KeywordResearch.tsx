@@ -140,7 +140,10 @@ export default function KeywordResearch() {
 
   // DnD
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // Mouse: small distance threshold for desktop drag
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    // Touch: long-press (250ms) before drag activates so vertical scroll keeps working on mobile
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
