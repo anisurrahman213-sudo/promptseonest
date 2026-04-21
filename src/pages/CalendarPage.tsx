@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Star, TrendingUp, Plus, Filter, Download, Camera, Search, CalendarCheck } from 'lucide-react';
+import { Calendar, Star, TrendingUp, Plus, Filter, Download, Camera, Search, CalendarCheck, User } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,7 +39,8 @@ export default function CalendarPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photography', 'holiday', 'custom']);
+const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photography', 'holiday', 'custom']);
+  const [categoryFilters, setCategoryFilters] = useState<string[]>(['stock', 'photography', 'personal']);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Add/Edit form state
@@ -173,16 +174,20 @@ export default function CalendarPage() {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  const filteredEvents = allEvents.filter((event) => {
-    // Category filter
+const filteredEvents = allEvents.filter((event) => {
+    // Event type filter (Stock/Holiday/Photography/Custom)
     if (event.isCustom) {
       if (!activeFilters.includes('custom')) return false;
+      // For custom events, also apply category filter
+      if (!categoryFilters.includes(event.category || 'stock')) return false;
     } else if (event.type === 'stock') {
       if (!activeFilters.includes('stock')) return false;
+      if (!categoryFilters.includes('stock')) return false;
     } else if (['holiday', 'celebration', 'motivation'].includes(event.type)) {
       if (!activeFilters.includes('holiday')) return false;
     } else if (event.type === 'creative') {
       if (!activeFilters.includes('photography')) return false;
+      if (!categoryFilters.includes('photography')) return false;
     }
 
     // Search filter
@@ -253,8 +258,8 @@ export default function CalendarPage() {
             </div>
           </motion.div>
 
-          {/* Filter & Controls */}
-          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          {/* Event Type Filters */}
+          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
             <div className="flex items-center gap-3">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <ToggleGroup type="multiple" value={activeFilters} onValueChange={(value) => { if (value.length > 0) setActiveFilters(value); }} className="bg-muted/30 rounded-lg p-1 flex-wrap">
@@ -280,6 +285,30 @@ export default function CalendarPage() {
                 <Download className="h-4 w-4" /><span className="hidden sm:inline">Export Month</span>
               </Button>
             </div>
+          </motion.div>
+
+          {/* Category Filters (Stock/Photography/Personal) */}
+          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Category:</span>
+              <ToggleGroup type="multiple" value={categoryFilters} onValueChange={(value) => { if (value.length > 0) setCategoryFilters(value); }} className="bg-muted/30 rounded-lg p-1 flex-wrap">
+                <ToggleGroupItem value="stock" aria-label="Toggle Stock Category" className="data-[state=on]:bg-emerald-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-emerald-400/50">
+                  <TrendingUp className="h-3 w-3" /><span>Stock</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="photography" aria-label="Toggle Photography Category" className="data-[state=on]:bg-purple-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-purple-400/50">
+                  <Camera className="h-3 w-3" /><span>Photography</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="personal" aria-label="Toggle Personal Category" className="data-[state=on]:bg-amber-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-amber-400/50">
+                  <User className="h-3 w-3" /><span>Personal</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+            {(searchQuery.trim() || categoryFilters.length < 3) && (
+              <div className="text-xs text-muted-foreground">
+                Showing {monthEvents.filter(e => e.month === currentMonth).length} events
+                {searchQuery.trim() && <span> for "{searchQuery}"</span>}
+              </div>
+            )}
           </motion.div>
 
           {/* Main Content */}
