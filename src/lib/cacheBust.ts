@@ -7,6 +7,8 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const BUILD_INFO_URL = '/build-info.json';
+const DEPLOYMENT_VERSION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-deployment-version`;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const LS_LAST_SEEN_BUILD = 'pn_last_seen_build';
 
 export interface BuildInfo {
@@ -35,6 +37,34 @@ export function getRunningBuildTime(): string {
 export async function fetchLatestBuildInfo(signal?: AbortSignal): Promise<BuildInfo | null> {
   // 1. Authoritative: backend deployment registry
   try {
+    const session = await supabase.auth.getSession();
+    const accessToken = session.data.session?.access_token;
+    const res = await fetch(`${DEPLOYMENT_VERSION_URL}?t=${Date.now()}`, {
+      method: 'GET',
+      cache: 'no-store',
+      signal,
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+    });
+
+    if (res.ok) {
+      const data = (await res.json()) as BuildInfo | null;
+      if (data?.buildTime) {
+        return {
+          buildTime: data.buildTime as string,
+          version: data.version ?? undefined,
+          deployedAt: data.deployedAt ?? undefined,
+          notes: data.notes ?? undefined,
+          source: 'deployment_versions',
+        };
+      }
+    }
+  } catch {/* fall through to static manifest */}
+
+  // 2. Back-compat fallback: older client path using invoke() / POST
+  try {
     const { data, error } = await supabase.functions.invoke('get-deployment-version');
     if (!error && data?.buildTime) {
       return {
@@ -47,7 +77,7 @@ export async function fetchLatestBuildInfo(signal?: AbortSignal): Promise<BuildI
     }
   } catch {/* fall through to static manifest */}
 
-  // 2. Fallback: static build-info.json from the served bundle
+  // 3. Fallback: static build-info.json from the served bundle
   try {
     const res = await fetch(`${BUILD_INFO_URL}?t=${Date.now()}`, {
       cache: 'no-store',
