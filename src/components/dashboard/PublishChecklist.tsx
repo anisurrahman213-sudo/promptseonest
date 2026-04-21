@@ -16,6 +16,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { cacheBustAndReload } from '@/lib/cacheBust';
+import { toast } from 'sonner';
 
 const LS_LAST_PUBLISHED = 'pn_last_published_at';
 const LS_DISMISSED_VERSION = 'pn_publish_checklist_dismissed_for';
@@ -95,6 +97,13 @@ export function PublishChecklist() {
     } catch {/* ignore */}
     setLastPublished(now);
     setDismissedFor(buildId);
+  };
+
+  const handlePublishedAndRefresh = async () => {
+    markPublished();
+    toast.info('Clearing caches and reloading…', { duration: 2000 });
+    // Tiny delay so the toast can paint before we navigate away
+    setTimeout(() => { void cacheBustAndReload(); }, 400);
   };
 
   const dismiss = () => {
