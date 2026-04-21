@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench, ArrowLeft, Activity } from 'lucide-react';
+import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -123,27 +123,15 @@ export function Header() {
               </Button>
 
               {isAdmin && (
-                <>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-primary"
-                    onClick={() => handleNavigate('/admin/payments')}
-                  >
-                    <ShieldCheck className="h-4 w-4 mr-1" />
-                    {t('header.admin')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full text-primary"
-                    onClick={() => handleNavigate('/admin/health')}
-                    aria-label="Health Check"
-                    title="Health Check"
-                  >
-                    <Activity className="h-5 w-5" />
-                  </Button>
-                </>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-primary"
+                  onClick={() => handleNavigate('/admin-dashboard')}
+                >
+                  <ShieldCheck className="h-4 w-4 mr-1" />
+                  {t('header.admin')}
+                </Button>
               )}
 
 
@@ -283,24 +271,14 @@ export function Header() {
                     {t('header.tutorials')}
                   </Button>
                   {isAdmin && (
-                    <>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-center h-11 text-primary"
-                        onClick={() => handleNavigate('/admin/payments')}
-                      >
-                        <ShieldCheck className="mr-2 h-4 w-4" />
-                        {t('header.adminPanel')}
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-center h-11 text-primary"
-                        onClick={() => handleNavigate('/admin/health')}
-                      >
-                        <Activity className="mr-2 h-4 w-4" />
-                        Health Check
-                      </Button>
-                    </>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-center h-11 text-primary"
+                      onClick={() => handleNavigate('/admin-dashboard')}
+                    >
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                      {t('header.adminPanel')}
+                    </Button>
                   )}
                   <Button
                     variant="ghost"
