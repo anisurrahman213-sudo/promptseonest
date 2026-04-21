@@ -1,11 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, ImageIcon, Video, Calendar, Hash, Download, ExternalLink } from 'lucide-react';
+import { Loader2, ImageIcon, Video, Calendar, Hash, Download, ExternalLink, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+
+type GenStatus = 'complete' | 'processing' | 'error';
+
+function getGenerationStatus(gen: { image_url?: string; title?: string; tags?: string; description?: string }): GenStatus {
+  if (!gen.image_url || gen.image_url.trim() === '') return 'error';
+  const hasTitle = !!gen.title && gen.title.trim().length > 0;
+  const hasTags = !!gen.tags && gen.tags.trim().length > 0;
+  const hasDescription = !!gen.description && gen.description.trim().length > 0;
+  if (hasTitle && hasTags && hasDescription) return 'complete';
+  if (hasTitle || hasTags || hasDescription) return 'processing';
+  return 'processing';
+}
+
+const statusConfig: Record<GenStatus, { label: string; icon: typeof CheckCircle2; className: string; ringClass: string }> = {
+  complete: { label: 'Complete', icon: CheckCircle2, className: 'bg-green-500/90 text-white border-green-600', ringClass: 'ring-green-500/40' },
+  processing: { label: 'Processing', icon: Clock, className: 'bg-amber-500/90 text-white border-amber-600', ringClass: 'ring-amber-500/40' },
+  error: { label: 'Error', icon: AlertCircle, className: 'bg-destructive/90 text-destructive-foreground border-destructive', ringClass: 'ring-destructive/50' },
+};
 
 interface UserGenerationsDialogProps {
   open: boolean;
