@@ -207,6 +207,4 @@ export default function StockToolsShowcase() {
       </div>
     </section>
   );
-});
-
-export default StockToolsShowcase;
+}
