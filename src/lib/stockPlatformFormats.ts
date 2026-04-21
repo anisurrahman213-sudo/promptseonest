@@ -39,13 +39,13 @@ export const stockPlatforms: StockPlatform[] = [
   {
     id: 'adobe_stock',
     name: 'Adobe Stock',
-    description: 'Filename, Title, Keywords (max 50), Category, Releases',
+    description: 'Filename, Title, Keywords (max 49), Category, Releases',
     icon: '🅰️',
-    maxKeywords: 50,
+    maxKeywords: 49,
     maxTitleLength: 70,
     maxDescriptionLength: 0,
     csvColumns: ['Filename', 'Title', 'Keywords', 'Category', 'Releases'],
-    guidelines: 'Adobe Stock CSV Format (Official 2024):\n• Filename: Exact name with extension (max 30 chars), must match uploaded asset\n• Title: Simple description (max 70 characters), no commas\n• Keywords: Comma-separated in one cell, max 50, ordered by relevance\n• Category: Numeric code (1-21) - optional but recommended\n• Releases: Exact model/property release name from portal (optional)\n\nIMPORTANT:\n• Column names must match exactly in English\n• CSV must be UTF-8 encoded\n• Max 5000 rows, max 1MB file size\n• Upload images FIRST, then CSV\n• Filename must match exactly or metadata won\'t apply\n• Required columns: Filename, Title, Keywords',
+    guidelines: 'Adobe Stock CSV Format (Official 2024):\n• Filename: Exact name with extension (max 30 chars), must match uploaded asset\n• Title: Simple description (max 70 characters), no commas\n• Keywords: Comma-separated in one cell, max 49 (safe limit, official cap is 50), ordered by relevance\n• Category: Numeric code (1-21) - optional but recommended\n• Releases: Exact model/property release name from portal (optional)\n\nIMPORTANT:\n• Column names must match exactly in English\n• CSV must be UTF-8 encoded\n• Max 5000 rows, max 1MB file size\n• Upload images FIRST, then CSV\n• Filename must match exactly or metadata won\'t apply\n• Required columns: Filename, Title, Keywords',
   },
   {
     id: 'shutterstock',
@@ -467,7 +467,7 @@ export const generateExport = (format: ExportFormat, generations: Generation[], 
         rows: generations.map(g => [
           escapeCSV(g.image_name), // Exact filename, no path
           escapeCSV(cleanAdobeStockTitle(g.title)), // Clean title, max 70 chars, no commas
-          escapeCSV(limitKeywords(g.tags, 50)), // Max 50 keywords, comma-separated
+          escapeCSV(limitKeywords(g.tags, 49)), // Max 49 keywords (safe limit under Adobe's 50 cap)
           escapeCSV(getAdobeStockCategoryNumber(getCategoryValue(g.category || '', overrideCategory))),
           escapeCSV(''), // Releases optional - leave blank
         ]),
