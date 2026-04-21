@@ -209,4 +209,6 @@ const StockToolsShowcase = forwardRef<HTMLElement>(function StockToolsShowcase(_
       </div>
     </section>
   );
-}
+});
+
+export default StockToolsShowcase;
