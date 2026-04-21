@@ -45,6 +45,16 @@ export default function AdminPayments() {
   const approveMutation = useApprovePayment();
   const rejectMutation = useRejectPayment();
   const sendEmailMutation = useSendCustomEmail();
+  const { data: pricingPlans } = useAdminPricingPlans();
+
+  // Resolve credits for a plan: DB first, then fallback map, then 100
+  const getCreditsForPlan = (planName: string): number => {
+    const plan = pricingPlans?.find(p => p.name === planName);
+    if (plan) {
+      return plan.is_unlimited ? 999999 : plan.credits_amount;
+    }
+    return FALLBACK_CREDITS_BY_PLAN[planName] ?? 100;
+  };
 
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
