@@ -237,7 +237,7 @@ export function AiAskPopup() {
 
     await streamChat({
       messages: [...messages, userMsg],
-      language: i18n.language,
+      language: chatLanguage,
       onDelta: upsertAssistant,
       onDone: () => {
         setIsLoading(false);
@@ -252,7 +252,7 @@ export function AiAskPopup() {
         ]);
       },
     });
-  }, [input, isLoading, messages, soundEnabled]);
+  }, [input, isLoading, messages, soundEnabled, chatLanguage]);
 
   // Handle suggested question click
   const handleSuggestedQuestion = (question: string) => {
