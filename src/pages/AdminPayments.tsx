@@ -331,14 +331,25 @@ export default function AdminPayments() {
         )}
 
         {showActions && (
-          <div className="flex gap-2 pt-2 border-t">
-            <Button 
-              size="sm" 
+          <div className="flex gap-2 pt-2 border-t flex-wrap">
+            <Button
+              size="sm"
+              onClick={() => handleQuickApprove(payment)}
+              disabled={approveMutation.isPending}
+              className="bg-gradient-to-r from-primary to-primary/80 shadow-md gap-1"
+              title={`Auto-approve: ${getCreditsForPlan(payment.plan_name) === 999999 ? 'Unlimited' : getCreditsForPlan(payment.plan_name)} credits`}
+            >
+              {approveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+              Quick Approve ({getCreditsForPlan(payment.plan_name) === 999999 ? '∞' : getCreditsForPlan(payment.plan_name)} credits)
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => openActionDialog(payment, 'approve')}
-              className="bg-success hover:bg-success/90"
+              title="Approve with custom credits"
             >
               <CheckCircle className="h-4 w-4 mr-1" />
-              Approve
+              Custom
             </Button>
             <Button 
               size="sm" 
