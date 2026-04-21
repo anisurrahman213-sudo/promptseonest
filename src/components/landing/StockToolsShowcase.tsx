@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import {
   Sparkles,
@@ -184,13 +184,17 @@ export default function StockToolsShowcase() {
         >
           <div className="rounded-xl sm:rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 p-5 sm:p-7 text-center">
             <p className="text-sm sm:text-base text-muted-foreground mb-3">
-              <Trans
-                i18nKey="stockTools.ctaFreeText"
-                values={{ bold: t("stockTools.ctaFreeBold") }}
-                components={{ 1: <span className="font-semibold text-foreground" /> }}
-              >
-                <span className="font-semibold text-foreground">{t("stockTools.ctaFreeBold")}</span>
-              </Trans>
+              {(() => {
+                const text = t("stockTools.ctaFreeText", { bold: "{{BOLD}}" });
+                const parts = text.split("{{BOLD}}");
+                return (
+                  <>
+                    {parts[0]}
+                    <span className="font-semibold text-foreground">{t("stockTools.ctaFreeBold")}</span>
+                    {parts[1]}
+                  </>
+                );
+              })()}
             </p>
             <Link to={user ? "/dashboard" : "/auth"}>
               <span className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-medium text-primary-foreground shadow-md hover:opacity-90 transition-opacity">
