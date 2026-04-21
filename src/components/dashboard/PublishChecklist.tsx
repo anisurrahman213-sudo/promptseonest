@@ -391,11 +391,23 @@ export function PublishChecklist() {
                 <Rocket className="h-4 w-4" />
                 {hasUnpublishedChanges ? "I've published — clear cache & reload" : 'Clear cache & reload'}
               </Button>
+              {isAdmin && (
+                <Button
+                  variant="default"
+                  onClick={handleMarkDeployedOnServer}
+                  disabled={recording}
+                  className="gap-2 bg-primary hover:opacity-90"
+                  title="Record this build as the live deployed version on the backend (admin)"
+                >
+                  {recording ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                  Record deployment
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 onClick={markPublished}
                 className="gap-2"
-                title="Mark as published without reloading"
+                title="Mark as published locally without reloading"
               >
                 Mark only
               </Button>
