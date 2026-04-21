@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Download, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,11 +13,16 @@ function ScoreBadge({ score }: { score: number }) {
   return <span className={`font-bold ${color}`}>{score}/100 {emoji}</span>;
 }
 
-export function PlatformCard({ config, result, changes }: {
+interface PlatformCardProps {
   config: typeof PLATFORM_CONFIG[number];
   result: PlatformResult;
   changes?: string[];
-}) {
+}
+
+export const PlatformCard = forwardRef<HTMLDivElement, PlatformCardProps>(function PlatformCard(
+  { config, result, changes },
+  ref,
+) {
   const copyField = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copied to clipboard`);
