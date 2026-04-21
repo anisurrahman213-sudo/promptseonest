@@ -14,7 +14,7 @@ import {
   ExternalLink,
   ShieldCheck,
   Loader2,
-  CloudCheck,
+  Cloud,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -72,10 +72,27 @@ interface ChecklistStep {
 
 export function PublishChecklist() {
   const buildId = useMemo(() => getCurrentBuildId(), []);
+  const { data: isAdmin } = useIsAdmin();
   const [lastPublished, setLastPublished] = useState<string | null>(null);
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [liveBuild, setLiveBuild] = useState<BuildInfo | null>(null);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [recording, setRecording] = useState(false);
+
+  const refreshLiveBuild = async () => {
+    setLiveLoading(true);
+    try {
+      const info = await fetchLatestBuildInfo();
+      setLiveBuild(info);
+    } finally {
+      setLiveLoading(false);
+    }
+  };
+
+  // Fetch authoritative deployed version on mount
+  useEffect(() => { void refreshLiveBuild(); }, []);
 
   // Load persisted state
   useEffect(() => {
