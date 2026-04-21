@@ -350,5 +350,53 @@
     "signupTitle": "开始使用",
     "subtitle": "观看分步视频指南，充分利用我们由AI驱动的元数据生成平台",
     "title": "学习如何使用 PromptNest"
+  },
+  "stockTools": {
+    "badge": "图库供稿人一站式工具套件",
+    "title": "一个平台 — 图库赚钱所需的所有工具",
+    "subtitle": "生成、修复、转换、研究和追踪 — Adobe Stock / Shutterstock / Freepik 成功供稿人所需的一切,尽在一处。",
+    "ctaFreeText": "{{bold}}开始 — 无需信用卡。",
+    "ctaFreeBold": "100% 免费",
+    "ctaButtonGuest": "免费试用所有工具",
+    "ctaButtonUser": "前往仪表板",
+    "badgeMostPopular": "最受欢迎",
+    "badgeNew": "新",
+    "tools": {
+      "generator": {
+        "title": "Adobe Stock 元数据生成器",
+        "description": "使用 Vision AI 一键生成 SEO 完美的标题、描述和恰好 49 个单字关键词。",
+        "highlight": "批量 500 文件 · 100% 符合 Adobe"
+      },
+      "converter": {
+        "title": "平台转换器",
+        "description": "一键将 Adobe Stock 元数据转换为完全符合规则的 Shutterstock 和 Freepik 格式。",
+        "highlight": "3 个平台 · 批量 CSV 支持"
+      },
+      "fixer": {
+        "title": "元数据修复优化器",
+        "description": "粘贴现有标题/关键词 — AI 将修复多字词、删除禁用词并强制执行 IELTS 8-9 级质量。",
+        "highlight": "自动修复 · 合规分数"
+      },
+      "research": {
+        "title": "关键词研究",
+        "description": "输入任何主题 — 获取高 CPC、购买意向的分类即用关键词。",
+        "highlight": "细分 · 分类 · 意图"
+      },
+      "trending": {
+        "title": "热门关键词",
+        "description": "实时查看 Adobe Stock 当前热门趋势,据此拍摄。",
+        "highlight": "实时趋势 · 细分洞察"
+      },
+      "rejection": {
+        "title": "拒稿分析器",
+        "description": "粘贴拒稿邮件/原因 — AI 将告诉你确切原因以及如何修复并重新提交。",
+        "highlight": "根本原因 · 行动计划"
+      },
+      "tracker": {
+        "title": "投稿追踪器",
+        "description": "追踪每个平台已提交、已接受和已拒绝的数量 — 全部一处管理。",
+        "highlight": "19+ 平台 · 收入洞察"
+      }
+    }
   }
 }

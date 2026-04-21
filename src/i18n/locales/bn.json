@@ -350,5 +350,53 @@
     "serverError": "সার্ভারে সংযোগ করতে সমস্যা হচ্ছে। VPN বন্ধ করে আবার চেষ্টা করুন।",
     "slowConnection": "ধীর সংযোগ ({{seconds}} সেকেন্ড)। VPN বন্ধ করলে দ্রুত হতে পারে।",
     "retry": "আবার চেষ্টা করুন"
+  },
+  "stockTools": {
+    "badge": "All-in-One Stock Contributor Suite",
+    "title": "একটাই Platform — Stock-এ Earn করার সব Tools",
+    "subtitle": "Generate, Fix, Convert, Research আর Track — যা যা একজন successful Adobe Stock / Shutterstock / Freepik contributor-এর দরকার, সব এক জায়গায়।",
+    "ctaFreeText": "{{bold}}-তে শুরু করুন — কোনো credit card লাগবে না।",
+    "ctaFreeBold": "১০০% ফ্রি",
+    "ctaButtonGuest": "সব Tools ফ্রি ট্রাই করুন",
+    "ctaButtonUser": "Dashboard-এ যান",
+    "badgeMostPopular": "সবচেয়ে জনপ্রিয়",
+    "badgeNew": "নতুন",
+    "tools": {
+      "generator": {
+        "title": "Adobe Stock Metadata Generator",
+        "description": "Vision-AI দিয়ে এক ক্লিকে SEO-perfect Title, Description আর exactly 49 single-word Keywords generate করুন।",
+        "highlight": "Bulk 500 files · 100% Adobe Compliance"
+      },
+      "converter": {
+        "title": "Platform Converter",
+        "description": "Adobe Stock metadata কে এক ক্লিকে Shutterstock আর Freepik format-এ rule-perfect convert করুন।",
+        "highlight": "3 Platforms · Bulk CSV Support"
+      },
+      "fixer": {
+        "title": "Metadata Fixer & Optimizer",
+        "description": "Existing title/keywords paste করুন — AI multi-word fix, banned words remove আর IELTS Band 8-9 quality enforce করবে।",
+        "highlight": "Auto Fix · Compliance Score"
+      },
+      "research": {
+        "title": "Keyword Research",
+        "description": "যেকোনো subject দিন — high-CPC, buyer-intent keywords, categorized & ready-to-use list পান।",
+        "highlight": "Niche · Category · Intent"
+      },
+      "trending": {
+        "title": "Trending Keywords",
+        "description": "এই মুহূর্তে Adobe Stock-এ কী trending সেটা real-time দেখুন আর সেই অনুযায়ী shoot করুন।",
+        "highlight": "Live Trends · Niche Insights"
+      },
+      "rejection": {
+        "title": "Rejection Analyzer",
+        "description": "Rejection email/reason paste করুন — AI বলবে exact কারণ আর কীভাবে fix করে resubmit করবেন।",
+        "highlight": "Root-cause · Action Plan"
+      },
+      "tracker": {
+        "title": "Submission Tracker",
+        "description": "কোন platform-এ কতগুলো submitted, accepted, rejected — সব track এক জায়গায়।",
+        "highlight": "19+ Platforms · Earnings Insight"
+      }
+    }
   }
 }

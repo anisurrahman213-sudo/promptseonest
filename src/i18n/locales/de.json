@@ -350,5 +350,53 @@
     "signupTitle": "Erste Schritte",
     "subtitle": "Sehen Sie sich Schritt-für-Schritt-Videoanleitungen an, um das Beste aus unserer KI-gestützten Metadatengenerierungsplattform herauszuholen",
     "title": "Lernprogramm: PromptNest verwenden"
+  },
+  "stockTools": {
+    "badge": "All-in-One-Suite für Stock-Mitwirkende",
+    "title": "Eine Plattform — Alle Tools zum Verdienen auf Stock",
+    "subtitle": "Generieren, Korrigieren, Konvertieren, Recherchieren und Verfolgen — alles, was ein erfolgreicher Adobe Stock / Shutterstock / Freepik-Mitwirkender braucht, an einem Ort.",
+    "ctaFreeText": "Starten Sie {{bold}} — keine Kreditkarte erforderlich.",
+    "ctaFreeBold": "100% Kostenlos",
+    "ctaButtonGuest": "Alle Tools kostenlos testen",
+    "ctaButtonUser": "Zum Dashboard",
+    "badgeMostPopular": "Am Beliebtesten",
+    "badgeNew": "Neu",
+    "tools": {
+      "generator": {
+        "title": "Adobe Stock Metadaten-Generator",
+        "description": "Generieren Sie SEO-perfekten Titel, Beschreibung und genau 49 Single-Word-Keywords mit einem Klick per Vision AI.",
+        "highlight": "Bulk 500 Dateien · 100% Adobe-Konform"
+      },
+      "converter": {
+        "title": "Plattform-Konverter",
+        "description": "Konvertieren Sie Adobe Stock Metadaten mit einem Klick in regelkonformes Shutterstock- und Freepik-Format.",
+        "highlight": "3 Plattformen · Bulk CSV-Unterstützung"
+      },
+      "fixer": {
+        "title": "Metadaten-Fixer & Optimierer",
+        "description": "Fügen Sie vorhandene Titel/Keywords ein — KI behebt Mehrwortbegriffe, entfernt verbotene Wörter und erzwingt IELTS Band 8-9 Qualität.",
+        "highlight": "Auto-Fix · Compliance-Score"
+      },
+      "research": {
+        "title": "Keyword-Recherche",
+        "description": "Geben Sie ein beliebiges Thema ein — erhalten Sie High-CPC-, Käuferintention-Keywords, kategorisiert und einsatzbereit.",
+        "highlight": "Nische · Kategorie · Intention"
+      },
+      "trending": {
+        "title": "Trending Keywords",
+        "description": "Sehen Sie in Echtzeit, was gerade auf Adobe Stock im Trend liegt, und fotografieren Sie entsprechend.",
+        "highlight": "Live-Trends · Nischen-Insights"
+      },
+      "rejection": {
+        "title": "Ablehnungs-Analyzer",
+        "description": "Fügen Sie Ablehnungs-E-Mail/Grund ein — KI sagt Ihnen die genaue Ursache und wie Sie korrigieren und erneut einreichen.",
+        "highlight": "Ursachenanalyse · Aktionsplan"
+      },
+      "tracker": {
+        "title": "Einreichungs-Tracker",
+        "description": "Verfolgen Sie, wie viele Sie auf jeder Plattform eingereicht, akzeptiert und abgelehnt haben — alles an einem Ort.",
+        "highlight": "19+ Plattformen · Verdienst-Insights"
+      }
+    }
   }
 }

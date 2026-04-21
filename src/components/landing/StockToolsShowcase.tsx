@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import {
   Sparkles,
@@ -15,85 +16,62 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 
 interface ToolItem {
+  key: string;
   icon: typeof Sparkles;
-  title: string;
-  description: string;
-  highlight: string;
   path: string;
   gradient: string;
   iconBg: string;
-  badge?: string;
+  badgeKey?: "badgeMostPopular" | "badgeNew";
 }
 
 const TOOLS: ToolItem[] = [
   {
+    key: "generator",
     icon: Sparkles,
-    title: "Adobe Stock Metadata Generator",
-    description:
-      "Vision-AI দিয়ে এক ক্লিকে SEO-perfect Title, Description আর exactly 49 single-word Keywords generate করুন।",
-    highlight: "Bulk 500 files · 100% Adobe Compliance",
     path: "/adobe-stock-generator",
     gradient: "from-violet-500/20 via-fuchsia-500/10 to-pink-500/20",
     iconBg: "bg-gradient-to-br from-violet-500 to-fuchsia-500",
-    badge: "Most Popular",
+    badgeKey: "badgeMostPopular",
   },
   {
+    key: "converter",
     icon: ArrowRightLeft,
-    title: "Platform Converter",
-    description:
-      "Adobe Stock metadata কে এক ক্লিকে Shutterstock আর Freepik format-এ rule-perfect convert করুন।",
-    highlight: "3 Platforms · Bulk CSV Support",
     path: "/platform-converter",
     gradient: "from-blue-500/20 via-cyan-500/10 to-teal-500/20",
     iconBg: "bg-gradient-to-br from-blue-500 to-cyan-500",
   },
   {
+    key: "fixer",
     icon: Wrench,
-    title: "Metadata Fixer & Optimizer",
-    description:
-      "Existing title/keywords paste করুন — AI multi-word fix, banned words remove আর IELTS Band 8-9 quality enforce করবে।",
-    highlight: "Auto Fix · Compliance Score",
     path: "/metadata-fixer",
     gradient: "from-emerald-500/20 via-green-500/10 to-lime-500/20",
     iconBg: "bg-gradient-to-br from-emerald-500 to-green-500",
   },
   {
+    key: "research",
     icon: Search,
-    title: "Keyword Research",
-    description:
-      "যেকোনো subject দিন — high-CPC, buyer-intent keywords, categorized & ready-to-use list পান।",
-    highlight: "Niche · Category · Intent",
     path: "/keyword-research",
     gradient: "from-amber-500/20 via-orange-500/10 to-red-500/20",
     iconBg: "bg-gradient-to-br from-amber-500 to-orange-500",
   },
   {
+    key: "trending",
     icon: TrendingUp,
-    title: "Trending Keywords",
-    description:
-      "এই মুহূর্তে Adobe Stock-এ কী trending সেটা real-time দেখুন আর সেই অনুযায়ী shoot করুন।",
-    highlight: "Live Trends · Niche Insights",
     path: "/trending-keywords",
     gradient: "from-rose-500/20 via-pink-500/10 to-fuchsia-500/20",
     iconBg: "bg-gradient-to-br from-rose-500 to-pink-500",
-    badge: "New",
+    badgeKey: "badgeNew",
   },
   {
+    key: "rejection",
     icon: AlertTriangle,
-    title: "Rejection Analyzer",
-    description:
-      "Rejection email/reason paste করুন — AI বলবে exact কারণ আর কীভাবে fix করে resubmit করবেন।",
-    highlight: "Root-cause · Action Plan",
     path: "/rejection-analyzer",
     gradient: "from-red-500/20 via-rose-500/10 to-orange-500/20",
     iconBg: "bg-gradient-to-br from-red-500 to-rose-500",
   },
   {
+    key: "tracker",
     icon: ClipboardList,
-    title: "Submission Tracker",
-    description:
-      "কোন platform-এ কতগুলো submitted, accepted, rejected — সব track এক জায়গায়।",
-    highlight: "19+ Platforms · Earnings Insight",
     path: "/submission-tracker",
     gradient: "from-indigo-500/20 via-blue-500/10 to-violet-500/20",
     iconBg: "bg-gradient-to-br from-indigo-500 to-blue-500",
@@ -102,10 +80,11 @@ const TOOLS: ToolItem[] = [
 
 export default function StockToolsShowcase() {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <section
-      aria-label="Stock Contributor Tools"
+      aria-label={t("stockTools.badge")}
       className="relative py-14 sm:py-24 overflow-hidden"
     >
       {/* Decorative background */}
@@ -125,14 +104,13 @@ export default function StockToolsShowcase() {
         >
           <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary">
             <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            All-in-One Stock Contributor Suite
+            {t("stockTools.badge")}
           </div>
           <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-            একটাই Platform — Stock-এ Earn করার সব Tools
+            {t("stockTools.title")}
           </h2>
           <p className="text-sm sm:text-lg text-muted-foreground px-2">
-            Generate, Fix, Convert, Research আর Track — যা যা একজন successful Adobe Stock /
-            Shutterstock / Freepik contributor-এর দরকার, সব এক জায়গায়।
+            {t("stockTools.subtitle")}
           </p>
         </motion.div>
 
@@ -143,7 +121,7 @@ export default function StockToolsShowcase() {
             const to = user ? tool.path : "/auth";
             return (
               <motion.div
-                key={tool.title}
+                key={tool.key}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
@@ -157,9 +135,9 @@ export default function StockToolsShowcase() {
                     />
 
                     {/* Badge */}
-                    {tool.badge && (
+                    {tool.badgeKey && (
                       <div className="absolute top-3 right-3 z-10 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold px-2 py-0.5 shadow-md">
-                        {tool.badge}
+                        {t(`stockTools.${tool.badgeKey}`)}
                       </div>
                     )}
 
@@ -173,18 +151,18 @@ export default function StockToolsShowcase() {
 
                       {/* Title */}
                       <h3 className="mb-2 text-base sm:text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {tool.title}
+                        {t(`stockTools.tools.${tool.key}.title`)}
                       </h3>
 
                       {/* Description */}
                       <p className="mb-4 text-sm text-muted-foreground leading-relaxed flex-1">
-                        {tool.description}
+                        {t(`stockTools.tools.${tool.key}.description`)}
                       </p>
 
                       {/* Highlight chip */}
                       <div className="flex items-center justify-between gap-2 pt-3 border-t border-border/40">
                         <span className="text-[11px] sm:text-xs font-medium text-primary/80 truncate">
-                          {tool.highlight}
+                          {t(`stockTools.tools.${tool.key}.highlight`)}
                         </span>
                         <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 flex-shrink-0" />
                       </div>
@@ -206,12 +184,21 @@ export default function StockToolsShowcase() {
         >
           <div className="rounded-xl sm:rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 p-5 sm:p-7 text-center">
             <p className="text-sm sm:text-base text-muted-foreground mb-3">
-              <span className="font-semibold text-foreground">100% Free</span>-তে শুরু করুন —
-              কোনো credit card লাগবে না।
+              {(() => {
+                const text = t("stockTools.ctaFreeText", { bold: "{{BOLD}}" });
+                const parts = text.split("{{BOLD}}");
+                return (
+                  <>
+                    {parts[0]}
+                    <span className="font-semibold text-foreground">{t("stockTools.ctaFreeBold")}</span>
+                    {parts[1]}
+                  </>
+                );
+              })()}
             </p>
             <Link to={user ? "/dashboard" : "/auth"}>
               <span className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-medium text-primary-foreground shadow-md hover:opacity-90 transition-opacity">
-                {user ? "Go to Dashboard" : "Try All Tools Free"}
+                {user ? t("stockTools.ctaButtonUser") : t("stockTools.ctaButtonGuest")}
                 <ArrowRight className="h-4 w-4" />
               </span>
             </Link>

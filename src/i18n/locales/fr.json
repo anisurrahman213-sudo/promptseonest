@@ -350,5 +350,53 @@
     "signupTitle": "Démarrage rapide",
     "subtitle": "Regardez des guides vidéo étape par étape pour tirer le meilleur parti de notre plateforme de génération de métadonnées basée sur l'IA",
     "title": "Apprenez à utiliser PromptNest"
+  },
+  "stockTools": {
+    "badge": "Suite Tout-en-Un pour Contributeurs Stock",
+    "title": "Une Plateforme — Tous les Outils pour Gagner sur Stock",
+    "subtitle": "Générez, Corrigez, Convertissez, Recherchez et Suivez — tout ce dont un contributeur Adobe Stock / Shutterstock / Freepik à succès a besoin, en un seul endroit.",
+    "ctaFreeText": "Commencez {{bold}} — aucune carte bancaire requise.",
+    "ctaFreeBold": "100% Gratuit",
+    "ctaButtonGuest": "Essayer Tous les Outils Gratuitement",
+    "ctaButtonUser": "Aller au Tableau de Bord",
+    "badgeMostPopular": "Le Plus Populaire",
+    "badgeNew": "Nouveau",
+    "tools": {
+      "generator": {
+        "title": "Générateur de Métadonnées Adobe Stock",
+        "description": "Générez un Titre, une Description et exactement 49 mots-clés parfaits SEO en un clic avec Vision AI.",
+        "highlight": "Lot 500 fichiers · 100% Conforme Adobe"
+      },
+      "converter": {
+        "title": "Convertisseur de Plateformes",
+        "description": "Convertissez les métadonnées Adobe Stock au format parfait pour Shutterstock et Freepik en un clic.",
+        "highlight": "3 Plateformes · Support CSV en Masse"
+      },
+      "fixer": {
+        "title": "Correcteur et Optimiseur de Métadonnées",
+        "description": "Collez le titre/mots-clés existants — l'IA corrigera les multi-mots, supprimera les mots interdits et imposera la qualité IELTS Band 8-9.",
+        "highlight": "Correction Auto · Score de Conformité"
+      },
+      "research": {
+        "title": "Recherche de Mots-Clés",
+        "description": "Entrez n'importe quel sujet — obtenez des mots-clés à fort CPC, à intention d'achat, catégorisés et prêts à l'emploi.",
+        "highlight": "Niche · Catégorie · Intention"
+      },
+      "trending": {
+        "title": "Mots-Clés Tendance",
+        "description": "Voyez en temps réel ce qui est tendance sur Adobe Stock et photographiez en conséquence.",
+        "highlight": "Tendances en Direct · Insights Niche"
+      },
+      "rejection": {
+        "title": "Analyseur de Refus",
+        "description": "Collez l'email/raison du refus — l'IA vous dira la cause exacte et comment corriger et resoumettre.",
+        "highlight": "Cause Racine · Plan d'Action"
+      },
+      "tracker": {
+        "title": "Suivi des Soumissions",
+        "description": "Suivez combien vous avez soumis, acceptés et refusés sur chaque plateforme — tout en un seul endroit.",
+        "highlight": "19+ Plateformes · Insights Revenus"
+      }
+    }
   }
 }
