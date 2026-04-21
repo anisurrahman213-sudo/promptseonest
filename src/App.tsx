@@ -17,6 +17,7 @@ const BackgroundProcessingIndicator = lazy(() => import("@/components/Background
 const NetworkStatusIndicator = lazy(() => import("@/components/NetworkStatusIndicator").then(m => ({ default: m.NetworkStatusIndicator })));
 const PWAInstallPrompt = lazy(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
 const AiAskPopup = lazy(() => import("@/components/AiAskPopup").then(m => ({ default: m.AiAskPopup })));
+const RouteTracker = lazy(() => import("@/components/RouteTracker").then(m => ({ default: m.RouteTracker })));
 
 // Lazy load non-critical routes to reduce initial bundle size
 const Auth = lazy(() => import("./pages/Auth"));
@@ -66,6 +67,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <RouteTracker />
               <Suspense fallback={<div className="min-h-screen bg-background" />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
