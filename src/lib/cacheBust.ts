@@ -4,12 +4,17 @@
  * service-worker / browser caches.
  */
 
+import { supabase } from '@/integrations/supabase/client';
+
 export const BUILD_INFO_URL = '/build-info.json';
 const LS_LAST_SEEN_BUILD = 'pn_last_seen_build';
 
 export interface BuildInfo {
   buildTime: string;
   version?: string;
+  source?: 'static' | 'deployment_versions';
+  deployedAt?: string;
+  notes?: string;
 }
 
 /** Read the currently running build's timestamp (injected at build time). */
@@ -22,8 +27,27 @@ export function getRunningBuildTime(): string {
   }
 }
 
-/** Fetch the latest build manifest from the server, bypassing all caches. */
+/**
+ * Fetch the latest build manifest. Prefers the backend `get-deployment-version`
+ * edge function (authoritative — what an admin actually marked as deployed),
+ * and falls back to the static `/build-info.json` from the served bundle.
+ */
 export async function fetchLatestBuildInfo(signal?: AbortSignal): Promise<BuildInfo | null> {
+  // 1. Authoritative: backend deployment registry
+  try {
+    const { data, error } = await supabase.functions.invoke('get-deployment-version');
+    if (!error && data?.buildTime) {
+      return {
+        buildTime: data.buildTime as string,
+        version: data.version ?? undefined,
+        deployedAt: data.deployedAt ?? undefined,
+        notes: data.notes ?? undefined,
+        source: 'deployment_versions',
+      };
+    }
+  } catch {/* fall through to static manifest */}
+
+  // 2. Fallback: static build-info.json from the served bundle
   try {
     const res = await fetch(`${BUILD_INFO_URL}?t=${Date.now()}`, {
       cache: 'no-store',
@@ -31,9 +55,35 @@ export async function fetchLatestBuildInfo(signal?: AbortSignal): Promise<BuildI
       signal,
     });
     if (!res.ok) return null;
-    return (await res.json()) as BuildInfo;
+    const json = (await res.json()) as { buildTime?: string; version?: string };
+    if (!json?.buildTime) return null;
+    return { buildTime: json.buildTime, version: json.version, source: 'static' };
   } catch {
     return null;
+  }
+}
+
+/**
+ * Record a new deployment server-side. Admin-only; backend enforces.
+ * Returns true on success.
+ */
+export async function recordDeployment(opts: { buildTime?: string; notes?: string; version?: string } = {}): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.functions.invoke('record-deployment', {
+      body: {
+        buildTime: opts.buildTime ?? getRunningBuildTime() ?? new Date().toISOString(),
+        notes: opts.notes,
+        version: opts.version,
+      },
+    });
+    if (error) {
+      console.error('[recordDeployment] error:', error.message);
+      return false;
+    }
+    return !!data?.success;
+  } catch (err) {
+    console.error('[recordDeployment] failed:', err);
+    return false;
   }
 }
 

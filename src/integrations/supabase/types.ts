@@ -56,6 +56,33 @@ export type Database = {
         }
         Relationships: []
       }
+      deployment_versions: {
+        Row: {
+          build_time: string
+          created_at: string
+          deployed_by: string | null
+          id: string
+          notes: string | null
+          version: string | null
+        }
+        Insert: {
+          build_time: string
+          created_at?: string
+          deployed_by?: string | null
+          id?: string
+          notes?: string | null
+          version?: string | null
+        }
+        Update: {
+          build_time?: string
+          created_at?: string
+          deployed_by?: string | null
+          id?: string
+          notes?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
       feature_cards: {
         Row: {
           created_at: string

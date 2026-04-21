@@ -12,12 +12,23 @@ import {
   Layout,
   X,
   ExternalLink,
+  ShieldCheck,
+  Loader2,
+  Cloud,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { cacheBustAndReload } from '@/lib/cacheBust';
+import {
+  cacheBustAndReload,
+  fetchLatestBuildInfo,
+  recordDeployment,
+  getRunningBuildTime,
+  isNewerBuild,
+  type BuildInfo,
+} from '@/lib/cacheBust';
 import { toast } from 'sonner';
+import { useIsAdmin } from '@/hooks/usePaymentRequests';
 
 const LS_LAST_PUBLISHED = 'pn_last_published_at';
 const LS_DISMISSED_VERSION = 'pn_publish_checklist_dismissed_for';
@@ -61,10 +72,27 @@ interface ChecklistStep {
 
 export function PublishChecklist() {
   const buildId = useMemo(() => getCurrentBuildId(), []);
+  const { data: isAdmin } = useIsAdmin();
   const [lastPublished, setLastPublished] = useState<string | null>(null);
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [liveBuild, setLiveBuild] = useState<BuildInfo | null>(null);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [recording, setRecording] = useState(false);
+
+  const refreshLiveBuild = async () => {
+    setLiveLoading(true);
+    try {
+      const info = await fetchLatestBuildInfo();
+      setLiveBuild(info);
+    } finally {
+      setLiveLoading(false);
+    }
+  };
+
+  // Fetch authoritative deployed version on mount
+  useEffect(() => { void refreshLiveBuild(); }, []);
 
   // Load persisted state
   useEffect(() => {
@@ -75,10 +103,18 @@ export function PublishChecklist() {
     } catch {/* ignore */}
   }, []);
 
-  // True if current build hasn't been published yet
-  const hasUnpublishedChanges = useMemo(() => {
+  // Compare running build vs LIVE deployment registry (authoritative).
+  // True when the running build is newer than what's marked deployed.
+  const liveOutOfDate = useMemo(() => {
+    const running = getRunningBuildTime();
+    if (!running) return false;
+    if (!liveBuild?.buildTime) return true; // never recorded → out of date
+    return isNewerBuild(running, liveBuild.buildTime);
+  }, [liveBuild]);
+
+  // True if current build hasn't been marked published in localStorage either
+  const localUnpublished = useMemo(() => {
     if (!lastPublished) return true;
-    // If lastPublished timestamp >= build time, considered published
     try {
       const pub = new Date(lastPublished).getTime();
       const build = new Date(buildId).getTime();
@@ -86,6 +122,9 @@ export function PublishChecklist() {
     } catch {/* fall through */}
     return true;
   }, [lastPublished, buildId]);
+
+  // Final verdict: live registry is authoritative when available, otherwise fall back
+  const hasUnpublishedChanges = liveBuild ? liveOutOfDate : localUnpublished;
 
   const dismissed = dismissedFor === buildId;
 
@@ -97,6 +136,26 @@ export function PublishChecklist() {
     } catch {/* ignore */}
     setLastPublished(now);
     setDismissedFor(buildId);
+  };
+
+  const handleMarkDeployedOnServer = async () => {
+    if (!isAdmin) {
+      toast.error('Admin access required to record deployment');
+      return;
+    }
+    setRecording(true);
+    try {
+      const ok = await recordDeployment({ notes: 'Marked from PublishChecklist' });
+      if (!ok) {
+        toast.error('Failed to record deployment');
+        return;
+      }
+      toast.success('Deployment recorded — all clients will detect the new version');
+      markPublished();
+      await refreshLiveBuild();
+    } finally {
+      setRecording(false);
+    }
   };
 
   const handlePublishedAndRefresh = async () => {
@@ -206,11 +265,38 @@ export function PublishChecklist() {
               <span className="text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                 {completedCount}/{totalCount} steps
               </span>
+              {/* Live deployment registry badge */}
+              <span
+                className={cn(
+                  'text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1',
+                  liveLoading
+                    ? 'bg-muted text-muted-foreground'
+                    : liveBuild
+                      ? hasUnpublishedChanges
+                        ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                        : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                      : 'bg-muted text-muted-foreground'
+                )}
+                title={
+                  liveBuild?.buildTime
+                    ? `Live build: ${new Date(liveBuild.buildTime).toLocaleString()}`
+                    : 'No deployment recorded yet'
+                }
+              >
+                {liveLoading ? (
+                  <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                ) : (
+                  <Cloud className="h-2.5 w-2.5" />
+                )}
+                Live: {liveBuild?.buildTime ? formatRelative(liveBuild.buildTime) : 'never'}
+              </span>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Last published: <span className="font-medium">{formatRelative(lastPublished)}</span>
+              Local mark: <span className="font-medium">{formatRelative(lastPublished)}</span>
               {' · '}
-              Frontend changes need a manual <span className="font-semibold">Publish → Update</span> to go live.
+              {liveBuild
+                ? <>Backend deployment registry is the source of truth.</>
+                : <>Frontend changes need a manual <span className="font-semibold">Publish → Update</span> to go live.</>}
             </p>
           </div>
         </div>
@@ -305,11 +391,23 @@ export function PublishChecklist() {
                 <Rocket className="h-4 w-4" />
                 {hasUnpublishedChanges ? "I've published — clear cache & reload" : 'Clear cache & reload'}
               </Button>
+              {isAdmin && (
+                <Button
+                  variant="default"
+                  onClick={handleMarkDeployedOnServer}
+                  disabled={recording}
+                  className="gap-2 bg-primary hover:opacity-90"
+                  title="Record this build as the live deployed version on the backend (admin)"
+                >
+                  {recording ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                  Record deployment
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 onClick={markPublished}
                 className="gap-2"
-                title="Mark as published without reloading"
+                title="Mark as published locally without reloading"
               >
                 Mark only
               </Button>
