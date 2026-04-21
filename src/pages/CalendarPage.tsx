@@ -200,7 +200,47 @@ const filteredEvents = allEvents.filter((event) => {
     return true;
   });
 
-  const monthEvents = filteredEvents.filter((e) => e.month === currentMonth);
+const monthEvents = filteredEvents.filter((e) => e.month === currentMonth);
+
+  // Category counts for current month + search query (independent of category filter selection)
+  const categoryCounts = useMemo(() => {
+    const counts = { stock: 0, photography: 0, personal: 0 };
+    allEvents.forEach((event) => {
+      if (event.month !== currentMonth) return;
+
+      // Apply search filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        if (!event.title.toLowerCase().includes(q) && !event.description.toLowerCase().includes(q)) {
+          return;
+        }
+      }
+
+      // Apply event type filter
+      if (event.isCustom) {
+        if (!activeFilters.includes('custom')) return;
+      } else if (event.type === 'stock') {
+        if (!activeFilters.includes('stock')) return;
+      } else if (['holiday', 'celebration', 'motivation'].includes(event.type)) {
+        if (!activeFilters.includes('holiday')) return;
+      } else if (event.type === 'creative') {
+        if (!activeFilters.includes('photography')) return;
+      }
+
+      // Count by category
+      if (event.isCustom) {
+        const cat = event.category || 'stock';
+        if (cat === 'stock') counts.stock++;
+        else if (cat === 'photography') counts.photography++;
+        else if (cat === 'personal') counts.personal++;
+      } else if (event.type === 'stock') {
+        counts.stock++;
+      } else if (event.type === 'creative') {
+        counts.photography++;
+      }
+    });
+    return counts;
+  }, [allEvents, currentMonth, searchQuery, activeFilters]);
 
   const handleDateClick = (day: number) => {
     const event = monthEvents.find((e) => e.date === day);
@@ -293,13 +333,25 @@ const filteredEvents = allEvents.filter((event) => {
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Category:</span>
               <ToggleGroup type="multiple" value={categoryFilters} onValueChange={(value) => { if (value.length > 0) setCategoryFilters(value); }} className="bg-muted/30 rounded-lg p-1 flex-wrap">
                 <ToggleGroupItem value="stock" aria-label="Toggle Stock Category" className="data-[state=on]:bg-emerald-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-emerald-400/50">
-                  <TrendingUp className="h-3 w-3" /><span>Stock</span>
+                  <TrendingUp className="h-3 w-3" />
+                  <span>Stock</span>
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-600/40 text-[10px] font-bold min-w-[18px] text-center">
+                    {categoryCounts.stock}
+                  </span>
                 </ToggleGroupItem>
                 <ToggleGroupItem value="photography" aria-label="Toggle Photography Category" className="data-[state=on]:bg-purple-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-purple-400/50">
-                  <Camera className="h-3 w-3" /><span>Photography</span>
+                  <Camera className="h-3 w-3" />
+                  <span>Photography</span>
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-purple-600/40 text-[10px] font-bold min-w-[18px] text-center">
+                    {categoryCounts.photography}
+                  </span>
                 </ToggleGroupItem>
                 <ToggleGroupItem value="personal" aria-label="Toggle Personal Category" className="data-[state=on]:bg-amber-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-amber-400/50">
-                  <User className="h-3 w-3" /><span>Personal</span>
+                  <User className="h-3 w-3" />
+                  <span>Personal</span>
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-600/40 text-[10px] font-bold min-w-[18px] text-center">
+                    {categoryCounts.personal}
+                  </span>
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
