@@ -103,10 +103,18 @@ export function PublishChecklist() {
     } catch {/* ignore */}
   }, []);
 
-  // True if current build hasn't been published yet
-  const hasUnpublishedChanges = useMemo(() => {
+  // Compare running build vs LIVE deployment registry (authoritative).
+  // True when the running build is newer than what's marked deployed.
+  const liveOutOfDate = useMemo(() => {
+    const running = getRunningBuildTime();
+    if (!running) return false;
+    if (!liveBuild?.buildTime) return true; // never recorded → out of date
+    return isNewerBuild(running, liveBuild.buildTime);
+  }, [liveBuild]);
+
+  // True if current build hasn't been marked published in localStorage either
+  const localUnpublished = useMemo(() => {
     if (!lastPublished) return true;
-    // If lastPublished timestamp >= build time, considered published
     try {
       const pub = new Date(lastPublished).getTime();
       const build = new Date(buildId).getTime();
@@ -114,6 +122,9 @@ export function PublishChecklist() {
     } catch {/* fall through */}
     return true;
   }, [lastPublished, buildId]);
+
+  // Final verdict: live registry is authoritative when available, otherwise fall back
+  const hasUnpublishedChanges = liveBuild ? liveOutOfDate : localUnpublished;
 
   const dismissed = dismissedFor === buildId;
 
@@ -125,6 +136,26 @@ export function PublishChecklist() {
     } catch {/* ignore */}
     setLastPublished(now);
     setDismissedFor(buildId);
+  };
+
+  const handleMarkDeployedOnServer = async () => {
+    if (!isAdmin) {
+      toast.error('Admin access required to record deployment');
+      return;
+    }
+    setRecording(true);
+    try {
+      const ok = await recordDeployment({ notes: 'Marked from PublishChecklist' });
+      if (!ok) {
+        toast.error('Failed to record deployment');
+        return;
+      }
+      toast.success('Deployment recorded — all clients will detect the new version');
+      markPublished();
+      await refreshLiveBuild();
+    } finally {
+      setRecording(false);
+    }
   };
 
   const handlePublishedAndRefresh = async () => {
