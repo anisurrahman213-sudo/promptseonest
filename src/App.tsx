@@ -91,6 +91,7 @@ const App = () => (
       <AuthProvider>
         <BackgroundProcessorProvider>
           <TooltipProvider>
+            <VersionWatcher />
             <Suspense fallback={null}>
               <NetworkStatusIndicator />
               <PWAInstallPrompt />
