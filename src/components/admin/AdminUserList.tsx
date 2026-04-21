@@ -137,6 +137,12 @@ export function AdminUserList({
           ))}
         </div>
       )}
+
+      <UserGenerationsDialog
+        open={!!generationsUser}
+        onOpenChange={(open) => !open && setGenerationsUser(null)}
+        user={generationsUser}
+      />
     </div>
   );
 }
