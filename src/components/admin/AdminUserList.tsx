@@ -31,6 +31,7 @@ export function AdminUserList({
   selectedUserIds, onToggleUser, onToggleSelectAll,
   onOpenHistory, onOpenAddCredits, onOpenEmail, onOpenDelete, onOpenBulkEmail,
 }: AdminUserListProps) {
+  const [generationsUser, setGenerationsUser] = useState<any>(null);
   const filteredUsers = useMemo(() => {
     if (!users) return [];
     return filterUsers(users, userFilters);
