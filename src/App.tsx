@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, ComponentType } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -10,8 +10,30 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { BackgroundProcessorProvider } from "@/contexts/BackgroundProcessorContext";
 import { RouteTracker } from "@/components/RouteTracker";
 
+// Auto-recover from stale chunk errors (after deploys / HMR cache miss)
+const RELOAD_KEY = "__chunk_reload__";
+function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      const mod = await factory();
+      sessionStorage.removeItem(RELOAD_KEY);
+      return mod;
+    } catch (err: any) {
+      const msg = String(err?.message || err);
+      const isChunkErr = /Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError/i.test(msg);
+      const alreadyReloaded = sessionStorage.getItem(RELOAD_KEY) === "1";
+      if (isChunkErr && !alreadyReloaded) {
+        sessionStorage.setItem(RELOAD_KEY, "1");
+        window.location.reload();
+        return new Promise<{ default: T }>(() => {});
+      }
+      throw err;
+    }
+  });
+}
+
 // Lazy load all routes including Index for fastest initial bundle
-const Index = lazy(() => import("./pages/Index"));
+const Index = lazyWithRetry(() => import("./pages/Index"));
 
 // Lazy load global components that aren't needed for initial render
 const BackgroundProcessingIndicator = lazy(() => import("@/components/BackgroundProcessingIndicator").then(m => ({ default: m.BackgroundProcessingIndicator })));
