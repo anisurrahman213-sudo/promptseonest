@@ -1,11 +1,10 @@
-import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSiteSettingsBatch, getSettingValue } from "@/hooks/useSiteSettings";
 import { motion } from "framer-motion";
 import { Play, Youtube } from "lucide-react";
 import { useState } from "react";
 
-const DemoVideoSection = forwardRef<HTMLElement>(function DemoVideoSection(_props, ref) {
+const DemoVideoSection = () => {
   const { t } = useTranslation();
   const { data: demoSettings } = useSiteSettingsBatch(['demo_video_url', 'demo_video_title', 'demo_video_subtitle']);
   
@@ -31,7 +30,7 @@ const DemoVideoSection = forwardRef<HTMLElement>(function DemoVideoSection(_prop
   }
 
   return (
-    <section ref={ref} className="py-16 sm:py-24 bg-gradient-to-b from-background via-muted/20 to-background">
+    <section className="py-16 sm:py-24 bg-gradient-to-b from-background via-muted/20 to-background">
       <div className="container mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -138,6 +137,6 @@ const DemoVideoSection = forwardRef<HTMLElement>(function DemoVideoSection(_prop
       </div>
     </section>
   );
-});
+};
 
 export default DemoVideoSection;
