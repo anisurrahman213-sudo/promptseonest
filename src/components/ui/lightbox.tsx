@@ -137,19 +137,19 @@ export function Lightbox({ isOpen, onClose, media, initialIndex = 0 }: LightboxP
             </motion.button>
           )}
 
-          {/* Media content - full viewport preview */}
+          {/* Media content */}
           <motion.div
-            className="relative z-10 w-screen h-screen flex items-center justify-center overflow-hidden p-2 sm:p-4"
-            initial={{ scale: 0.95, opacity: 0 }}
+            className="relative z-10 max-w-[90vw] max-h-[85vh] overflow-hidden"
+            initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
+            exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             key={currentIndex}
           >
             {currentMedia.type === 'video' ? (
               <video
                 src={currentMedia.src}
-                className="w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                className="max-w-full max-h-[85vh] rounded-lg shadow-2xl"
                 controls
                 autoPlay
                 playsInline
@@ -159,10 +159,10 @@ export function Lightbox({ isOpen, onClose, media, initialIndex = 0 }: LightboxP
                 src={currentMedia.src}
                 alt={currentMedia.name}
                 className={cn(
-                  "w-full h-full max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-300 cursor-zoom-in select-none",
+                  "max-w-full max-h-[85vh] rounded-lg shadow-2xl transition-transform duration-300 cursor-zoom-in",
                   zoom > 1 && "cursor-zoom-out"
                 )}
-                style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
+                style={{ transform: `scale(${zoom})` }}
                 onClick={toggleZoom}
                 draggable={false}
               />
