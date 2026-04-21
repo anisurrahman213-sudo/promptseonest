@@ -8,6 +8,7 @@ import { Loader2, Plus, Users, Mail, Phone, User, MessageCircle, History, Trash2
 import { UserFiltersComponent, filterUsers, UserFilters } from '@/components/admin/UserFilters';
 import { UserListExport } from '@/components/admin/UserListExport';
 import { MaskedEmail } from '@/components/admin/MaskedEmail';
+import { VerifyEmailSyncButton } from '@/components/admin/VerifyEmailSyncButton';
 
 interface AdminUserListProps {
   users: any[] | undefined;
