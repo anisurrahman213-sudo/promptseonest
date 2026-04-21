@@ -83,6 +83,23 @@ export function PublishChecklist() {
   const [liveBuild, setLiveBuild] = useState<BuildInfo | null>(null);
   const [liveLoading, setLiveLoading] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [pinging, setPinging] = useState(false);
+  const [pingResult, setPingResult] = useState<PingResult | null>(null);
+
+  const handlePingEndpoint = async () => {
+    setPinging(true);
+    try {
+      const result = await pingDeploymentEndpoint();
+      setPingResult(result);
+      if (result.ok) {
+        toast.success(`Endpoint OK · ${result.status} · ${result.durationMs}ms`);
+      } else {
+        toast.error(`Endpoint failed · ${result.status || 'network'} ${result.statusText}`);
+      }
+    } finally {
+      setPinging(false);
+    }
+  };
 
   const refreshLiveBuild = async () => {
     setLiveLoading(true);
