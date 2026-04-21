@@ -3,6 +3,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Star, TrendingUp, Plus, Filter, Download, Camera, Search, CalendarCheck, User } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
