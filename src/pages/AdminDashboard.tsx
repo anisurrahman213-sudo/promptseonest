@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { SEOHead } from '@/components/SEOHead';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminUsers, useIsAdmin, useDeleteUser, useSendCustomEmail, useAdminPaymentRequests } from '@/hooks/usePaymentRequests';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,10 +22,12 @@ import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 import { CreditSettings } from '@/components/admin/CreditSettings';
 import { AdminUserList } from '@/components/admin/AdminUserList';
 import { AddCreditsDialog, EmailDialog, DeleteUserDialog } from '@/components/admin/AdminDialogs';
+import { HealthCheckPanel } from '@/pages/HealthCheck';
 
 export default function AdminDashboard() {
   useAdminInactivityLogout();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   const { data: users, isLoading: usersLoading } = useAdminUsers();
@@ -56,6 +58,7 @@ export default function AdminDashboard() {
   const [userFilters, setUserFilters] = useState<UserFilters>({ search: '', minCredits: null, maxCredits: null, startDate: null, endDate: null });
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [bulkEmailDialogOpen, setBulkEmailDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(location.pathname === '/admin/health' ? 'health' : 'users');
 
   const filteredUsersForEmail = useMemo(() => {
     if (!users) return [];
@@ -65,6 +68,10 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!authLoading && !adminLoading && (!user || !isAdmin)) navigate('/');
   }, [user, isAdmin, authLoading, adminLoading, navigate]);
+
+  useEffect(() => {
+    setActiveTab(location.pathname === '/admin/health' ? 'health' : 'users');
+  }, [location.pathname]);
 
   const addCreditsMutation = useMutation({
     mutationFn: async ({ userId, credits }: { userId: string; credits: number }) => {
@@ -106,6 +113,15 @@ export default function AdminDashboard() {
     setSelectedUserIds(selectedUserIds.size === filtered.length ? new Set() : new Set(filtered.map((u: any) => u.user_id)));
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === 'health') {
+      navigate('/admin/health');
+    } else if (location.pathname === '/admin/health') {
+      navigate('/admin-dashboard', { replace: true });
+    }
+  };
+
   if (authLoading || adminLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
@@ -124,14 +140,14 @@ export default function AdminDashboard() {
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">Admin Dashboard</h1>
             <p className="text-muted-foreground">Manage users & credits</p>
           </div>
-          <Button variant="default" size="sm" onClick={() => navigate('/admin/health')} className="gap-2 bg-gradient-to-r from-primary to-primary/80 shadow-md">
+          <Button variant="default" size="sm" onClick={() => handleTabChange('health')} className="gap-2 bg-gradient-to-r from-primary to-primary/80 shadow-md">
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Health Check</span>
             <span className="sm:hidden">Health</span>
           </Button>
         </div>
 
-        <Tabs defaultValue="users" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full max-w-6xl grid-cols-8">
             <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" /><span className="hidden sm:inline">Users</span></TabsTrigger>
             <TabsTrigger value="credits" className="gap-2"><CreditCard className="h-4 w-4" /><span className="hidden sm:inline">Credits</span></TabsTrigger>
@@ -140,7 +156,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="demo" className="gap-2"><Play className="h-4 w-4" /><span className="hidden sm:inline">Demo</span></TabsTrigger>
             <TabsTrigger value="hero" className="gap-2"><Wallpaper className="h-4 w-4" /><span className="hidden sm:inline">Hero BG</span></TabsTrigger>
             <TabsTrigger value="features" className="gap-2"><ImageIcon className="h-4 w-4" /><span className="hidden sm:inline">Features</span></TabsTrigger>
-            <TabsTrigger value="health" onClick={() => navigate('/admin/health')} className="gap-2 text-primary data-[state=active]:text-primary"><Activity className="h-4 w-4" /><span className="hidden sm:inline">Health</span></TabsTrigger>
+            <TabsTrigger value="health" className="gap-2 text-primary data-[state=active]:text-primary"><Activity className="h-4 w-4" /><span className="hidden sm:inline">Health</span></TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-6">
@@ -204,6 +220,7 @@ export default function AdminDashboard() {
           <TabsContent value="demo"><DemoVideoManagement /></TabsContent>
           <TabsContent value="hero"><HeroBackgroundManagement /></TabsContent>
           <TabsContent value="features"><FeatureCardManagement /></TabsContent>
+          <TabsContent value="health"><HealthCheckPanel embedded /></TabsContent>
         </Tabs>
       </div>
 
