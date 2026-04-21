@@ -130,9 +130,21 @@ export function Lightbox({ isOpen, onClose, media, initialIndex = 0 }: LightboxP
             <X className="w-6 h-6" />
           </motion.button>
 
+          {/* Download button */}
+          <motion.button
+            className="absolute top-4 right-16 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors disabled:opacity-50"
+            onClick={handleDownload}
+            disabled={downloading}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            title={`Download ${currentMedia.type === 'video' ? 'video' : 'photo'}`}
+          >
+            {downloading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Download className="w-6 h-6" />}
+          </motion.button>
+
           {/* Zoom button */}
           <motion.button
-            className="absolute top-4 right-16 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="absolute top-4 right-28 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
             onClick={toggleZoom}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
