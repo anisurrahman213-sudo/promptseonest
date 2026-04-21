@@ -110,6 +110,39 @@ export function UserGenerationsDialog({ open, onOpenChange, user }: UserGenerati
           </DialogDescription>
         </DialogHeader>
 
+        {/* Status filter chips */}
+        {!loading && generations.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap pb-2 border-b">
+            <button
+              onClick={() => setStatusFilter('all')}
+              className={cn(
+                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
+                statusFilter === 'all' ? 'bg-foreground text-background border-foreground' : 'bg-background hover:bg-muted border-border'
+              )}
+            >
+              All ({generations.length})
+            </button>
+            {(['complete', 'processing', 'error'] as GenStatus[]).map((s) => {
+              const cfg = statusConfig[s];
+              const Icon = cfg.icon;
+              const active = statusFilter === s;
+              return (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(active ? 'all' : s)}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all',
+                    active ? cfg.className : 'bg-background hover:bg-muted border-border text-foreground'
+                  )}
+                >
+                  <Icon className="h-3 w-3" />
+                  {cfg.label} ({statusCounts[s]})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto -mx-6 px-6">
           {loading ? (
             <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
@@ -118,35 +151,60 @@ export function UserGenerationsDialog({ open, onOpenChange, user }: UserGenerati
               <ImageIcon className="h-12 w-12 mx-auto mb-3 opacity-40" />
               <p>No generations found for this user</p>
             </div>
+          ) : visibleGenerations.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <p className="text-sm">No generations match the selected status</p>
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {generations.map((gen) => (
-                <div
-                  key={gen.id}
-                  className="group relative rounded-lg overflow-hidden border border-border bg-muted/30 cursor-pointer hover:ring-2 hover:ring-primary transition-all"
-                  onClick={() => setSelected(gen)}
-                >
-                  <div className="aspect-square bg-muted">
-                    {gen.media_type === 'video' ? (
-                      <video src={gen.image_url} className="w-full h-full object-cover" muted preload="metadata" />
-                    ) : (
-                      <img src={gen.image_url} alt={gen.title} className="w-full h-full object-cover" loading="lazy" />
+              {visibleGenerations.map((gen) => {
+                const status = getGenerationStatus(gen);
+                const cfg = statusConfig[status];
+                const StatusIcon = cfg.icon;
+                return (
+                  <div
+                    key={gen.id}
+                    className={cn(
+                      'group relative rounded-lg overflow-hidden border bg-muted/30 cursor-pointer hover:ring-2 hover:ring-primary transition-all',
+                      status === 'error' ? 'border-destructive/40' : status === 'processing' ? 'border-amber-500/40' : 'border-border',
+                      `ring-1 ${cfg.ringClass}`
                     )}
+                    onClick={() => setSelected(gen)}
+                  >
+                    <div className="aspect-square bg-muted">
+                      {gen.media_type === 'video' ? (
+                        <video src={gen.image_url} className="w-full h-full object-cover" muted preload="metadata" />
+                      ) : gen.image_url ? (
+                        <img src={gen.image_url} alt={gen.title} className="w-full h-full object-cover" loading="lazy" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-destructive">
+                          <AlertCircle className="h-8 w-8" />
+                        </div>
+                      )}
+                    </div>
+                    {/* Status badge - top left */}
+                    <div className="absolute top-1.5 left-1.5">
+                      <Badge className={cn('gap-1 text-[10px] px-1.5 py-0 h-5 backdrop-blur', cfg.className)}>
+                        <StatusIcon className="h-2.5 w-2.5" />
+                        {cfg.label}
+                      </Badge>
+                    </div>
+                    {/* Media type badge - top right */}
+                    <div className="absolute top-1.5 right-1.5">
+                      <Badge variant="secondary" className="gap-1 text-[10px] px-1.5 py-0 h-5 bg-background/80 backdrop-blur">
+                        {gen.media_type === 'video' ? <Video className="h-2.5 w-2.5" /> : <ImageIcon className="h-2.5 w-2.5" />}
+                      </Badge>
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-white text-xs font-medium truncate">{gen.title || gen.image_name}</p>
+                      <p className="text-white/70 text-[10px] flex items-center gap-1 mt-0.5">
+                        <Calendar className="h-2.5 w-2.5" />
+                        {format(new Date(gen.created_at), 'MMM d, yyyy')}
+                      </p>
+                    </div>
                   </div>
-                  <div className="absolute top-1.5 right-1.5">
-                    <Badge variant="secondary" className="gap-1 text-[10px] px-1.5 py-0 h-5 bg-background/80 backdrop-blur">
-                      {gen.media_type === 'video' ? <Video className="h-2.5 w-2.5" /> : <ImageIcon className="h-2.5 w-2.5" />}
-                    </Badge>
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-white text-xs font-medium truncate">{gen.title || gen.image_name}</p>
-                    <p className="text-white/70 text-[10px] flex items-center gap-1 mt-0.5">
-                      <Calendar className="h-2.5 w-2.5" />
-                      {format(new Date(gen.created_at), 'MMM d, yyyy')}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
