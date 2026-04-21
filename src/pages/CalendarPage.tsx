@@ -3,6 +3,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Star, TrendingUp, Plus, Filter, Download, Camera, Search, CalendarCheck, User } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,6 +43,7 @@ export default function CalendarPage() {
 const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photography', 'holiday', 'custom']);
   const [categoryFilters, setCategoryFilters] = useState<string[]>(['stock', 'photography', 'personal']);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryMatchMode, setCategoryMatchMode] = useState<'any' | 'all'>('any');
 
   // Add/Edit form state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -176,18 +178,38 @@ const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photogra
 
 const filteredEvents = allEvents.filter((event) => {
     // Event type filter (Stock/Holiday/Photography/Custom)
+    let eventCategory: string | null = null;
+    
     if (event.isCustom) {
       if (!activeFilters.includes('custom')) return false;
-      // For custom events, also apply category filter
-      if (!categoryFilters.includes(event.category || 'stock')) return false;
+      eventCategory = event.category || 'stock';
     } else if (event.type === 'stock') {
       if (!activeFilters.includes('stock')) return false;
-      if (!categoryFilters.includes('stock')) return false;
+      eventCategory = 'stock';
     } else if (['holiday', 'celebration', 'motivation'].includes(event.type)) {
       if (!activeFilters.includes('holiday')) return false;
+      // Holidays have no category for category filtering
     } else if (event.type === 'creative') {
       if (!activeFilters.includes('photography')) return false;
-      if (!categoryFilters.includes('photography')) return false;
+      eventCategory = 'photography';
+    }
+
+    // Category filter with match mode (any vs all)
+    if (eventCategory !== null) {
+      if (categoryMatchMode === 'any') {
+        // ANY selected category matches (OR logic)
+        if (!categoryFilters.includes(eventCategory)) return false;
+      } else {
+        // ALL selected categories must match (exact match of all)
+        // For single-category events, this means event must belong to ALL selected categories
+        // which is only possible if exactly one category is selected
+        if (categoryFilters.length === 1) {
+          if (eventCategory !== categoryFilters[0]) return false;
+        } else {
+          // More than one category selected, single-category event can't match all
+          return false;
+        }
+      }
     }
 
     // Search filter
@@ -329,35 +351,48 @@ const monthEvents = filteredEvents.filter((e) => e.month === currentMonth);
 
           {/* Category Filters (Stock/Photography/Personal) */}
           <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Category:</span>
-              <ToggleGroup type="multiple" value={categoryFilters} onValueChange={(value) => { if (value.length > 0) setCategoryFilters(value); }} className="bg-muted/30 rounded-lg p-1 flex-wrap">
-                <ToggleGroupItem value="stock" aria-label="Toggle Stock Category" className="data-[state=on]:bg-emerald-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-emerald-400/50">
-                  <TrendingUp className="h-3 w-3" />
-                  <span>Stock</span>
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-600/40 text-[10px] font-bold min-w-[18px] text-center">
-                    {categoryCounts.stock}
-                  </span>
-                </ToggleGroupItem>
-                <ToggleGroupItem value="photography" aria-label="Toggle Photography Category" className="data-[state=on]:bg-purple-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-purple-400/50">
-                  <Camera className="h-3 w-3" />
-                  <span>Photography</span>
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-purple-600/40 text-[10px] font-bold min-w-[18px] text-center">
-                    {categoryCounts.photography}
-                  </span>
-                </ToggleGroupItem>
-                <ToggleGroupItem value="personal" aria-label="Toggle Personal Category" className="data-[state=on]:bg-amber-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-amber-400/50">
-                  <User className="h-3 w-3" />
-                  <span>Personal</span>
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-600/40 text-[10px] font-bold min-w-[18px] text-center">
-                    {categoryCounts.personal}
-                  </span>
-                </ToggleGroupItem>
-              </ToggleGroup>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Category:</span>
+                <ToggleGroup type="multiple" value={categoryFilters} onValueChange={(value) => { if (value.length > 0) setCategoryFilters(value); }} className="bg-muted/30 rounded-lg p-1 flex-wrap">
+                  <ToggleGroupItem value="stock" aria-label="Toggle Stock Category" className="data-[state=on]:bg-emerald-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-emerald-400/50">
+                    <TrendingUp className="h-3 w-3" />
+                    <span>Stock</span>
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-600/40 text-[10px] font-bold min-w-[18px] text-center">
+                      {categoryCounts.stock}
+                    </span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="photography" aria-label="Toggle Photography Category" className="data-[state=on]:bg-purple-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-purple-400/50">
+                    <Camera className="h-3 w-3" />
+                    <span>Photography</span>
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-purple-600/40 text-[10px] font-bold min-w-[18px] text-center">
+                      {categoryCounts.photography}
+                    </span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="personal" aria-label="Toggle Personal Category" className="data-[state=on]:bg-amber-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-amber-400/50">
+                    <User className="h-3 w-3" />
+                    <span>Personal</span>
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-600/40 text-[10px] font-bold min-w-[18px] text-center">
+                      {categoryCounts.personal}
+                    </span>
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <div className="flex items-center gap-2 pl-0 sm:pl-2 border-t sm:border-t-0 sm:border-l border-border/50 pt-2 sm:pt-0">
+                <Switch
+                  checked={categoryMatchMode === 'all'}
+                  onCheckedChange={(checked) => setCategoryMatchMode(checked ? 'all' : 'any')}
+                  id="match-mode"
+                  className="scale-90"
+                />
+                <label htmlFor="match-mode" className="text-xs text-muted-foreground cursor-pointer select-none">
+                  {categoryMatchMode === 'any' ? 'Match any' : 'Match all'}
+                </label>
+              </div>
             </div>
-            {(searchQuery.trim() || categoryFilters.length < 3) && (
+            {(searchQuery.trim() || categoryFilters.length < 3 || categoryMatchMode === 'all') && (
               <div className="text-xs text-muted-foreground">
-                Showing {monthEvents.filter(e => e.month === currentMonth).length} events
+                Showing {monthEvents.length} events
                 {searchQuery.trim() && <span> for "{searchQuery}"</span>}
               </div>
             )}
