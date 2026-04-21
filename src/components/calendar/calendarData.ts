@@ -1,5 +1,8 @@
 import { Sparkles, Star, Heart, Rocket, Trophy, Gift, Sun, Moon, Flame, Target, TrendingUp, DollarSign, BarChart3, Globe, Building2, Briefcase } from 'lucide-react';
 
+export type EventCategory = 'stock' | 'photography' | 'personal';
+export type RecurringMode = 'none' | 'yearly' | 'monthly';
+
 export interface CalendarEvent {
   date: number;
   month: number;
@@ -11,6 +14,8 @@ export interface CalendarEvent {
   type: 'holiday' | 'celebration' | 'creative' | 'motivation' | 'stock';
   isCustom?: boolean;
   id?: string;
+  category?: EventCategory;
+  recurring?: RecurringMode;
 }
 
 export interface CustomEventDB {
@@ -21,6 +26,8 @@ export interface CustomEventDB {
   title: string;
   description: string | null;
   event_type: string;
+  category?: string;
+  recurring?: string;
   created_at: string;
 }
 
@@ -47,7 +54,7 @@ export const getFirstDayOfMonth = (month: number, year: number) => {
   return new Date(year, month, 1).getDay();
 };
 
-// Worldwide Stock Market Events for 2026
+// Worldwide Stock Market Events (year-agnostic — recur yearly)
 export const stockMarketEvents: CalendarEvent[] = [
   // January
   { date: 1, month: 0, title: "New Year's Day 📈", description: "Global markets closed - Plan your Q1 stock photography strategy", motivation: "New year, new opportunities! Start creating trending financial content.", icon: TrendingUp, color: "from-emerald-500 to-green-600", type: 'stock' },
@@ -55,7 +62,7 @@ export const stockMarketEvents: CalendarEvent[] = [
   { date: 20, month: 0, title: "Martin Luther King Jr. Day (US)", description: "US markets closed - Focus on diversity in finance content", motivation: "Create inclusive business imagery showcasing diverse professionals.", icon: Globe, color: "from-violet-500 to-purple-500", type: 'stock' },
   { date: 26, month: 0, title: "Australia Day 🇦🇺", description: "ASX closed - Focus on Asia-Pacific market content", motivation: "Australian financial imagery is in demand globally!", icon: Building2, color: "from-blue-600 to-blue-400", type: 'stock' },
   // February
-  { date: 12, month: 1, title: "Chinese New Year 🐍", description: "Year of the Snake - Asian markets affected", motivation: "Snake year symbolizes wisdom & wealth. Create prosperity-themed content!", icon: DollarSign, color: "from-red-500 to-yellow-500", type: 'stock' },
+  { date: 12, month: 1, title: "Chinese New Year 🐍", description: "Asian markets affected - prosperity content peaks", motivation: "Lunar New Year symbolizes wisdom & wealth. Create prosperity-themed content!", icon: DollarSign, color: "from-red-500 to-yellow-500", type: 'stock' },
   { date: 16, month: 1, title: "Presidents' Day (US)", description: "US markets closed - Create patriotic business content", motivation: "American dream imagery always performs well!", icon: Briefcase, color: "from-blue-600 to-red-500", type: 'stock' },
   // March
   { date: 14, month: 2, title: "Pi Day 🥧", description: "Tech & finance crossover - Create fintech content", motivation: "Mathematical precision in finance content is trending!", icon: Target, color: "from-cyan-500 to-blue-500", type: 'stock' },
@@ -89,7 +96,7 @@ export const stockMarketEvents: CalendarEvent[] = [
   { date: 27, month: 10, title: "Black Friday 🛒", description: "Early close - Retail & e-commerce stock imagery peak", motivation: "Shopping and retail investing content peaks today!", icon: DollarSign, color: "from-gray-800 to-amber-500", type: 'stock' },
   // December
   { date: 24, month: 11, title: "Christmas Eve 🎄", description: "Global markets early close - Holiday investing content", motivation: "Year-end financial planning imagery in high demand!", icon: Gift, color: "from-green-600 to-red-500", type: 'stock' },
-  { date: 25, month: 11, title: "Christmas Day 🎅", description: "Most global markets closed - Create 2027 planning content", motivation: "Prepare next year's financial content now!", icon: Star, color: "from-red-500 to-green-600", type: 'stock' },
+  { date: 25, month: 11, title: "Christmas Day 🎅", description: "Most global markets closed - Create next year's planning content", motivation: "Prepare next year's financial content now!", icon: Star, color: "from-red-500 to-green-600", type: 'stock' },
   { date: 26, month: 11, title: "Boxing Day 🇬🇧🇦🇺🇨🇦", description: "UK, Canada, Australia markets closed - Sales imagery", motivation: "Post-holiday sales and retail investing content!", icon: Gift, color: "from-blue-500 to-purple-500", type: 'stock' },
-  { date: 31, month: 11, title: "New Year's Eve 🥂", description: "Early close - Year in review content", motivation: "Annual review and 2027 prediction content is HOT!", icon: TrendingUp, color: "from-amber-500 to-yellow-400", type: 'stock' },
+  { date: 31, month: 11, title: "New Year's Eve 🥂", description: "Early close - Year in review content", motivation: "Annual review and next-year prediction content is HOT!", icon: TrendingUp, color: "from-amber-500 to-yellow-400", type: 'stock' },
 ];
