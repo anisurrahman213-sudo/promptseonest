@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench, ArrowLeft, Activity } from 'lucide-react';
+import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
