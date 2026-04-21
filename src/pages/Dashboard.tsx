@@ -23,7 +23,8 @@ import { useCredits } from '@/hooks/useCredits';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { useInfiniteGenerations } from '@/hooks/useInfiniteGenerations';
 import { useBackgroundProcessor } from '@/contexts/BackgroundProcessorContext';
-import { Loader2, Sparkles, History, Zap, CreditCard, AlertTriangle, User, Search } from 'lucide-react';
+import { Loader2, Sparkles, History, Zap, CreditCard, AlertTriangle, User, Search, ShieldAlert, ListChecks, TrendingUp, ArrowRightLeft, ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -268,43 +269,41 @@ export default function Dashboard() {
             todayGenerations={todayGenerations}
           />
 
-          {/* Quick Link: Keyword Research */}
-          <motion.div
+          {/* Stock Contributor Tools */}
+          <motion.section
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl border border-border bg-muted/30 flex items-center justify-between gap-4 cursor-pointer hover:border-primary/30 transition-colors"
-            onClick={() => navigate('/keyword-research')}
+            transition={{ delay: 0.1 }}
+            aria-label="Stock contributor tools"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-primary/15">
-                <Search className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium text-sm">Keyword Research</p>
-                <p className="text-xs text-muted-foreground">Find the best 49 keywords for any subject instantly</p>
-              </div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Stock Contributor Tools</h2>
             </div>
-            <Button size="sm" variant="outline" className="shrink-0">Open Tool →</Button>
-          </motion.div>
-
-          {/* Quick Link: Platform Converter */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl border border-border bg-muted/30 flex items-center justify-between gap-4 cursor-pointer hover:border-primary/30 transition-colors"
-            onClick={() => navigate('/platform-converter')}
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-accent/15">
-                <Zap className="h-5 w-5 text-accent" />
-              </div>
-              <div>
-                <p className="font-medium text-sm flex items-center gap-1.5">Platform Converter <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-primary/15 text-primary leading-none">Bulk</span></p>
-                <p className="text-xs text-muted-foreground">Convert Adobe metadata to Shutterstock and Freepik instantly</p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {[
+                { icon: ShieldAlert, title: 'Rejection Analyzer', desc: 'Find out why your submissions were rejected', path: '/rejection-analyzer', color: 'text-destructive', bg: 'bg-destructive/10' },
+                { icon: ListChecks, title: 'Submission Tracker', desc: 'Track your stock platform submissions', path: '/submission-tracker', color: 'text-primary', bg: 'bg-primary/10' },
+                { icon: TrendingUp, title: 'Trending Keywords', desc: 'Discover hot keywords across platforms', path: '/trending-keywords', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                { icon: Search, title: 'Keyword Research', desc: 'Research high-value keywords by subject', path: '/keyword-research', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                { icon: ArrowRightLeft, title: 'Platform Converter', desc: 'Convert metadata across stock platforms', path: '/platform-converter', color: 'text-purple-500', bg: 'bg-purple-500/10' },
+              ].map((tool) => (
+                <button
+                  key={tool.path}
+                  onClick={() => navigate(tool.path)}
+                  className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-primary/50 hover:shadow-md transition-all text-left"
+                >
+                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", tool.bg)}>
+                    <tool.icon className={cn("h-5 w-5", tool.color)} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm truncate">{tool.title}</div>
+                    <div className="text-xs text-muted-foreground truncate">{tool.desc}</div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+                </button>
+              ))}
             </div>
-            <Button size="sm" variant="outline" className="shrink-0">Open Tool →</Button>
-          </motion.div>
+          </motion.section>
 
           {/* Recent Activity Feed */}
           <Suspense fallback={<Skeleton className="h-32 w-full rounded-xl" />}>
