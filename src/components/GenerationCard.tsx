@@ -416,6 +416,7 @@ interface GenerationCardProps {
                     size="icon"
                     className="h-8 w-8 bg-black/40 hover:bg-black/60 backdrop-blur-sm border-0 text-white"
                     onClick={() => setLightboxOpen(true)}
+                    title="View full size"
                   >
                     <Maximize2 className="h-4 w-4" />
                   </Button>
@@ -424,8 +425,21 @@ interface GenerationCardProps {
                   <Button
                     variant="secondary"
                     size="icon"
+                    className="h-8 w-8 bg-black/40 hover:bg-primary/80 backdrop-blur-sm border-0 text-white disabled:opacity-50"
+                    onClick={handleDownloadMedia}
+                    disabled={isDownloading}
+                    title={`Download ${generation.media_type === 'video' ? 'video' : 'photo'}`}
+                  >
+                    {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button
+                    variant="secondary"
+                    size="icon"
                     className="h-8 w-8 bg-black/40 hover:bg-destructive/80 backdrop-blur-sm border-0 text-white"
                     onClick={handleDelete}
+                    title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
