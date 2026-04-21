@@ -12,12 +12,23 @@ import {
   Layout,
   X,
   ExternalLink,
+  ShieldCheck,
+  Loader2,
+  CloudCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { cacheBustAndReload } from '@/lib/cacheBust';
+import {
+  cacheBustAndReload,
+  fetchLatestBuildInfo,
+  recordDeployment,
+  getRunningBuildTime,
+  isNewerBuild,
+  type BuildInfo,
+} from '@/lib/cacheBust';
 import { toast } from 'sonner';
+import { useIsAdmin } from '@/hooks/usePaymentRequests';
 
 const LS_LAST_PUBLISHED = 'pn_last_published_at';
 const LS_DISMISSED_VERSION = 'pn_publish_checklist_dismissed_for';
