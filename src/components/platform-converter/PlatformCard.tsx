@@ -52,7 +52,7 @@ export const PlatformCard = forwardRef<HTMLDivElement, PlatformCardProps>(functi
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+    <motion.div ref={ref} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
       <Card className={`${config.color} border-2 h-full`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -129,4 +129,4 @@ export const PlatformCard = forwardRef<HTMLDivElement, PlatformCardProps>(functi
       </Card>
     </motion.div>
   );
-}
+});
