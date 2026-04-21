@@ -265,11 +265,38 @@ export function PublishChecklist() {
               <span className="text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                 {completedCount}/{totalCount} steps
               </span>
+              {/* Live deployment registry badge */}
+              <span
+                className={cn(
+                  'text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1',
+                  liveLoading
+                    ? 'bg-muted text-muted-foreground'
+                    : liveBuild
+                      ? hasUnpublishedChanges
+                        ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                        : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                      : 'bg-muted text-muted-foreground'
+                )}
+                title={
+                  liveBuild?.buildTime
+                    ? `Live build: ${new Date(liveBuild.buildTime).toLocaleString()}`
+                    : 'No deployment recorded yet'
+                }
+              >
+                {liveLoading ? (
+                  <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                ) : (
+                  <Cloud className="h-2.5 w-2.5" />
+                )}
+                Live: {liveBuild?.buildTime ? formatRelative(liveBuild.buildTime) : 'never'}
+              </span>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Last published: <span className="font-medium">{formatRelative(lastPublished)}</span>
+              Local mark: <span className="font-medium">{formatRelative(lastPublished)}</span>
               {' · '}
-              Frontend changes need a manual <span className="font-semibold">Publish → Update</span> to go live.
+              {liveBuild
+                ? <>Backend deployment registry is the source of truth.</>
+                : <>Frontend changes need a manual <span className="font-semibold">Publish → Update</span> to go live.</>}
             </p>
           </div>
         </div>
