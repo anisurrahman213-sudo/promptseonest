@@ -17,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard, ImageIcon, Wallpaper, History, Download, Video } from 'lucide-react';
 import { PlanManagement } from '@/components/admin/PlanManagement';
+import { useAdminPricingPlans } from '@/hooks/usePricingPlans';
+import { Zap } from 'lucide-react';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog';
