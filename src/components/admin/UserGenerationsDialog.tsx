@@ -48,6 +48,7 @@ export function UserGenerationsDialog({ open, onOpenChange, user }: UserGenerati
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Generation | null>(null);
+  const [statusFilter, setStatusFilter] = useState<GenStatus | 'all'>('all');
 
   useEffect(() => {
     if (!open || !user) return;
@@ -72,6 +73,22 @@ export function UserGenerationsDialog({ open, onOpenChange, user }: UserGenerati
 
   const imageCount = generations.filter(g => g.media_type === 'image').length;
   const videoCount = generations.filter(g => g.media_type === 'video').length;
+
+  const statusCounts = useMemo(() => {
+    return generations.reduce(
+      (acc, g) => {
+        const s = getGenerationStatus(g);
+        acc[s]++;
+        return acc;
+      },
+      { complete: 0, processing: 0, error: 0 } as Record<GenStatus, number>
+    );
+  }, [generations]);
+
+  const visibleGenerations = useMemo(() => {
+    if (statusFilter === 'all') return generations;
+    return generations.filter(g => getGenerationStatus(g) === statusFilter);
+  }, [generations, statusFilter]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
