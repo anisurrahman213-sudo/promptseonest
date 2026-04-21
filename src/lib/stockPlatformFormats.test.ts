@@ -33,7 +33,7 @@ describe('Adobe Stock CSV Export - Official 2024 Format', () => {
     const adobePlatform = stockPlatforms.find(p => p.id === 'adobe_stock');
     
     expect(adobePlatform).toBeDefined();
-    expect(adobePlatform?.maxKeywords).toBe(50);
+    expect(adobePlatform?.maxKeywords).toBe(49);
     expect(adobePlatform?.maxTitleLength).toBe(70);
     // Official Adobe Stock CSV columns: Filename, Title, Keywords, Category, Releases
     expect(adobePlatform?.csvColumns).toEqual([
@@ -71,7 +71,7 @@ describe('Adobe Stock CSV Export - Official 2024 Format', () => {
     expect(result.rows[1][0]).toBe('"business-meeting.png"');
   });
 
-  it('should limit keywords to 50 max (official Adobe Stock limit)', () => {
+  it('should limit keywords to 49 max (safe Adobe Stock limit under official 50 cap)', () => {
     const manyKeywords = Array(60).fill('keyword').map((k, i) => `${k}${i}`).join(', ');
     const generation: Generation = {
       ...mockGenerations[0],
@@ -83,7 +83,8 @@ describe('Adobe Stock CSV Export - Official 2024 Format', () => {
     // Remove quotes and count keywords
     const keywords = keywordsCell.replace(/^"|"$/g, '').split(', ');
     
-    expect(keywords.length).toBeLessThanOrEqual(50);
+    expect(keywords.length).toBeLessThanOrEqual(49);
+    expect(keywords.length).toBe(49);
   });
 
   it('should have empty Releases by default', () => {
