@@ -9,6 +9,17 @@
     <link rel="dns-prefetch" href="https://nkcexqjoimhdldjclktk.supabase.co" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+
+    <!-- Google tag (gtag.js) - GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MY5154F3EW"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // send_page_view: false — SPA route tracker handles page_view manually
+      gtag('config', 'G-MY5154F3EW', { send_page_view: false });
+    </script>
 
     <!-- LCP Optimization: Preload cached hero image immediately during HTML parse (before any JS bundle).
          This shaves 500ms-1s off LCP by skipping React hydration + settings query for repeat visitors. -->
