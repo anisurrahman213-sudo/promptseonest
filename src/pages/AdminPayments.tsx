@@ -17,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import { ShieldCheck, Clock, CheckCircle, XCircle, Loader2, Mail, Phone, User, Send, Users, MessageCircle, CreditCard, ImageIcon, Wallpaper, History, Download, Video } from 'lucide-react';
 import { PlanManagement } from '@/components/admin/PlanManagement';
+import { useAdminPricingPlans } from '@/hooks/usePricingPlans';
+import { Zap } from 'lucide-react';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { CustomerHistoryDialog } from '@/components/admin/CustomerHistoryDialog';
@@ -26,7 +28,8 @@ import { UserListExport } from '@/components/admin/UserListExport';
 import { TutorialManagement } from '@/components/admin/TutorialManagement';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 
-const CREDITS_BY_PLAN: Record<string, number> = {
+// Fallback credit map (used only when plan not found in DB)
+const FALLBACK_CREDITS_BY_PLAN: Record<string, number> = {
   'Lite': 100,
   'Pro': 500,
   'Unlimited': 999999,
@@ -42,6 +45,16 @@ export default function AdminPayments() {
   const approveMutation = useApprovePayment();
   const rejectMutation = useRejectPayment();
   const sendEmailMutation = useSendCustomEmail();
+  const { data: pricingPlans } = useAdminPricingPlans();
+
+  // Resolve credits for a plan: DB first, then fallback map, then 100
+  const getCreditsForPlan = (planName: string): number => {
+    const plan = pricingPlans?.find(p => p.name === planName);
+    if (plan) {
+      return plan.is_unlimited ? 999999 : plan.credits_amount;
+    }
+    return FALLBACK_CREDITS_BY_PLAN[planName] ?? 100;
+  };
 
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
@@ -154,8 +167,22 @@ export default function AdminPayments() {
   const openActionDialog = (payment: any, type: 'approve' | 'reject') => {
     setSelectedPayment(payment);
     setActionType(type);
-    setCredits(type === 'approve' ? String(CREDITS_BY_PLAN[payment.plan_name] || 100) : '');
+    setCredits(type === 'approve' ? String(getCreditsForPlan(payment.plan_name)) : '');
     setAdminNotes('');
+  };
+
+  // Quick auto-approve: skip dialog, use plan-mapped credits, send email
+  const handleQuickApprove = async (payment: any) => {
+    const autoCredits = getCreditsForPlan(payment.plan_name);
+    await approveMutation.mutateAsync({
+      paymentId: payment.id,
+      userId: payment.user_id,
+      credits: autoCredits,
+      adminNotes: `Auto-approved: ${autoCredits === 999999 ? 'Unlimited' : autoCredits} credits added for ${payment.plan_name} plan`,
+      userEmail: payment.user_email,
+      userName: payment.user_name,
+      planName: payment.plan_name,
+    });
   };
 
   const handleAction = async () => {
@@ -304,14 +331,25 @@ export default function AdminPayments() {
         )}
 
         {showActions && (
-          <div className="flex gap-2 pt-2 border-t">
-            <Button 
-              size="sm" 
+          <div className="flex gap-2 pt-2 border-t flex-wrap">
+            <Button
+              size="sm"
+              onClick={() => handleQuickApprove(payment)}
+              disabled={approveMutation.isPending}
+              className="bg-gradient-to-r from-primary to-primary/80 shadow-md gap-1"
+              title={`Auto-approve: ${getCreditsForPlan(payment.plan_name) === 999999 ? 'Unlimited' : getCreditsForPlan(payment.plan_name)} credits`}
+            >
+              {approveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+              Quick Approve ({getCreditsForPlan(payment.plan_name) === 999999 ? '∞' : getCreditsForPlan(payment.plan_name)} credits)
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => openActionDialog(payment, 'approve')}
-              className="bg-success hover:bg-success/90"
+              title="Approve with custom credits"
             >
               <CheckCircle className="h-4 w-4 mr-1" />
-              Approve
+              Custom
             </Button>
             <Button 
               size="sm" 
