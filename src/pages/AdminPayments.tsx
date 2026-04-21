@@ -167,8 +167,22 @@ export default function AdminPayments() {
   const openActionDialog = (payment: any, type: 'approve' | 'reject') => {
     setSelectedPayment(payment);
     setActionType(type);
-    setCredits(type === 'approve' ? String(CREDITS_BY_PLAN[payment.plan_name] || 100) : '');
+    setCredits(type === 'approve' ? String(getCreditsForPlan(payment.plan_name)) : '');
     setAdminNotes('');
+  };
+
+  // Quick auto-approve: skip dialog, use plan-mapped credits, send email
+  const handleQuickApprove = async (payment: any) => {
+    const autoCredits = getCreditsForPlan(payment.plan_name);
+    await approveMutation.mutateAsync({
+      paymentId: payment.id,
+      userId: payment.user_id,
+      credits: autoCredits,
+      adminNotes: `Auto-approved: ${autoCredits === 999999 ? 'Unlimited' : autoCredits} credits added for ${payment.plan_name} plan`,
+      userEmail: payment.user_email,
+      userName: payment.user_name,
+      planName: payment.plan_name,
+    });
   };
 
   const handleAction = async () => {
