@@ -1,14 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Users, Mail, Phone, User, MessageCircle, History, Trash2, MessageSquare } from 'lucide-react';
+import { Loader2, Plus, Users, Mail, Phone, User, MessageCircle, History, Trash2, MessageSquare, Images } from 'lucide-react';
 import { UserFiltersComponent, filterUsers, UserFilters } from '@/components/admin/UserFilters';
 import { UserListExport } from '@/components/admin/UserListExport';
 import { MaskedEmail } from '@/components/admin/MaskedEmail';
 import { VerifyEmailSyncButton } from '@/components/admin/VerifyEmailSyncButton';
+import { UserGenerationsDialog } from '@/components/admin/UserGenerationsDialog';
 
 interface AdminUserListProps {
   users: any[] | undefined;
