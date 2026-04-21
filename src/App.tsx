@@ -60,10 +60,12 @@ const App = () => (
       <AuthProvider>
         <BackgroundProcessorProvider>
           <TooltipProvider>
-            <NetworkStatusIndicator />
-            <PWAInstallPrompt />
-            <BackgroundProcessingIndicator />
-            <AiAskPopup />
+            <Suspense fallback={null}>
+              <NetworkStatusIndicator />
+              <PWAInstallPrompt />
+              <BackgroundProcessingIndicator />
+              <AiAskPopup />
+            </Suspense>
             <Toaster />
             <Sonner />
             <BrowserRouter>
