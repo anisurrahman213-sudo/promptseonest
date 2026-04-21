@@ -59,7 +59,8 @@ export function AdminUserList({
             {selectedUserIds.size > 0 ? `${selectedUserIds.size} selected` : `${filteredUsers.length} users`}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <VerifyEmailSyncButton />
           <UserListExport users={filteredUsers} filename="customers" />
           {selectedUserIds.size > 0 && (
             <Button size="sm" onClick={onOpenBulkEmail} className="gap-2">
