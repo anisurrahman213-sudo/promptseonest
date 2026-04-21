@@ -42,6 +42,7 @@ export default function CalendarPage() {
 const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photography', 'holiday', 'custom']);
   const [categoryFilters, setCategoryFilters] = useState<string[]>(['stock', 'photography', 'personal']);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryMatchMode, setCategoryMatchMode] = useState<'any' | 'all'>('any');
 
   // Add/Edit form state
   const [editingId, setEditingId] = useState<string | null>(null);
