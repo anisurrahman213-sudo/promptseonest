@@ -13,7 +13,7 @@ const BUILD_TIME = new Date().toISOString();
  * Vite dev server. The frontend polls this file to detect when a fresh
  * build is live and trigger a cache-bust + reload.
  */
-function buildInfoPlugin() {
+function buildInfoPlugin(): any {
   const json = () => JSON.stringify({ buildTime: BUILD_TIME }) + '\n';
   return {
     name: 'pn-build-info',
