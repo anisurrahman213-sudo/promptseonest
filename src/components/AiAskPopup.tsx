@@ -151,6 +151,13 @@ export function AiAskPopup() {
   });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [chatLanguage, setChatLanguage] = useState<string>(() => {
+    try {
+      return localStorage.getItem("promptnest-chat-language") || i18n.language || "en";
+    } catch {
+      return i18n.language || "en";
+    }
+  });
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
       return localStorage.getItem("promptnest-chat-sound") !== "false";
@@ -160,6 +167,14 @@ export function AiAskPopup() {
   });
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Save chat language preference
+  const handleLanguageChange = (lang: string) => {
+    setChatLanguage(lang);
+    try {
+      localStorage.setItem("promptnest-chat-language", lang);
+    } catch {}
+  };
 
   // Toggle sound and save preference
   const toggleSound = () => {
