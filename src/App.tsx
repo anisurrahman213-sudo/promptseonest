@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { BackgroundProcessorProvider } from "@/contexts/BackgroundProcessorContext";
 import { RouteTracker } from "@/components/RouteTracker";
+import { useBuildVersionCheck } from "@/hooks/useBuildVersionCheck";
 
 // Auto-recover from stale chunk errors (after deploys / HMR cache miss)
 const RELOAD_KEY = "__chunk_reload__";
@@ -77,6 +78,11 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function VersionWatcher() {
+  useBuildVersionCheck({ intervalMs: 60_000, promptUser: true });
+  return null;
+}
 
 const App = () => (
   <HelmetProvider>

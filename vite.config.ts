@@ -82,8 +82,10 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/build-info\.json/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,webp,avif}"],
+        // Never precache build-info.json — it must always come fresh from network
+        globIgnores: ["**/build-info.json"],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
