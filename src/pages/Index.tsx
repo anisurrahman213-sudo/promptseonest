@@ -155,10 +155,10 @@ const Index = () => {
   const whatYouGetItems = [t('landing.feature1'), t('landing.feature2'), t('landing.feature3'), t('landing.feature4'), t('landing.feature5'), t('landing.feature6')];
   return <div className="min-h-screen bg-background">
       <SEOHead
-        title="AI-Powered Image SEO Generator"
-        description="Generate SEO-optimized titles, descriptions, and 49 unique tags for your images using AI. Perfect for Adobe Stock, Shutterstock, Freepik, and Midjourney."
+        title="Free Adobe Stock Metadata Generator — 100% Compliant Keywords"
+        description="Generate perfect Adobe Stock metadata instantly. Fix multi-word keywords, optimise titles, and get 100% compliance score. Free AI-powered tool for stock contributors."
         path="/"
-        keywords="image seo, ai seo generator, stock photo tags, image title generator, adobe stock, shutterstock, freepik"
+        keywords="adobe stock metadata generator, stock photo keyword generator, adobe stock keywords, metadata generator free, keyword fixer, seo tool, shutterstock keywords, freepik metadata, 49 keywords adobe stock, image seo"
       />
       {/* Skip Navigation Link for Accessibility */}
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none">
