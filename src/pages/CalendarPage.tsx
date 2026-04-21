@@ -39,7 +39,8 @@ export default function CalendarPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photography', 'holiday', 'custom']);
+const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photography', 'holiday', 'custom']);
+  const [categoryFilters, setCategoryFilters] = useState<string[]>(['stock', 'photography', 'personal']);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Add/Edit form state
