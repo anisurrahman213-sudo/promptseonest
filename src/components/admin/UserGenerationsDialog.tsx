@@ -114,11 +114,13 @@ export function UserGenerationsDialog({ open, onOpenChange, user }: UserGenerati
             </div>
           )}
         </div>
+      </DialogContent>
 
-        {/* Detail preview */}
-        {selected && (
-          <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-            <DialogContent className="max-w-3xl">
+      {/* Detail preview - sibling dialog to avoid nesting issues */}
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent className="max-w-3xl">
+          {selected && (
+            <>
               <DialogHeader>
                 <DialogTitle className="truncate">{selected.title || selected.image_name}</DialogTitle>
               </DialogHeader>
@@ -145,10 +147,10 @@ export function UserGenerationsDialog({ open, onOpenChange, user }: UserGenerati
                   </Button>
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </DialogContent>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
