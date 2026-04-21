@@ -44,7 +44,14 @@
     "adminPanel": "管理面板",
     "upgradePlan": "升级计划",
     "pricing": "价格",
-    "tutorials": "帮助"
+    "tutorials": "帮助",
+    "metadataFixer": "元数据修复器",
+    "extension": "扩展程序",
+    "stockTools": "图库工具",
+    "stockToolsLabel": "图库贡献者工具",
+    "rejectionAnalyzer": "拒稿分析器",
+    "submissionTracker": "提交追踪器",
+    "trendingKeywords": "热门关键词"
   },
   "landing": {
     "badge": "AI驱动的图像分析",

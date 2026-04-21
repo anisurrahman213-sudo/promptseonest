@@ -44,7 +44,14 @@
     "adminPanel": "Panneau Admin",
     "upgradePlan": "Améliorer le Plan",
     "pricing": "Tarifs",
-    "tutorials": "Aide"
+    "tutorials": "Aide",
+    "metadataFixer": "Correcteur Métadonnées",
+    "extension": "Extension",
+    "stockTools": "Outils Stock",
+    "stockToolsLabel": "Outils Contributeur Stock",
+    "rejectionAnalyzer": "Analyseur de Rejets",
+    "submissionTracker": "Suivi Soumissions",
+    "trendingKeywords": "Mots-clés Tendance"
   },
   "landing": {
     "badge": "Analyse d'Images par IA",

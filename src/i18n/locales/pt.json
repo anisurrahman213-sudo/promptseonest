@@ -44,7 +44,14 @@
     "adminPanel": "Painel Admin",
     "upgradePlan": "Atualizar Plano",
     "pricing": "Preços",
-    "tutorials": "Ajuda"
+    "tutorials": "Ajuda",
+    "metadataFixer": "Corretor de Metadados",
+    "extension": "Extensão",
+    "stockTools": "Ferramentas Stock",
+    "stockToolsLabel": "Ferramentas para Colaboradores",
+    "rejectionAnalyzer": "Analisador de Rejeições",
+    "submissionTracker": "Rastreador de Envios",
+    "trendingKeywords": "Palavras-chave em Alta"
   },
   "landing": {
     "badge": "Análise de Imagens com IA",

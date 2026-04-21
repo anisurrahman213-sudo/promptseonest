@@ -44,7 +44,14 @@
     "adminPanel": "관리자 패널",
     "upgradePlan": "플랜 업그레이드",
     "pricing": "가격",
-    "tutorials": "도움말"
+    "tutorials": "도움말",
+    "metadataFixer": "메타데이터 수정",
+    "extension": "확장 프로그램",
+    "stockTools": "스톡 도구",
+    "stockToolsLabel": "스톡 기여자 도구",
+    "rejectionAnalyzer": "거부 분석기",
+    "submissionTracker": "제출 추적기",
+    "trendingKeywords": "인기 키워드"
   },
   "landing": {
     "badge": "AI 기반 이미지 분석",

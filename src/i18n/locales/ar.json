@@ -44,7 +44,14 @@
     "adminPanel": "لوحة المشرف",
     "upgradePlan": "ترقية الخطة",
     "pricing": "الأسعار",
-    "tutorials": "مساعدة"
+    "tutorials": "مساعدة",
+    "metadataFixer": "مصلح البيانات الوصفية",
+    "extension": "الإضافة",
+    "stockTools": "أدوات المخزون",
+    "stockToolsLabel": "أدوات المساهمين",
+    "rejectionAnalyzer": "محلل الرفض",
+    "submissionTracker": "متتبع التقديمات",
+    "trendingKeywords": "الكلمات الرائجة"
   },
   "landing": {
     "badge": "تحليل الصور بالذكاء الاصطناعي",
