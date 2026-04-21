@@ -14,6 +14,7 @@ import { PullToRefresh } from '@/components/dashboard/PullToRefresh';
 
 // Lazy load heavy below-fold components for faster initial paint
 const ExportDialog = lazy(() => import('@/components/dashboard/ExportDialog').then(m => ({ default: m.ExportDialog })));
+const SimpleCsvExportButton = lazy(() => import('@/components/dashboard/SimpleCsvExportButton').then(m => ({ default: m.SimpleCsvExportButton })));
 const RecentExports = lazy(() => import('@/components/dashboard/RecentExports').then(m => ({ default: m.RecentExports })));
 const RecentActivity = lazy(() => import('@/components/dashboard/RecentActivity').then(m => ({ default: m.RecentActivity })));
 const VirtualGenerationList = lazy(() => import('@/components/dashboard/VirtualGenerationList').then(m => ({ default: m.VirtualGenerationList })));
@@ -446,18 +447,27 @@ export default function Dashboard() {
                             onSortChange={setSortBy}
                           />
                         </div>
-                        <Suspense fallback={<Skeleton className="h-10 w-32 rounded-md" />}>
-                          <ExportDialog 
-                            generations={filteredGenerations} 
-                            fetchAllForExport={fetchAllForExport}
-                            searchQuery={searchQuery}
-                            exportOptions={{
-                              overrideCategory: metadataSettings.category,
-                              editorialStatus: metadataSettings.editorialStatus,
-                            }}
-                            onUpdateMetadata={handleUpdateMetadata}
-                          />
-                        </Suspense>
+                        <div className="flex items-center gap-2">
+                          <Suspense fallback={<Skeleton className="h-10 w-28 rounded-md" />}>
+                            <SimpleCsvExportButton
+                              generations={filteredGenerations}
+                              fetchAllForExport={fetchAllForExport}
+                              searchQuery={searchQuery}
+                            />
+                          </Suspense>
+                          <Suspense fallback={<Skeleton className="h-10 w-32 rounded-md" />}>
+                            <ExportDialog 
+                              generations={filteredGenerations} 
+                              fetchAllForExport={fetchAllForExport}
+                              searchQuery={searchQuery}
+                              exportOptions={{
+                                overrideCategory: metadataSettings.category,
+                                editorialStatus: metadataSettings.editorialStatus,
+                              }}
+                              onUpdateMetadata={handleUpdateMetadata}
+                            />
+                          </Suspense>
+                        </div>
                       </motion.div>
                     )}
                     
