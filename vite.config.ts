@@ -7,6 +7,8 @@ import { VitePWA } from "vite-plugin-pwa";
 // https://vitejs.dev/config/
 // Stable build timestamp shared between `define` and the build-info plugin
 const BUILD_TIME = new Date().toISOString();
+const REACT_ROOT = path.resolve(__dirname, "./node_modules/react");
+const REACT_DOM_ROOT = path.resolve(__dirname, "./node_modules/react-dom");
 
 /**
  * Emits /build-info.json into the build output AND serves it from the
@@ -217,9 +219,17 @@ export default defineConfig(({ mode }) => ({
     }),
   ].filter(Boolean),
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+      { find: /^react$/, replacement: REACT_ROOT },
+      { find: /^react-dom$/, replacement: REACT_DOM_ROOT },
+      { find: /^react\/jsx-runtime$/, replacement: path.resolve(REACT_ROOT, "jsx-runtime.js") },
+      { find: /^react\/jsx-dev-runtime$/, replacement: path.resolve(REACT_ROOT, "jsx-dev-runtime.js") },
+    ],
+    dedupe: ["react", "react-dom"],
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom/client", "@tanstack/react-query"],
   },
   build: {
     target: 'es2020',
