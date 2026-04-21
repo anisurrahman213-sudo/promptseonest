@@ -72,8 +72,10 @@ export function Lightbox({ isOpen, onClose, media, initialIndex = 0 }: LightboxP
     setZoom((prev) => (prev === 1 ? 2 : 1));
   };
 
+  const currentMedia = media[currentIndex];
+
   const handleDownload = async () => {
-    if (downloading) return;
+    if (!currentMedia || downloading) return;
     setDownloading(true);
     try {
       const response = await fetch(currentMedia.src, { mode: 'cors' });
@@ -90,15 +92,12 @@ export function Lightbox({ isOpen, onClose, media, initialIndex = 0 }: LightboxP
       toast.success(`${currentMedia.type === 'video' ? 'Video' : 'Photo'} downloaded`);
     } catch (err) {
       console.error('Download failed:', err);
-      // Fallback: open in new tab so user can save manually
       window.open(currentMedia.src, '_blank');
       toast.error('Direct download failed — opened in new tab. Right-click to save.');
     } finally {
       setDownloading(false);
     }
   };
-
-  const currentMedia = media[currentIndex];
 
   if (!currentMedia) return null;
 
