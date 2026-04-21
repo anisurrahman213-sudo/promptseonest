@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/dashboard/EmptyState';
 import { AdvancedMetadataControls, MetadataSettings, defaultMetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { AutoDeleteWarning } from '@/components/dashboard/AutoDeleteWarning';
 import { PullToRefresh } from '@/components/dashboard/PullToRefresh';
+import { PublishChecklist } from '@/components/dashboard/PublishChecklist';
 
 // Lazy load heavy below-fold components for faster initial paint
 const ExportDialog = lazy(() => import('@/components/dashboard/ExportDialog').then(m => ({ default: m.ExportDialog })));
@@ -230,6 +231,9 @@ export default function Dashboard() {
               </AlertDescription>
             </Alert>
           )}
+
+          {/* Publish Checklist — frontend vs backend deploy guidance */}
+          <PublishChecklist />
 
           {/* Auto-Delete Warning - Important for users */}
           <AutoDeleteWarning generations={generations} />
