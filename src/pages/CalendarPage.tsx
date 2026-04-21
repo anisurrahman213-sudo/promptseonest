@@ -258,8 +258,8 @@ const filteredEvents = allEvents.filter((event) => {
             </div>
           </motion.div>
 
-          {/* Filter & Controls */}
-          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          {/* Event Type Filters */}
+          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
             <div className="flex items-center gap-3">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <ToggleGroup type="multiple" value={activeFilters} onValueChange={(value) => { if (value.length > 0) setActiveFilters(value); }} className="bg-muted/30 rounded-lg p-1 flex-wrap">
