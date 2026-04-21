@@ -28,7 +28,8 @@ import { UserListExport } from '@/components/admin/UserListExport';
 import { TutorialManagement } from '@/components/admin/TutorialManagement';
 import { useAdminInactivityLogout } from '@/hooks/useAdminInactivityLogout';
 
-const CREDITS_BY_PLAN: Record<string, number> = {
+// Fallback credit map (used only when plan not found in DB)
+const FALLBACK_CREDITS_BY_PLAN: Record<string, number> = {
   'Lite': 100,
   'Pro': 500,
   'Unlimited': 999999,
