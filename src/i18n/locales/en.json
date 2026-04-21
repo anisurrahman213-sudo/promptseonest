@@ -350,5 +350,53 @@
     "serverError": "Having trouble connecting to server. Try turning off VPN.",
     "slowConnection": "Slow connection ({{seconds}}s). Turning off VPN may help.",
     "retry": "Retry"
+  },
+  "stockTools": {
+    "badge": "All-in-One Stock Contributor Suite",
+    "title": "One Platform — Every Tool You Need to Earn on Stock",
+    "subtitle": "Generate, Fix, Convert, Research and Track — everything a successful Adobe Stock / Shutterstock / Freepik contributor needs, all in one place.",
+    "ctaFreeText": "Start 100% Free — no credit card required.",
+    "ctaFreeBold": "100% Free",
+    "ctaButtonGuest": "Try All Tools Free",
+    "ctaButtonUser": "Go to Dashboard",
+    "badgeMostPopular": "Most Popular",
+    "badgeNew": "New",
+    "tools": {
+      "generator": {
+        "title": "Adobe Stock Metadata Generator",
+        "description": "Generate SEO-perfect Title, Description and exactly 49 single-word Keywords in one click using Vision AI.",
+        "highlight": "Bulk 500 files · 100% Adobe Compliance"
+      },
+      "converter": {
+        "title": "Platform Converter",
+        "description": "Convert Adobe Stock metadata into rule-perfect Shutterstock and Freepik formats in one click.",
+        "highlight": "3 Platforms · Bulk CSV Support"
+      },
+      "fixer": {
+        "title": "Metadata Fixer & Optimizer",
+        "description": "Paste existing title/keywords — AI will fix multi-words, remove banned words and enforce IELTS Band 8-9 quality.",
+        "highlight": "Auto Fix · Compliance Score"
+      },
+      "research": {
+        "title": "Keyword Research",
+        "description": "Enter any subject — get high-CPC, buyer-intent keywords, categorized & ready-to-use.",
+        "highlight": "Niche · Category · Intent"
+      },
+      "trending": {
+        "title": "Trending Keywords",
+        "description": "See what is trending on Adobe Stock right now in real time and shoot accordingly.",
+        "highlight": "Live Trends · Niche Insights"
+      },
+      "rejection": {
+        "title": "Rejection Analyzer",
+        "description": "Paste rejection email/reason — AI will tell the exact cause and how to fix and resubmit.",
+        "highlight": "Root-cause · Action Plan"
+      },
+      "tracker": {
+        "title": "Submission Tracker",
+        "description": "Track how many you submitted, accepted and rejected on each platform — all in one place.",
+        "highlight": "19+ Platforms · Earnings Insight"
+      }
+    }
   }
 }

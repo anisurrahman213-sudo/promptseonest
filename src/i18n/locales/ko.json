@@ -350,5 +350,53 @@
     "signupTitle": "시작하기",
     "subtitle": "AI 기반 메타데이터 생성 플랫폼을 최대한 활용하기 위한 단계별 비디오 가이드를 시청하세요",
     "title": "PromptNest 사용법 알아보기"
+  },
+  "stockTools": {
+    "badge": "스톡 기여자 올인원 스위트",
+    "title": "하나의 플랫폼 — 스톡으로 수익 내는 모든 도구",
+    "subtitle": "생성, 수정, 변환, 리서치 및 추적 — 성공적인 Adobe Stock / Shutterstock / Freepik 기여자에게 필요한 모든 것이 한 곳에.",
+    "ctaFreeText": "{{bold}}로 시작하세요 — 신용카드 불필요.",
+    "ctaFreeBold": "100% 무료",
+    "ctaButtonGuest": "모든 도구 무료로 사용해보기",
+    "ctaButtonUser": "대시보드로 이동",
+    "badgeMostPopular": "가장 인기",
+    "badgeNew": "신규",
+    "tools": {
+      "generator": {
+        "title": "Adobe Stock 메타데이터 생성기",
+        "description": "Vision AI로 한 번의 클릭으로 SEO 완벽한 제목, 설명 및 정확히 49개의 단일 단어 키워드 생성.",
+        "highlight": "대량 500 파일 · 100% Adobe 준수"
+      },
+      "converter": {
+        "title": "플랫폼 변환기",
+        "description": "Adobe Stock 메타데이터를 한 번에 Shutterstock 및 Freepik 규칙 완벽 형식으로 변환.",
+        "highlight": "3 플랫폼 · 대량 CSV 지원"
+      },
+      "fixer": {
+        "title": "메타데이터 수정 및 최적화",
+        "description": "기존 제목/키워드 붙여넣기 — AI가 복수 단어 수정, 금지 단어 제거, IELTS Band 8-9 품질 적용.",
+        "highlight": "자동 수정 · 준수 점수"
+      },
+      "research": {
+        "title": "키워드 리서치",
+        "description": "주제 입력 — 높은 CPC, 구매 의도 카테고리별 즉시 사용 가능한 키워드 획득.",
+        "highlight": "틈새 · 카테고리 · 의도"
+      },
+      "trending": {
+        "title": "트렌딩 키워드",
+        "description": "Adobe Stock에서 지금 트렌드를 실시간으로 확인하고 그에 맞춰 촬영.",
+        "highlight": "실시간 트렌드 · 틈새 인사이트"
+      },
+      "rejection": {
+        "title": "거절 분석기",
+        "description": "거절 이메일/이유 붙여넣기 — AI가 정확한 원인과 수정 및 재제출 방법을 알려줍니다.",
+        "highlight": "근본 원인 · 실행 계획"
+      },
+      "tracker": {
+        "title": "제출 추적기",
+        "description": "각 플랫폼에서 제출, 승인, 거절된 수를 추적 — 모두 한 곳에서.",
+        "highlight": "19+ 플랫폼 · 수익 인사이트"
+      }
+    }
   }
 }

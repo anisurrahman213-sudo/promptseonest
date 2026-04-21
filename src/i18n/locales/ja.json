@@ -350,5 +350,53 @@
     "signupTitle": "はじめに",
     "subtitle": "当社のAIパワードメタデータ生成プラットフォームを最大限に活用するためのステップバイステップのビデオガイドをご覧ください",
     "title": "PromptNest の使い方を学ぶ"
+  },
+  "stockTools": {
+    "badge": "ストックコントリビューター オールインワン スイート",
+    "title": "一つのプラットフォーム — ストックで稼ぐ全てのツール",
+    "subtitle": "生成・修正・変換・調査・追跡 — 成功する Adobe Stock / Shutterstock / Freepik コントリビューターに必要な全てを一か所に。",
+    "ctaFreeText": "{{bold}}で始めましょう — クレジットカード不要。",
+    "ctaFreeBold": "100% 無料",
+    "ctaButtonGuest": "全ツールを無料で試す",
+    "ctaButtonUser": "ダッシュボードへ",
+    "badgeMostPopular": "最人気",
+    "badgeNew": "新着",
+    "tools": {
+      "generator": {
+        "title": "Adobe Stock メタデータジェネレーター",
+        "description": "Vision AI でワンクリックで SEO 完璧なタイトル、説明、ちょうど 49 個の単語キーワードを生成。",
+        "highlight": "一括 500 ファイル · 100% Adobe 準拠"
+      },
+      "converter": {
+        "title": "プラットフォームコンバーター",
+        "description": "Adobe Stock メタデータをワンクリックで Shutterstock と Freepik のルール完璧な形式に変換。",
+        "highlight": "3 プラットフォーム · 一括 CSV 対応"
+      },
+      "fixer": {
+        "title": "メタデータ修正・最適化",
+        "description": "既存のタイトル/キーワードを貼り付け — AI が複数語修正、禁止語削除、IELTS Band 8-9 品質を適用。",
+        "highlight": "自動修正 · 準拠スコア"
+      },
+      "research": {
+        "title": "キーワードリサーチ",
+        "description": "任意のテーマを入力 — 高 CPC、購入意向のカテゴリ別すぐ使えるキーワードを取得。",
+        "highlight": "ニッチ · カテゴリ · 意図"
+      },
+      "trending": {
+        "title": "トレンドキーワード",
+        "description": "Adobe Stock の今のトレンドをリアルタイムで確認し、それに沿って撮影。",
+        "highlight": "ライブトレンド · ニッチ洞察"
+      },
+      "rejection": {
+        "title": "却下分析ツール",
+        "description": "却下メール/理由を貼り付け — AI が正確な原因と修正・再提出方法を教えます。",
+        "highlight": "根本原因 · アクションプラン"
+      },
+      "tracker": {
+        "title": "投稿トラッカー",
+        "description": "各プラットフォームで投稿、承認、却下された数を追跡 — 全て一か所で管理。",
+        "highlight": "19+ プラットフォーム · 収益洞察"
+      }
+    }
   }
 }

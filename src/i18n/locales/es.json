@@ -350,5 +350,53 @@
     "signupTitle": "Primeros Pasos",
     "subtitle": "Vea guías de video paso a paso para aprovechar al máximo nuestra plataforma de generación de metadatos impulsada por IA",
     "title": "Aprenda a usar PromptNest"
+  },
+  "stockTools": {
+    "badge": "Suite Todo-en-Uno para Colaboradores de Stock",
+    "title": "Una Plataforma — Todas las Herramientas para Ganar en Stock",
+    "subtitle": "Genera, Corrige, Convierte, Investiga y Rastrea — todo lo que necesita un colaborador exitoso de Adobe Stock / Shutterstock / Freepik, en un solo lugar.",
+    "ctaFreeText": "Empieza {{bold}} — no se requiere tarjeta de crédito.",
+    "ctaFreeBold": "100% Gratis",
+    "ctaButtonGuest": "Prueba Todas las Herramientas Gratis",
+    "ctaButtonUser": "Ir al Panel",
+    "badgeMostPopular": "Más Popular",
+    "badgeNew": "Nuevo",
+    "tools": {
+      "generator": {
+        "title": "Generador de Metadatos Adobe Stock",
+        "description": "Genera Título, Descripción y exactamente 49 palabras clave perfectas en SEO con un clic usando Vision AI.",
+        "highlight": "Lote 500 archivos · 100% Compatible con Adobe"
+      },
+      "converter": {
+        "title": "Conversor de Plataformas",
+        "description": "Convierte metadatos de Adobe Stock al formato perfecto de Shutterstock y Freepik con un clic.",
+        "highlight": "3 Plataformas · Soporte CSV Masivo"
+      },
+      "fixer": {
+        "title": "Corrector y Optimizador de Metadatos",
+        "description": "Pega título/palabras clave — la IA corregirá múltiples palabras, eliminará palabras prohibidas e impondrá calidad IELTS Band 8-9.",
+        "highlight": "Auto-Corrección · Puntaje de Cumplimiento"
+      },
+      "research": {
+        "title": "Investigación de Palabras Clave",
+        "description": "Introduce cualquier tema — obtén palabras clave de alto CPC, intención de compra, categorizadas y listas para usar.",
+        "highlight": "Nicho · Categoría · Intención"
+      },
+      "trending": {
+        "title": "Palabras Clave en Tendencia",
+        "description": "Mira en tiempo real qué es tendencia en Adobe Stock ahora mismo y dispara en consecuencia.",
+        "highlight": "Tendencias en Vivo · Información de Nicho"
+      },
+      "rejection": {
+        "title": "Analizador de Rechazos",
+        "description": "Pega el email/motivo de rechazo — la IA te dirá la causa exacta y cómo arreglar y reenviar.",
+        "highlight": "Causa Raíz · Plan de Acción"
+      },
+      "tracker": {
+        "title": "Rastreador de Envíos",
+        "description": "Rastrea cuántos enviaste, aceptados y rechazados en cada plataforma — todo en un solo lugar.",
+        "highlight": "19+ Plataformas · Información de Ingresos"
+      }
+    }
   }
 }
