@@ -11,7 +11,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check:i18n": "node scripts/check-i18n.mjs"
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "clean": "bash scripts/clean-dev.sh --no-dev",
+    "clean:dev": "bash scripts/clean-dev.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
