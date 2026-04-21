@@ -1,13 +1,20 @@
-# Prompt SEO Nest - robots.txt
+# PromptSEONest - robots.txt
 # https://www.promptseonest.com
 
-# Allow all search engine crawlers
+# ─── Search Engines ───
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# ─── Social Media Crawlers ───
 User-agent: Twitterbot
 Allow: /
 
@@ -17,12 +24,62 @@ Allow: /
 User-agent: LinkedInBot
 Allow: /
 
-User-agent: Slurp
+# ─── AI Search & LLM Crawlers (explicitly allowed for citations) ───
+User-agent: GPTBot
 Allow: /
 
-User-agent: DuckDuckBot
+User-agent: ChatGPT-User
 Allow: /
 
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+# ─── Default rules for everyone else ───
 User-agent: *
 Allow: /
 Disallow: /admin-dashboard
@@ -30,5 +87,5 @@ Disallow: /admin/payments
 Disallow: /profile
 Disallow: /payment-history
 
-# Sitemap location
+# ─── Sitemaps & AI Reference Files ───
 Sitemap: https://www.promptseonest.com/sitemap.xml
