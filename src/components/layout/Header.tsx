@@ -120,31 +120,6 @@ export function Header() {
                 {t('header.metadataFixer')}
               </Button>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <BarChart3 className="h-4 w-4 mr-1" />
-                    {t('header.stockTools')}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
-                  <DropdownMenuLabel>{t('header.stockToolsLabel')}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleNavigate('/rejection-analyzer')}>
-                    <ShieldAlert className="h-4 w-4 mr-2" />
-                    {t('header.rejectionAnalyzer')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigate('/submission-tracker')}>
-                    <ListChecks className="h-4 w-4 mr-2" />
-                    {t('header.submissionTracker')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigate('/trending-keywords')}>
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    {t('header.trendingKeywords')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/extension')}>
                 <Chrome className="h-4 w-4 mr-1" />
                 {t('header.extension')}
