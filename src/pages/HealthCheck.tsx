@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
@@ -118,14 +118,14 @@ function runStaticChecks(): CheckResult[] {
   return results;
 }
 
-export default function HealthCheck() {
+export function HealthCheckPanel({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
 
   useEffect(() => {
-    if (!authLoading && !adminLoading && (!user || !isAdmin)) navigate('/');
-  }, [user, isAdmin, authLoading, adminLoading, navigate]);
+    if (!embedded && !authLoading && !adminLoading && (!user || !isAdmin)) navigate('/');
+  }, [embedded, user, isAdmin, authLoading, adminLoading, navigate]);
 
   const [staticChecks, setStaticChecks] = useState<CheckResult[]>(() => runStaticChecks());
 
@@ -147,7 +147,11 @@ export default function HealthCheck() {
   };
 
   if (authLoading || adminLoading) {
-    return (
+    return embedded ? (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    ) : (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
@@ -166,15 +170,16 @@ export default function HealthCheck() {
   const overall: CheckStatus = summary.fail > 0 ? 'fail' : summary.warn > 0 ? 'warn' : 'pass';
   const overallMeta = STATUS_META[overall];
 
-  return (
-    <div className="min-h-screen bg-background">
-      <SEOHead title="Health Check" description="Deployment health monitoring" path="/admin/health" noindex />
-      <div className="container mx-auto p-4 md:p-6 max-w-6xl">
+  const content = (
+    <>
+      {!embedded && <SEOHead title="Health Check" description="Deployment health monitoring" path="/admin/health" noindex />}
         <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/admin-dashboard')} aria-label="Back">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            {!embedded && (
+              <Button variant="ghost" size="icon" onClick={() => navigate('/admin-dashboard')} aria-label="Back">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
             <div>
               <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
                 <Activity className="h-7 w-7 text-primary" />
@@ -277,12 +282,17 @@ export default function HealthCheck() {
             </CardContent>
           </Card>
         </Section>
-      </div>
-    </div>
+    </>
   );
+
+  return embedded ? content : <div className="min-h-screen bg-background"><div className="container mx-auto p-4 md:p-6 max-w-6xl">{content}</div></div>;
 }
 
-function Section({ title, icon: Icon, children }: { title: string; icon: typeof Activity; children: React.ReactNode }) {
+export default function HealthCheck() {
+  return <HealthCheckPanel />;
+}
+
+function Section({ title, icon: Icon, children }: { title: string; icon: typeof Activity; children: ReactNode }) {
   return (
     <div className="mb-8">
       <h2 className="text-lg font-semibold flex items-center gap-2 mb-3">
