@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Video, Play, AlertCircle, CheckCircle, DollarSign } from 'lucide-react';
+import { Loader2, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Video, Play, AlertCircle, CheckCircle, DollarSign, Activity } from 'lucide-react';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { DemoVideoManagement } from '@/components/admin/DemoVideoManagement';
@@ -120,10 +120,14 @@ export default function AdminDashboard() {
       <div className="container mx-auto p-4 md:p-6 max-w-6xl">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate('/')}><ArrowLeft className="h-5 w-5" /></Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">Admin Dashboard</h1>
             <p className="text-muted-foreground">Manage users & credits</p>
           </div>
+          <Button variant="outline" size="sm" onClick={() => navigate('/admin/health')} className="gap-2">
+            <Activity className="h-4 w-4" />
+            <span className="hidden sm:inline">Health Check</span>
+          </Button>
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
