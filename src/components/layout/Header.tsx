@@ -7,9 +7,17 @@ import { useTheme } from '@/hooks/useTheme';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench, ArrowLeft } from 'lucide-react';
+import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench, ArrowLeft, ShieldAlert, ListChecks, TrendingUp, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 export function Header() {
   const { t } = useTranslation();
