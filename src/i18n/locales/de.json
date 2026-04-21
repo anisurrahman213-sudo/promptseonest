@@ -44,7 +44,14 @@
     "adminPanel": "Admin-Panel",
     "upgradePlan": "Plan upgraden",
     "pricing": "Preise",
-    "tutorials": "Hilfe"
+    "tutorials": "Hilfe",
+    "metadataFixer": "Metadaten-Fixer",
+    "extension": "Erweiterung",
+    "stockTools": "Stock-Tools",
+    "stockToolsLabel": "Stock-Mitwirkenden-Tools",
+    "rejectionAnalyzer": "Ablehnungs-Analysator",
+    "submissionTracker": "Einreichungs-Tracker",
+    "trendingKeywords": "Trending Keywords"
   },
   "landing": {
     "badge": "KI-gestützte Bildanalyse",

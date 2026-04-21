@@ -44,7 +44,14 @@
     "adminPanel": "管理パネル",
     "upgradePlan": "プランをアップグレード",
     "pricing": "料金",
-    "tutorials": "ヘルプ"
+    "tutorials": "ヘルプ",
+    "metadataFixer": "メタデータ修正",
+    "extension": "拡張機能",
+    "stockTools": "ストックツール",
+    "stockToolsLabel": "ストック貢献者ツール",
+    "rejectionAnalyzer": "拒否分析",
+    "submissionTracker": "提出追跡",
+    "trendingKeywords": "トレンドキーワード"
   },
   "landing": {
     "badge": "AI搭載の画像分析",

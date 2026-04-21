@@ -7,9 +7,17 @@ import { useTheme } from '@/hooks/useTheme';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
 import { usePlansActive } from '@/hooks/usePlansActive';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench, ArrowLeft } from 'lucide-react';
+import { Moon, Sun, LogOut, Coins, Sparkles, Menu, X, Crown, History, ShieldCheck, User, HelpCircle, Chrome, Wrench, ArrowLeft, ShieldAlert, ListChecks, TrendingUp, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 export function Header() {
   const { t } = useTranslation();
@@ -109,12 +117,37 @@ export function Header() {
 
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/metadata-fixer')}>
                 <Wrench className="h-4 w-4 mr-1" />
-                Metadata Fixer
+                {t('header.metadataFixer')}
               </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <BarChart3 className="h-4 w-4 mr-1" />
+                    {t('header.stockTools')}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
+                  <DropdownMenuLabel>{t('header.stockToolsLabel')}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleNavigate('/rejection-analyzer')}>
+                    <ShieldAlert className="h-4 w-4 mr-2" />
+                    {t('header.rejectionAnalyzer')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate('/submission-tracker')}>
+                    <ListChecks className="h-4 w-4 mr-2" />
+                    {t('header.submissionTracker')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate('/trending-keywords')}>
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    {t('header.trendingKeywords')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/extension')}>
                 <Chrome className="h-4 w-4 mr-1" />
-                Extension
+                {t('header.extension')}
               </Button>
 
               <Button variant="ghost" size="sm" onClick={() => handleNavigate('/tutorials')}>
@@ -252,7 +285,31 @@ export function Header() {
                     onClick={() => handleNavigate('/metadata-fixer')}
                   >
                     <Wrench className="mr-2 h-4 w-4" />
-                    Metadata Fixer
+                    {t('header.metadataFixer')}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/rejection-analyzer')}
+                  >
+                    <ShieldAlert className="mr-2 h-4 w-4" />
+                    {t('header.rejectionAnalyzer')}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/submission-tracker')}
+                  >
+                    <ListChecks className="mr-2 h-4 w-4" />
+                    {t('header.submissionTracker')}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11"
+                    onClick={() => handleNavigate('/trending-keywords')}
+                  >
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    {t('header.trendingKeywords')}
                   </Button>
                   <Button 
                     variant="ghost" 
@@ -260,7 +317,7 @@ export function Header() {
                     onClick={() => handleNavigate('/extension')}
                   >
                     <Chrome className="mr-2 h-4 w-4" />
-                    Extension
+                    {t('header.extension')}
                   </Button>
                   <Button 
                     variant="ghost" 
@@ -297,7 +354,7 @@ export function Header() {
                     onClick={() => handleNavigate('/metadata-fixer')}
                   >
                     <Wrench className="mr-2 h-4 w-4" />
-                    Metadata Fixer
+                    {t('header.metadataFixer')}
                   </Button>
                   <Button 
                     variant="ghost" 
@@ -305,7 +362,7 @@ export function Header() {
                     onClick={() => handleNavigate('/extension')}
                   >
                     <Chrome className="mr-2 h-4 w-4" />
-                    Extension
+                    {t('header.extension')}
                   </Button>
                   <Button 
                     variant="ghost" 

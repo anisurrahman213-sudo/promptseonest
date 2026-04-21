@@ -44,7 +44,14 @@
     "adminPanel": "অ্যাডমিন প্যানেল",
     "upgradePlan": "প্ল্যান আপগ্রেড",
     "pricing": "মূল্য",
-    "tutorials": "সাহায্য"
+    "tutorials": "সাহায্য",
+    "metadataFixer": "মেটাডেটা ফিক্সার",
+    "extension": "এক্সটেনশন",
+    "stockTools": "স্টক টুলস",
+    "stockToolsLabel": "স্টক কন্ট্রিবিউটর টুলস",
+    "rejectionAnalyzer": "রিজেকশন এনালাইজার",
+    "submissionTracker": "সাবমিশন ট্র্যাকার",
+    "trendingKeywords": "ট্রেন্ডিং কীওয়ার্ড"
   },
   "landing": {
     "badge": "🚀 #১ AI মেটাডেটা জেনারেটর",

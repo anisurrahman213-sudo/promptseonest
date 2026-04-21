@@ -44,7 +44,14 @@
     "adminPanel": "व्यवस्थापक पैनल",
     "upgradePlan": "प्लान अपग्रेड करें",
     "pricing": "मूल्य निर्धारण",
-    "tutorials": "सहायता"
+    "tutorials": "सहायता",
+    "metadataFixer": "मेटाडेटा फिक्सर",
+    "extension": "एक्सटेंशन",
+    "stockTools": "स्टॉक टूल्स",
+    "stockToolsLabel": "स्टॉक योगदानकर्ता उपकरण",
+    "rejectionAnalyzer": "अस्वीकृति विश्लेषक",
+    "submissionTracker": "सबमिशन ट्रैकर",
+    "trendingKeywords": "ट्रेंडिंग कीवर्ड"
   },
   "landing": {
     "badge": "AI-संचालित छवि विश्लेषण",

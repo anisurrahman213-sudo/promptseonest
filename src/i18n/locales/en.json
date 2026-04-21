@@ -44,7 +44,14 @@
     "adminPanel": "Admin Panel",
     "upgradePlan": "Upgrade Plan",
     "pricing": "Pricing",
-    "tutorials": "Help"
+    "tutorials": "Help",
+    "metadataFixer": "Metadata Fixer",
+    "extension": "Extension",
+    "stockTools": "Stock Tools",
+    "stockToolsLabel": "Stock Contributor Tools",
+    "rejectionAnalyzer": "Rejection Analyzer",
+    "submissionTracker": "Submission Tracker",
+    "trendingKeywords": "Trending Keywords"
   },
   "landing": {
     "badge": "🚀 #1 AI Metadata Generator",
