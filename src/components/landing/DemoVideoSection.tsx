@@ -1,10 +1,11 @@
+import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSiteSettingsBatch, getSettingValue } from "@/hooks/useSiteSettings";
 import { motion } from "framer-motion";
 import { Play, Youtube } from "lucide-react";
 import { useState } from "react";
 
-const DemoVideoSection = () => {
+const DemoVideoSection = forwardRef<HTMLElement>(function DemoVideoSection(_props, ref) {
   const { t } = useTranslation();
   const { data: demoSettings } = useSiteSettingsBatch(['demo_video_url', 'demo_video_title', 'demo_video_subtitle']);
   
