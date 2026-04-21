@@ -18,6 +18,7 @@ interface LightboxProps {
 export function Lightbox({ isOpen, onClose, media, initialIndex = 0 }: LightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [zoom, setZoom] = useState(1);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
