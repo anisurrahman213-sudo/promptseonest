@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { BackgroundProcessorProvider } from "@/contexts/BackgroundProcessorContext";
+import { RouteTracker } from "@/components/RouteTracker";
 
 // Lazy load all routes including Index for fastest initial bundle
 const Index = lazy(() => import("./pages/Index"));
@@ -17,7 +18,6 @@ const BackgroundProcessingIndicator = lazy(() => import("@/components/Background
 const NetworkStatusIndicator = lazy(() => import("@/components/NetworkStatusIndicator").then(m => ({ default: m.NetworkStatusIndicator })));
 const PWAInstallPrompt = lazy(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
 const AiAskPopup = lazy(() => import("@/components/AiAskPopup").then(m => ({ default: m.AiAskPopup })));
-const RouteTracker = lazy(() => import("@/components/RouteTracker").then(m => ({ default: m.RouteTracker })));
 
 // Lazy load non-critical routes to reduce initial bundle size
 const Auth = lazy(() => import("./pages/Auth"));
