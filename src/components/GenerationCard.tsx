@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
- import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2, Video, Image as ImageIcon, Folder, Pencil, RefreshCw, AlertTriangle } from 'lucide-react';
+ import { Copy, Check, Trash2, ChevronDown, Eye, Maximize2, Video, Image as ImageIcon, Folder, Pencil, RefreshCw, AlertTriangle, Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -74,7 +74,35 @@ interface GenerationCardProps {
   const [contentIssues, setContentIssues] = useState<ContentIssue[]>([]);
   const [isFixing, setIsFixing] = useState(false);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [showWarning, setShowWarning] = useState(true);
+
+  // Download the original media file
+  const handleDownloadMedia = useCallback(async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const response = await fetch(generation.image_url, { mode: 'cors' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = generation.image_name || `download-${Date.now()}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`${generation.media_type === 'video' ? 'Video' : 'Photo'} downloaded`);
+    } catch (err) {
+      console.error('Download failed:', err);
+      window.open(generation.image_url, '_blank');
+      toast.error('Direct download failed — opened in new tab. Right-click to save.');
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [generation.image_url, generation.image_name, generation.media_type, isDownloading]);
 
   // Check for content quality issues
   const checkContentQuality = useCallback(() => {
