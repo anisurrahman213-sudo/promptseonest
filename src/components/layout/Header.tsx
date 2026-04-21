@@ -271,24 +271,14 @@ export function Header() {
                     {t('header.tutorials')}
                   </Button>
                   {isAdmin && (
-                    <>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-center h-11 text-primary"
-                        onClick={() => handleNavigate('/admin/payments')}
-                      >
-                        <ShieldCheck className="mr-2 h-4 w-4" />
-                        {t('header.adminPanel')}
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-center h-11 text-primary"
-                        onClick={() => handleNavigate('/admin/health')}
-                      >
-                        <Activity className="mr-2 h-4 w-4" />
-                        Health Check
-                      </Button>
-                    </>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-center h-11 text-primary"
+                      onClick={() => handleNavigate('/admin-dashboard')}
+                    >
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                      {t('header.adminPanel')}
+                    </Button>
                   )}
                   <Button
                     variant="ghost"
