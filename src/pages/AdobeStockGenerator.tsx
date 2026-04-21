@@ -18,7 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Upload, Copy, CheckCircle, Loader2, Sparkles, AlertTriangle,
   ImageIcon, FileText, Tag, MessageSquare, ClipboardCopy, Info, XCircle, Check,
-  ChevronLeft, ChevronRight, Download, Trash2, RotateCcw, Images
+  ChevronLeft, ChevronRight, Download, Trash2, RotateCcw, Images,
+  ShieldAlert, ListChecks, TrendingUp, ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -440,6 +441,41 @@ export default function AdobeStockGenerator() {
             <h1 className="text-3xl sm:text-4xl font-display font-bold mb-2">Adobe Stock Metadata Generator</h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">Upload images and get perfectly optimized metadata — supports bulk processing up to 100 images at once.</p>
           </motion.div>
+
+          {/* Stock Tools Quick Access */}
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-8"
+            aria-label="Stock contributor tools"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Stock Contributor Tools</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { icon: ShieldAlert, title: 'Rejection Analyzer', desc: 'Find out why your submissions were rejected', path: '/rejection-analyzer', color: 'text-destructive', bg: 'bg-destructive/10' },
+                { icon: ListChecks, title: 'Submission Tracker', desc: 'Track your stock platform submissions', path: '/submission-tracker', color: 'text-primary', bg: 'bg-primary/10' },
+                { icon: TrendingUp, title: 'Trending Keywords', desc: 'Discover hot keywords across platforms', path: '/trending-keywords', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+              ].map((tool) => (
+                <button
+                  key={tool.path}
+                  onClick={() => navigate(tool.path)}
+                  className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-primary/50 hover:shadow-md transition-all text-left"
+                >
+                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", tool.bg)}>
+                    <tool.icon className={cn("h-5 w-5", tool.color)} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm truncate">{tool.title}</div>
+                    <div className="text-xs text-muted-foreground truncate">{tool.desc}</div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+                </button>
+              ))}
+            </div>
+          </motion.section>
 
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Left: Upload + Results */}
