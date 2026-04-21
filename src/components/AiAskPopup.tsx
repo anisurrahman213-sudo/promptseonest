@@ -278,7 +278,7 @@ export function AiAskPopup() {
 
       streamChat({
         messages: [...messages, userMsg],
-        language: i18n.language,
+        language: chatLanguage,
         onDelta: upsertAssistant,
         onDone: () => {
           setIsLoading(false);
