@@ -36,30 +36,30 @@ function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ de
 const Index = lazyWithRetry(() => import("./pages/Index"));
 
 // Lazy load global components that aren't needed for initial render
-const BackgroundProcessingIndicator = lazy(() => import("@/components/BackgroundProcessingIndicator").then(m => ({ default: m.BackgroundProcessingIndicator })));
-const NetworkStatusIndicator = lazy(() => import("@/components/NetworkStatusIndicator").then(m => ({ default: m.NetworkStatusIndicator })));
-const PWAInstallPrompt = lazy(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
-const AiAskPopup = lazy(() => import("@/components/AiAskPopup").then(m => ({ default: m.AiAskPopup })));
+const BackgroundProcessingIndicator = lazyWithRetry(() => import("@/components/BackgroundProcessingIndicator").then(m => ({ default: m.BackgroundProcessingIndicator })));
+const NetworkStatusIndicator = lazyWithRetry(() => import("@/components/NetworkStatusIndicator").then(m => ({ default: m.NetworkStatusIndicator })));
+const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
+const AiAskPopup = lazyWithRetry(() => import("@/components/AiAskPopup").then(m => ({ default: m.AiAskPopup })));
 
 // Lazy load non-critical routes to reduce initial bundle size
-const Auth = lazy(() => import("./pages/Auth"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Pricing = lazy(() => import("./pages/Pricing"));
-const CalendarPage = lazy(() => import("./pages/CalendarPage"));
-const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
-const AdminPayments = lazy(() => import("./pages/AdminPayments"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Tutorials = lazy(() => import("./pages/Tutorials"));
-const AdobeStockGenerator = lazy(() => import("./pages/AdobeStockGenerator"));
-const MetadataFixer = lazy(() => import("./pages/MetadataFixer"));
-const ExtensionDownload = lazy(() => import("./pages/ExtensionDownload"));
-const KeywordResearch = lazy(() => import("./pages/KeywordResearch"));
-const PlatformConverter = lazy(() => import("./pages/PlatformConverter"));
-const RejectionAnalyzer = lazy(() => import("./pages/RejectionAnalyzer"));
-const SubmissionTracker = lazy(() => import("./pages/SubmissionTracker"));
-const TrendingKeywords = lazy(() => import("./pages/TrendingKeywords"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Auth = lazyWithRetry(() => import("./pages/Auth"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const Pricing = lazyWithRetry(() => import("./pages/Pricing"));
+const CalendarPage = lazyWithRetry(() => import("./pages/CalendarPage"));
+const PaymentHistory = lazyWithRetry(() => import("./pages/PaymentHistory"));
+const AdminPayments = lazyWithRetry(() => import("./pages/AdminPayments"));
+const AdminDashboard = lazyWithRetry(() => import("./pages/AdminDashboard"));
+const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const Tutorials = lazyWithRetry(() => import("./pages/Tutorials"));
+const AdobeStockGenerator = lazyWithRetry(() => import("./pages/AdobeStockGenerator"));
+const MetadataFixer = lazyWithRetry(() => import("./pages/MetadataFixer"));
+const ExtensionDownload = lazyWithRetry(() => import("./pages/ExtensionDownload"));
+const KeywordResearch = lazyWithRetry(() => import("./pages/KeywordResearch"));
+const PlatformConverter = lazyWithRetry(() => import("./pages/PlatformConverter"));
+const RejectionAnalyzer = lazyWithRetry(() => import("./pages/RejectionAnalyzer"));
+const SubmissionTracker = lazyWithRetry(() => import("./pages/SubmissionTracker"));
+const TrendingKeywords = lazyWithRetry(() => import("./pages/TrendingKeywords"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
