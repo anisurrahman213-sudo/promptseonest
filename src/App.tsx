@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, ComponentType } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -10,34 +10,56 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { BackgroundProcessorProvider } from "@/contexts/BackgroundProcessorContext";
 import { RouteTracker } from "@/components/RouteTracker";
 
+// Auto-recover from stale chunk errors (after deploys / HMR cache miss)
+const RELOAD_KEY = "__chunk_reload__";
+function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      const mod = await factory();
+      sessionStorage.removeItem(RELOAD_KEY);
+      return mod;
+    } catch (err: any) {
+      const msg = String(err?.message || err);
+      const isChunkErr = /Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError/i.test(msg);
+      const alreadyReloaded = sessionStorage.getItem(RELOAD_KEY) === "1";
+      if (isChunkErr && !alreadyReloaded) {
+        sessionStorage.setItem(RELOAD_KEY, "1");
+        window.location.reload();
+        return new Promise<{ default: T }>(() => {});
+      }
+      throw err;
+    }
+  });
+}
+
 // Lazy load all routes including Index for fastest initial bundle
-const Index = lazy(() => import("./pages/Index"));
+const Index = lazyWithRetry(() => import("./pages/Index"));
 
 // Lazy load global components that aren't needed for initial render
-const BackgroundProcessingIndicator = lazy(() => import("@/components/BackgroundProcessingIndicator").then(m => ({ default: m.BackgroundProcessingIndicator })));
-const NetworkStatusIndicator = lazy(() => import("@/components/NetworkStatusIndicator").then(m => ({ default: m.NetworkStatusIndicator })));
-const PWAInstallPrompt = lazy(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
-const AiAskPopup = lazy(() => import("@/components/AiAskPopup").then(m => ({ default: m.AiAskPopup })));
+const BackgroundProcessingIndicator = lazyWithRetry(() => import("@/components/BackgroundProcessingIndicator").then(m => ({ default: m.BackgroundProcessingIndicator })));
+const NetworkStatusIndicator = lazyWithRetry(() => import("@/components/NetworkStatusIndicator").then(m => ({ default: m.NetworkStatusIndicator })));
+const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
+const AiAskPopup = lazyWithRetry(() => import("@/components/AiAskPopup").then(m => ({ default: m.AiAskPopup })));
 
 // Lazy load non-critical routes to reduce initial bundle size
-const Auth = lazy(() => import("./pages/Auth"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Pricing = lazy(() => import("./pages/Pricing"));
-const CalendarPage = lazy(() => import("./pages/CalendarPage"));
-const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
-const AdminPayments = lazy(() => import("./pages/AdminPayments"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Tutorials = lazy(() => import("./pages/Tutorials"));
-const AdobeStockGenerator = lazy(() => import("./pages/AdobeStockGenerator"));
-const MetadataFixer = lazy(() => import("./pages/MetadataFixer"));
-const ExtensionDownload = lazy(() => import("./pages/ExtensionDownload"));
-const KeywordResearch = lazy(() => import("./pages/KeywordResearch"));
-const PlatformConverter = lazy(() => import("./pages/PlatformConverter"));
-const RejectionAnalyzer = lazy(() => import("./pages/RejectionAnalyzer"));
-const SubmissionTracker = lazy(() => import("./pages/SubmissionTracker"));
-const TrendingKeywords = lazy(() => import("./pages/TrendingKeywords"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Auth = lazyWithRetry(() => import("./pages/Auth"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const Pricing = lazyWithRetry(() => import("./pages/Pricing"));
+const CalendarPage = lazyWithRetry(() => import("./pages/CalendarPage"));
+const PaymentHistory = lazyWithRetry(() => import("./pages/PaymentHistory"));
+const AdminPayments = lazyWithRetry(() => import("./pages/AdminPayments"));
+const AdminDashboard = lazyWithRetry(() => import("./pages/AdminDashboard"));
+const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const Tutorials = lazyWithRetry(() => import("./pages/Tutorials"));
+const AdobeStockGenerator = lazyWithRetry(() => import("./pages/AdobeStockGenerator"));
+const MetadataFixer = lazyWithRetry(() => import("./pages/MetadataFixer"));
+const ExtensionDownload = lazyWithRetry(() => import("./pages/ExtensionDownload"));
+const KeywordResearch = lazyWithRetry(() => import("./pages/KeywordResearch"));
+const PlatformConverter = lazyWithRetry(() => import("./pages/PlatformConverter"));
+const RejectionAnalyzer = lazyWithRetry(() => import("./pages/RejectionAnalyzer"));
+const SubmissionTracker = lazyWithRetry(() => import("./pages/SubmissionTracker"));
+const TrendingKeywords = lazyWithRetry(() => import("./pages/TrendingKeywords"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
