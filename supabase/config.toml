@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.check-login-attempt]
 verify_jwt = false
+
+[functions.analyze-rejection]
+verify_jwt = true
+
+[functions.trending-keywords]
+verify_jwt = true

@@ -34,6 +34,9 @@ const MetadataFixer = lazy(() => import("./pages/MetadataFixer"));
 const ExtensionDownload = lazy(() => import("./pages/ExtensionDownload"));
 const KeywordResearch = lazy(() => import("./pages/KeywordResearch"));
 const PlatformConverter = lazy(() => import("./pages/PlatformConverter"));
+const RejectionAnalyzer = lazy(() => import("./pages/RejectionAnalyzer"));
+const SubmissionTracker = lazy(() => import("./pages/SubmissionTracker"));
+const TrendingKeywords = lazy(() => import("./pages/TrendingKeywords"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -87,6 +90,9 @@ const App = () => (
                   <Route path="/extension" element={<ExtensionDownload />} />
                   <Route path="/keyword-research" element={<KeywordResearch />} />
                   <Route path="/platform-converter" element={<PlatformConverter />} />
+                  <Route path="/rejection-analyzer" element={<RejectionAnalyzer />} />
+                  <Route path="/submission-tracker" element={<SubmissionTracker />} />
+                  <Route path="/trending-keywords" element={<TrendingKeywords />} />
                   <Route path="/admin/health" element={<AdminDashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
