@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { BackgroundProcessorProvider } from "@/contexts/BackgroundProcessorContext";
 import { RouteTracker } from "@/components/RouteTracker";
 import { useBuildVersionCheck } from "@/hooks/useBuildVersionCheck";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Auto-recover from stale chunk errors (after deploys / HMR cache miss)
 const RELOAD_KEY = "__chunk_reload__";
@@ -85,6 +86,7 @@ function VersionWatcher() {
 }
 
 const App = () => (
+  <ErrorBoundary>
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -103,6 +105,7 @@ const App = () => (
             <BrowserRouter>
               <RouteTracker />
               <Suspense fallback={<div className="min-h-screen bg-background" />}>
+                <ErrorBoundary>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
