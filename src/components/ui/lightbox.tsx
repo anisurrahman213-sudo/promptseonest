@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Loader2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 
 interface LightboxProps {
   isOpen: boolean;
@@ -18,7 +17,6 @@ interface LightboxProps {
 export function Lightbox({ isOpen, onClose, media, initialIndex = 0 }: LightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [zoom, setZoom] = useState(1);
-  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     setCurrentIndex(initialIndex);
@@ -74,31 +72,6 @@ export function Lightbox({ isOpen, onClose, media, initialIndex = 0 }: LightboxP
 
   const currentMedia = media[currentIndex];
 
-  const handleDownload = async () => {
-    if (!currentMedia || downloading) return;
-    setDownloading(true);
-    try {
-      const response = await fetch(currentMedia.src, { mode: 'cors' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = currentMedia.name || `download-${Date.now()}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success(`${currentMedia.type === 'video' ? 'Video' : 'Photo'} downloaded`);
-    } catch (err) {
-      console.error('Download failed:', err);
-      window.open(currentMedia.src, '_blank');
-      toast.error('Direct download failed — opened in new tab. Right-click to save.');
-    } finally {
-      setDownloading(false);
-    }
-  };
-
   if (!currentMedia) return null;
 
   return (
@@ -130,21 +103,9 @@ export function Lightbox({ isOpen, onClose, media, initialIndex = 0 }: LightboxP
             <X className="w-6 h-6" />
           </motion.button>
 
-          {/* Download button */}
-          <motion.button
-            className="absolute top-4 right-16 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors disabled:opacity-50"
-            onClick={handleDownload}
-            disabled={downloading}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            title={`Download ${currentMedia.type === 'video' ? 'video' : 'photo'}`}
-          >
-            {downloading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Download className="w-6 h-6" />}
-          </motion.button>
-
           {/* Zoom button */}
           <motion.button
-            className="absolute top-4 right-28 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="absolute top-4 right-16 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
             onClick={toggleZoom}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
