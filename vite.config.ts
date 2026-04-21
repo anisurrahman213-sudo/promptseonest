@@ -5,9 +5,38 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
+// Stable build timestamp shared between `define` and the build-info plugin
+const BUILD_TIME = new Date().toISOString();
+
+/**
+ * Emits /build-info.json into the build output AND serves it from the
+ * Vite dev server. The frontend polls this file to detect when a fresh
+ * build is live and trigger a cache-bust + reload.
+ */
+function buildInfoPlugin() {
+  const json = () => JSON.stringify({ buildTime: BUILD_TIME }) + '\n';
+  return {
+    name: 'pn-build-info',
+    configureServer(server: any) {
+      server.middlewares.use('/build-info.json', (_req: any, res: any) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Cache-Control', 'no-store, no-cache, max-age=0');
+        res.end(json());
+      });
+    },
+    generateBundle(this: any) {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'build-info.json',
+        source: json(),
+      });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   define: {
-    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    __BUILD_TIME__: JSON.stringify(BUILD_TIME),
   },
   server: {
     host: "::",
@@ -18,6 +47,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    buildInfoPlugin(),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
@@ -52,8 +82,10 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        navigateFallbackDenylist: [/^\/~oauth/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/build-info\.json/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,webp,avif}"],
+        // Never precache build-info.json — it must always come fresh from network
+        globIgnores: ["**/build-info.json"],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,

@@ -16,6 +16,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { cacheBustAndReload } from '@/lib/cacheBust';
+import { toast } from 'sonner';
 
 const LS_LAST_PUBLISHED = 'pn_last_published_at';
 const LS_DISMISSED_VERSION = 'pn_publish_checklist_dismissed_for';
@@ -95,6 +97,13 @@ export function PublishChecklist() {
     } catch {/* ignore */}
     setLastPublished(now);
     setDismissedFor(buildId);
+  };
+
+  const handlePublishedAndRefresh = async () => {
+    markPublished();
+    toast.info('Clearing caches and reloading…', { duration: 2000 });
+    // Tiny delay so the toast can paint before we navigate away
+    setTimeout(() => { void cacheBustAndReload(); }, 400);
   };
 
   const dismiss = () => {
@@ -285,7 +294,7 @@ export function PublishChecklist() {
 
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
               <Button
-                onClick={markPublished}
+                onClick={handlePublishedAndRefresh}
                 className={cn(
                   'gap-2 flex-1',
                   hasUnpublishedChanges
@@ -294,7 +303,15 @@ export function PublishChecklist() {
                 )}
               >
                 <Rocket className="h-4 w-4" />
-                {hasUnpublishedChanges ? "I've published — mark as live" : 'Re-confirm published'}
+                {hasUnpublishedChanges ? "I've published — clear cache & reload" : 'Clear cache & reload'}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={markPublished}
+                className="gap-2"
+                title="Mark as published without reloading"
+              >
+                Mark only
               </Button>
               <Button
                 variant="outline"
