@@ -173,11 +173,6 @@ export default function CalendarPage() {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  const allEvents = useMemo(
-    () => [...stockMarketEvents, ...photographyEvents, ...customEvents],
-    [customEvents]
-  );
-
   const filteredEvents = allEvents.filter((event) => {
     // Category filter
     if (event.isCustom) {
