@@ -16,33 +16,42 @@ export type Database = {
     Tables: {
       custom_events: {
         Row: {
+          category: string
           created_at: string
           date: number
           description: string | null
           event_type: string
           id: string
           month: number
+          recurring: string
           title: string
+          updated_at: string
           user_id: string
         }
         Insert: {
+          category?: string
           created_at?: string
           date: number
           description?: string | null
           event_type?: string
           id?: string
           month: number
+          recurring?: string
           title: string
+          updated_at?: string
           user_id: string
         }
         Update: {
+          category?: string
           created_at?: string
           date?: number
           description?: string | null
           event_type?: string
           id?: string
           month?: number
+          recurring?: string
           title?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
