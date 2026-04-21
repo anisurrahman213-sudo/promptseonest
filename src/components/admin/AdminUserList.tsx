@@ -104,6 +104,9 @@ export function AdminUserList({
                       <Button variant="default" size="sm" onClick={() => onOpenHistory(u)} title="View History" className="gap-1">
                         <History className="h-4 w-4" />History
                       </Button>
+                      <Button variant="secondary" size="sm" onClick={() => setGenerationsUser(u)} title="View All Generations" className="gap-1">
+                        <Images className="h-4 w-4" />Generations
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => onOpenAddCredits(u.user_id, u.email || 'Unknown')} title="Add Credits">
                         <Plus className="h-4 w-4 mr-1" />Credits
                       </Button>
