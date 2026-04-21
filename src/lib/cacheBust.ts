@@ -7,8 +7,56 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const BUILD_INFO_URL = '/build-info.json';
-const DEPLOYMENT_VERSION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-deployment-version`;
+export const DEPLOYMENT_VERSION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-deployment-version`;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+export interface PingResult {
+  ok: boolean;
+  status: number;
+  statusText: string;
+  url: string;
+  durationMs: number;
+  body: unknown;
+  error?: string;
+}
+
+/**
+ * Diagnostic: GET the deployment-version endpoint and return raw status + body.
+ * Used by the PublishChecklist "Check deployment endpoint" button.
+ */
+export async function pingDeploymentEndpoint(): Promise<PingResult> {
+  const url = `${DEPLOYMENT_VERSION_URL}?t=${Date.now()}`;
+  const start = performance.now();
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: { apikey: SUPABASE_PUBLISHABLE_KEY },
+    });
+    const durationMs = Math.round(performance.now() - start);
+    const text = await res.text();
+    let body: unknown = text;
+    try { body = JSON.parse(text); } catch {/* keep raw text */}
+    return {
+      ok: res.ok,
+      status: res.status,
+      statusText: res.statusText,
+      url,
+      durationMs,
+      body,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      status: 0,
+      statusText: 'Network error',
+      url,
+      durationMs: Math.round(performance.now() - start),
+      body: null,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
 const LS_LAST_SEEN_BUILD = 'pn_last_seen_build';
 
 export interface BuildInfo {

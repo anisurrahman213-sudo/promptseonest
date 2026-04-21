@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Loader2,
   Cloud,
+  Activity,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -22,10 +23,12 @@ import { cn } from '@/lib/utils';
 import {
   cacheBustAndReload,
   fetchLatestBuildInfo,
+  pingDeploymentEndpoint,
   recordDeployment,
   getRunningBuildTime,
   isNewerBuild,
   type BuildInfo,
+  type PingResult,
 } from '@/lib/cacheBust';
 import { toast } from 'sonner';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
@@ -80,6 +83,23 @@ export function PublishChecklist() {
   const [liveBuild, setLiveBuild] = useState<BuildInfo | null>(null);
   const [liveLoading, setLiveLoading] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [pinging, setPinging] = useState(false);
+  const [pingResult, setPingResult] = useState<PingResult | null>(null);
+
+  const handlePingEndpoint = async () => {
+    setPinging(true);
+    try {
+      const result = await pingDeploymentEndpoint();
+      setPingResult(result);
+      if (result.ok) {
+        toast.success(`Endpoint OK · ${result.status} · ${result.durationMs}ms`);
+      } else {
+        toast.error(`Endpoint failed · ${result.status || 'network'} ${result.statusText}`);
+      }
+    } finally {
+      setPinging(false);
+    }
+  };
 
   const refreshLiveBuild = async () => {
     setLiveLoading(true);
@@ -413,6 +433,16 @@ export function PublishChecklist() {
               </Button>
               <Button
                 variant="outline"
+                onClick={handlePingEndpoint}
+                disabled={pinging}
+                className="gap-2"
+                title="GET the live get-deployment-version endpoint and show the response"
+              >
+                {pinging ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4" />}
+                Check deployment endpoint
+              </Button>
+              <Button
+                variant="outline"
                 asChild
                 className="gap-2"
               >
@@ -422,6 +452,49 @@ export function PublishChecklist() {
                 </a>
               </Button>
             </div>
+
+            {pingResult && (
+              <div className="mt-3 rounded-lg border border-border/60 bg-background/60 p-3">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span
+                      className={cn(
+                        'px-2 py-0.5 rounded-full font-bold',
+                        pingResult.ok
+                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                          : 'bg-rose-500/15 text-rose-700 dark:text-rose-400'
+                      )}
+                    >
+                      {pingResult.status || 'ERR'} {pingResult.statusText}
+                    </span>
+                    <span className="text-muted-foreground">{pingResult.durationMs}ms</span>
+                    <span className="text-muted-foreground">GET</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setPingResult(null)}
+                    aria-label="Close response"
+                    className="h-6 w-6"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground break-all mb-1.5 font-mono">
+                  {pingResult.url}
+                </p>
+                {pingResult.error && (
+                  <p className="text-xs text-rose-600 dark:text-rose-400 mb-1.5">
+                    Error: {pingResult.error}
+                  </p>
+                )}
+                <pre className="text-[11px] leading-relaxed bg-muted/40 rounded p-2 overflow-auto max-h-48 font-mono">
+                  {typeof pingResult.body === 'string'
+                    ? pingResult.body
+                    : JSON.stringify(pingResult.body, null, 2)}
+                </pre>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
