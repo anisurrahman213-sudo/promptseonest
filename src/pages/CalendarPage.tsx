@@ -177,18 +177,38 @@ const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photogra
 
 const filteredEvents = allEvents.filter((event) => {
     // Event type filter (Stock/Holiday/Photography/Custom)
+    let eventCategory: string | null = null;
+    
     if (event.isCustom) {
       if (!activeFilters.includes('custom')) return false;
-      // For custom events, also apply category filter
-      if (!categoryFilters.includes(event.category || 'stock')) return false;
+      eventCategory = event.category || 'stock';
     } else if (event.type === 'stock') {
       if (!activeFilters.includes('stock')) return false;
-      if (!categoryFilters.includes('stock')) return false;
+      eventCategory = 'stock';
     } else if (['holiday', 'celebration', 'motivation'].includes(event.type)) {
       if (!activeFilters.includes('holiday')) return false;
+      // Holidays have no category for category filtering
     } else if (event.type === 'creative') {
       if (!activeFilters.includes('photography')) return false;
-      if (!categoryFilters.includes('photography')) return false;
+      eventCategory = 'photography';
+    }
+
+    // Category filter with match mode (any vs all)
+    if (eventCategory !== null) {
+      if (categoryMatchMode === 'any') {
+        // ANY selected category matches (OR logic)
+        if (!categoryFilters.includes(eventCategory)) return false;
+      } else {
+        // ALL selected categories must match (exact match of all)
+        // For single-category events, this means event must belong to ALL selected categories
+        // which is only possible if exactly one category is selected
+        if (categoryFilters.length === 1) {
+          if (eventCategory !== categoryFilters[0]) return false;
+        } else {
+          // More than one category selected, single-category event can't match all
+          return false;
+        }
+      }
     }
 
     // Search filter
