@@ -333,13 +333,25 @@ const monthEvents = filteredEvents.filter((e) => e.month === currentMonth);
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Category:</span>
               <ToggleGroup type="multiple" value={categoryFilters} onValueChange={(value) => { if (value.length > 0) setCategoryFilters(value); }} className="bg-muted/30 rounded-lg p-1 flex-wrap">
                 <ToggleGroupItem value="stock" aria-label="Toggle Stock Category" className="data-[state=on]:bg-emerald-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-emerald-400/50">
-                  <TrendingUp className="h-3 w-3" /><span>Stock</span>
+                  <TrendingUp className="h-3 w-3" />
+                  <span>Stock</span>
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-600/40 text-[10px] font-bold min-w-[18px] text-center">
+                    {categoryCounts.stock}
+                  </span>
                 </ToggleGroupItem>
                 <ToggleGroupItem value="photography" aria-label="Toggle Photography Category" className="data-[state=on]:bg-purple-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-purple-400/50">
-                  <Camera className="h-3 w-3" /><span>Photography</span>
+                  <Camera className="h-3 w-3" />
+                  <span>Photography</span>
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-purple-600/40 text-[10px] font-bold min-w-[18px] text-center">
+                    {categoryCounts.photography}
+                  </span>
                 </ToggleGroupItem>
                 <ToggleGroupItem value="personal" aria-label="Toggle Personal Category" className="data-[state=on]:bg-amber-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-amber-400/50">
-                  <User className="h-3 w-3" /><span>Personal</span>
+                  <User className="h-3 w-3" />
+                  <span>Personal</span>
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-600/40 text-[10px] font-bold min-w-[18px] text-center">
+                    {categoryCounts.personal}
+                  </span>
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
