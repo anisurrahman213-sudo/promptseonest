@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-export const GA_MEASUREMENT_ID = 'G-MY5154F3EW';
+export const GA_MEASUREMENT_ID = 'G-HFM7VF0TCG';
 
 /** Track a SPA page view (called by RouteTracker on every route change). */
 export function trackPageView(path: string, title?: string) {
