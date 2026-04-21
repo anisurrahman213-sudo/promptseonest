@@ -128,6 +128,7 @@ const App = () => (
                   <Route path="/admin/health" element={<AdminDashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </ErrorBoundary>
               </Suspense>
             </BrowserRouter>
           </TooltipProvider>
@@ -136,6 +137,7 @@ const App = () => (
     </ThemeProvider>
   </QueryClientProvider>
   </HelmetProvider>
+  </ErrorBoundary>
 );
 
 export default App;
