@@ -174,16 +174,20 @@ const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photogra
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  const filteredEvents = allEvents.filter((event) => {
-    // Category filter
+const filteredEvents = allEvents.filter((event) => {
+    // Event type filter (Stock/Holiday/Photography/Custom)
     if (event.isCustom) {
       if (!activeFilters.includes('custom')) return false;
+      // For custom events, also apply category filter
+      if (!categoryFilters.includes(event.category || 'stock')) return false;
     } else if (event.type === 'stock') {
       if (!activeFilters.includes('stock')) return false;
+      if (!categoryFilters.includes('stock')) return false;
     } else if (['holiday', 'celebration', 'motivation'].includes(event.type)) {
       if (!activeFilters.includes('holiday')) return false;
     } else if (event.type === 'creative') {
       if (!activeFilters.includes('photography')) return false;
+      if (!categoryFilters.includes('photography')) return false;
     }
 
     // Search filter
