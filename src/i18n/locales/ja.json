@@ -43,7 +43,8 @@
     "paymentHistory": "支払い履歴",
     "adminPanel": "管理パネル",
     "upgradePlan": "プランをアップグレード",
-    "pricing": "料金"
+    "pricing": "料金",
+    "tutorials": "ヘルプ"
   },
   "landing": {
     "badge": "AI搭載の画像分析",
@@ -214,10 +215,7 @@
     "buyNow": "今すぐ購入",
     "getLifetimeAccess": "永久アクセスを取得",
     "needMore": "より多くのクレジットやカスタムプランが必要ですか？",
-    "contactUs": "お問い合わせ",
-    "perMonth": "/月",
-    "oneTime": "一回払い",
-    "unlimited": "無制限"
+    "contactUs": "お問い合わせ"
   },
   "payment": {
     "title": "支払い履歴",
@@ -241,7 +239,50 @@
     "downloadCsv": "CSVをダウンロード",
     "copyToClipboard": "クリップボードにコピー",
     "exportSuccess": "正常にエクスポートされました",
-    "noData": "エクスポートするデータがありません"
+    "noData": "エクスポートするデータがありません",
+    "allClean": "すべてのメタデータがクリーンです！",
+    "autoFixAll": "すべて自動修正",
+    "autoFixFailed": "自動修正に失敗しました",
+    "autoFixNotAvailable": "自動修正は利用できません",
+    "clickToScan": "スキャンを開始するには「今すぐスキャン」ボタンをクリックしてください",
+    "excelSheets": "名前を付けて保存 → CSV UTF-8 (コンマ区切り)",
+    "filenameMatch": "ファイル名が一致しない場合、メタデータは適用されません",
+    "fixedPartial": "{{fixed}}件修正成功、{{failed}}件失敗",
+    "fixedSuccess": "{{count}}件のアイテムが正常に修正されました！",
+    "fixing": "修正中...",
+    "importantInstructions": "重要な指示",
+    "issuesFound": "{{count}}件の問題が見つかりました",
+    "issuesFoundWarning": "{{count}}件の問題が見つかりました",
+    "noForbiddenWords": "禁止語は見つかりませんでした",
+    "noIssuesFound": "問題は見つかりませんでした！すべてのメタデータはクリーンです。",
+    "qualityCheck": "コンテンツ品質チェック",
+    "qualityCheckDesc": "エクスポートする前にすべてのメタデータをスキャンして禁止語を見つけます",
+    "readme": {
+      "filesInZip": "このZIP内のファイル",
+      "footer": "PromptSEONest (https://promptseonest.com) によって生成されました",
+      "generated": "生成日時",
+      "heading": "{{platform}} メタデータエクスポート",
+      "importantNotes": "重要な注意事項",
+      "instructionsAdobe": "1. Adobe Stock Contributor ポータルにログインします: https://contributor.stock.adobe.com\n2. まずIMAGEファイルをアップロードします（ドラッグ＆ドロップまたはFTP経由）。\n3. 画像の処理が完了するまで待ちます。\n4. 「アップロード」→「スプレッドシートのアップロード」をクリックし、各CSVファイルを選択します。\n5. CSV内のファイル名はアップロードされた画像ファイル名と正確に一致する必要があります。\n6. 1つのCSVにつき最大5,000行（このエクスポートは既に準拠しています）。",
+      "instructionsFreepik": "1. Freepik Contributor にログインします: https://contributor.freepik.com\n2. まず画像/ベクターファイルをアップロードします。\n3. 一括メタデータインポートオプションを使用します。\n4. このZIPから各CSVをアップロードします。\n5. ファイル名が正確に一致していることを確認してください。",
+      "instructionsGeneric": "1. ご利用の{{platform}}コントリビューターアカウントにログインします。\n2. まずメディアファイルをアップロードします。\n3. 一括メタデータ/CSVインポートオプションを使用します。\n4. このZIPから各CSVファイルをアップロードします。\n5. CSV内のファイル名はアップロードされたファイルと正確に一致する必要があります。",
+      "instructionsShutterstock": "1. Shutterstock Contributor にログインします: https://submit.shutterstock.com\n2. まずアップロードページからIMAGEファイルをアップロードします。\n3. アップロード後、「編集」→「CSVによる一括編集」を使用します。\n4. このZIPから各CSVファイルを1つずつアップロードします。\n5. ファイル名は正確に一致する必要があります。",
+      "note1": "すべてのCSVファイルはBOM付きUTF-8でエンコードされています（Excelで「CSV UTF-8」として開きます）。",
+      "note2": "Excel/Google Sheetsで編集する場合、エンコーディングを維持するために「CSV UTF-8」として保存してください。",
+      "note3": "各CSVは最大5,000行を保持します（プラットフォームの安全な制限）。",
+      "note4": "CSVより先にメディアファイルをアップロードしてください。",
+      "note5": "CSV内のファイル名はアップロードされたファイル名と正確に一致する必要があります。",
+      "platform": "プラットフォーム",
+      "totalFiles": "合計CSVファイル数",
+      "totalItems": "合計アイテム数",
+      "uploadInstructions": "アップロード手順"
+    },
+    "removingWords": "禁止語を削除中...",
+    "scanError": "スキャンエラー",
+    "scanNow": "今すぐスキャン",
+    "scanning": "スキャン中...",
+    "uploadOrder": "まず画像をアップロードし、次にCSVをアップロードしてください",
+    "utf8Encoding": "CSVファイルはUTF-8でエンコードされている必要があります"
   },
   "calendar": {
     "title": "2026年イベントカレンダー",
@@ -288,5 +329,19 @@
     "serverError": "サーバーへの接続に問題があります。VPNをオフにしてみてください。",
     "slowConnection": "接続が遅いです（{{seconds}}秒）。VPNをオフにすると改善する場合があります。",
     "retry": "再試行"
+  },
+  "tutorials": {
+    "badge": "ビデオチュートリアル",
+    "comingSoon": "ビデオは近日公開予定",
+    "contactSupport": "個別のアシスタンスについてはサポートチームにお問い合わせください",
+    "metadataDesc": "AIを使って画像/動画をアップロードし、SEO最適化されたタイトル、説明、タグを生成します",
+    "metadataTitle": "メタデータの生成",
+    "needHelp": "まだお困りですか？",
+    "pricingDesc": "管理者向け：ユーザーの料金プラン、クレジット、機能を設定します",
+    "pricingTitle": "管理者：料金設定",
+    "signupDesc": "アカウントの作成方法とプロフィールの設定方法を数分で学びます",
+    "signupTitle": "はじめに",
+    "subtitle": "当社のAIパワードメタデータ生成プラットフォームを最大限に活用するためのステップバイステップのビデオガイドをご覧ください",
+    "title": "PromptNest の使い方を学ぶ"
   }
 }

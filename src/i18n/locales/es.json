@@ -43,7 +43,8 @@
     "paymentHistory": "Historial de Pagos",
     "adminPanel": "Panel Admin",
     "upgradePlan": "Mejorar Plan",
-    "pricing": "Precios"
+    "pricing": "Precios",
+    "tutorials": "Ayuda"
   },
   "landing": {
     "badge": "Análisis de Imágenes con IA",
@@ -214,10 +215,7 @@
     "buyNow": "Comprar Ahora",
     "getLifetimeAccess": "Obtener Acceso de por Vida",
     "needMore": "¿Necesitas más créditos o planes personalizados?",
-    "contactUs": "Contáctanos",
-    "perMonth": "/mes",
-    "oneTime": "único pago",
-    "unlimited": "Ilimitado"
+    "contactUs": "Contáctanos"
   },
   "payment": {
     "title": "Historial de Pagos",
@@ -261,7 +259,30 @@
       "instructionsShutterstock": "1. Inicia sesión en Shutterstock Contributor: https://submit.shutterstock.com\n2. Sube tus archivos de IMAGEN primero desde la página Upload.\n3. Una vez subidos, ve a \"Edit\" → usa \"Bulk edit via CSV\".\n4. Sube cada archivo CSV de este ZIP uno por uno.\n5. Los nombres deben coincidir exactamente.",
       "instructionsFreepik": "1. Inicia sesión en Freepik Contributor: https://contributor.freepik.com\n2. Sube tus archivos de imagen/vector primero.\n3. Usa la opción de importación masiva de metadatos.\n4. Sube cada CSV de este ZIP.\n5. Asegúrate de que los nombres coincidan exactamente.",
       "instructionsGeneric": "1. Inicia sesión en tu cuenta de contribuidor de {{platform}}.\n2. Sube tus archivos multimedia primero.\n3. Usa la opción de importación masiva de metadatos / CSV.\n4. Sube cada archivo CSV de este ZIP.\n5. Los nombres en el CSV deben coincidir exactamente con los archivos subidos."
-    }
+    },
+    "allClean": "¡Todos los metadatos limpios!",
+    "autoFixAll": "Corregir todo automáticamente",
+    "autoFixFailed": "La corrección automática falló",
+    "autoFixNotAvailable": "Corrección automática no disponible",
+    "clickToScan": "Haga clic en el botón \"Escanear ahora\" para comenzar a escanear",
+    "excelSheets": "Guardar como → CSV UTF-8 (delimitado por comas)",
+    "filenameMatch": "Los metadatos no se aplicarán si el nombre del archivo no coincide",
+    "fixedPartial": "{{fixed}} corregidos, {{failed}} fallidos",
+    "fixedSuccess": "¡{{count}} elemento(s) corregido(s) exitosamente!",
+    "fixing": "Corrigiendo...",
+    "importantInstructions": "Instrucciones importantes",
+    "issuesFound": "{{count}} problema(s) encontrado(s)",
+    "issuesFoundWarning": "{{count}} problema(s) encontrado(s)",
+    "noForbiddenWords": "No se encontraron palabras prohibidas",
+    "noIssuesFound": "¡No se encontraron problemas! Todos los metadatos están limpios.",
+    "qualityCheck": "Verificación de calidad del contenido",
+    "qualityCheckDesc": "Escanee todos los metadatos antes de exportar para encontrar palabras prohibidas",
+    "removingWords": "Eliminando palabras prohibidas...",
+    "scanError": "Error al escanear",
+    "scanNow": "Escanear ahora",
+    "scanning": "Escaneando...",
+    "uploadOrder": "Suba las imágenes primero, luego el CSV",
+    "utf8Encoding": "El archivo CSV debe estar codificado en UTF-8"
   },
   "calendar": {
     "title": "Calendario de Eventos 2026",
@@ -308,5 +329,19 @@
     "serverError": "Problemas para conectar con el servidor. Intenta desactivar VPN.",
     "slowConnection": "Conexión lenta ({{seconds}}s). Desactivar VPN puede ayudar.",
     "retry": "Reintentar"
+  },
+  "tutorials": {
+    "badge": "Tutoriales en video",
+    "comingSoon": "Video próximamente",
+    "contactSupport": "Contacte a nuestro equipo de soporte para asistencia personalizada",
+    "metadataDesc": "Suba imágenes/videos y genere títulos, descripciones y etiquetas optimizados para SEO con IA",
+    "metadataTitle": "Generar Metadatos",
+    "needHelp": "¿Necesitas ayuda?",
+    "pricingDesc": "Para administradores: Configure planes de precios, créditos y funciones para sus usuarios",
+    "pricingTitle": "Administrador: Configuración de Precios",
+    "signupDesc": "Aprenda a crear su cuenta y configurar su perfil en solo unos minutos",
+    "signupTitle": "Primeros Pasos",
+    "subtitle": "Vea guías de video paso a paso para aprovechar al máximo nuestra plataforma de generación de metadatos impulsada por IA",
+    "title": "Aprenda a usar PromptNest"
   }
 }

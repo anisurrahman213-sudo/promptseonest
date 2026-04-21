@@ -43,7 +43,8 @@
     "paymentHistory": "결제 내역",
     "adminPanel": "관리자 패널",
     "upgradePlan": "플랜 업그레이드",
-    "pricing": "가격"
+    "pricing": "가격",
+    "tutorials": "도움말"
   },
   "landing": {
     "badge": "AI 기반 이미지 분석",
@@ -214,10 +215,7 @@
     "buyNow": "지금 구매",
     "getLifetimeAccess": "평생 액세스 획득",
     "needMore": "더 많은 크레딧이나 맞춤 플랜이 필요하신가요?",
-    "contactUs": "문의하기",
-    "perMonth": "/월",
-    "oneTime": "일회성",
-    "unlimited": "무제한"
+    "contactUs": "문의하기"
   },
   "payment": {
     "title": "결제 내역",
@@ -241,7 +239,50 @@
     "downloadCsv": "CSV 다운로드",
     "copyToClipboard": "클립보드에 복사",
     "exportSuccess": "성공적으로 내보냈습니다",
-    "noData": "내보낼 데이터가 없습니다"
+    "noData": "내보낼 데이터가 없습니다",
+    "allClean": "모든 메타데이터가 깨끗합니다!",
+    "autoFixAll": "모두 자동 수정",
+    "autoFixFailed": "자동 수정 실패",
+    "autoFixNotAvailable": "자동 수정 불가",
+    "clickToScan": "스캔을 시작하려면 \"지금 스캔\" 버튼을 클릭하세요",
+    "excelSheets": "다른 이름으로 저장 → CSV UTF-8 (쉼표로 구분)",
+    "filenameMatch": "파일 이름이 일치하지 않으면 메타데이터가 적용되지 않습니다",
+    "fixedPartial": "{{fixed}}개 수정됨, {{failed}}개 실패",
+    "fixedSuccess": "{{count}}개 항목이 성공적으로 수정되었습니다!",
+    "fixing": "수정 중...",
+    "importantInstructions": "중요 지침",
+    "issuesFound": "{{count}}개의 문제가 발견되었습니다",
+    "issuesFoundWarning": "{{count}}개의 문제가 발견되었습니다",
+    "noForbiddenWords": "금지된 단어를 찾을 수 없습니다",
+    "noIssuesFound": "문제가 발견되지 않았습니다! 모든 메타데이터가 깨끗합니다.",
+    "qualityCheck": "콘텐츠 품질 확인",
+    "qualityCheckDesc": "내보내기 전에 모든 메타데이터를 스캔하여 금지된 단어를 찾으세요",
+    "readme": {
+      "filesInZip": "이 ZIP 파일에 포함된 파일",
+      "footer": "PromptSEONest에서 생성됨 — https://promptseonest.com",
+      "generated": "생성됨",
+      "heading": "{{platform}} 메타데이터 내보내기",
+      "importantNotes": "중요 사항",
+      "instructionsAdobe": "1. Adobe Stock 기여자 포털에 로그인: https://contributor.stock.adobe.com\n2. 먼저 IMAGE 파일을 업로드합니다 (드래그 앤 드롭 또는 FTP를 통해).\n3. 이미지가 처리될 때까지 기다립니다.\n4. \"업로드\"로 이동 → \"스프레드시트 업로드\"를 클릭하고 각 CSV 파일을 선택합니다.\n5. CSV 파일의 파일 이름은 업로드된 이미지 파일 이름과 정확히 일치해야 합니다.\n6. CSV당 최대 5,000행 (이 내보내기는 이미 규칙을 따르고 있습니다).",
+      "instructionsFreepik": "1. Freepik 기여자 계정에 로그인: https://contributor.freepik.com\n2. 먼저 이미지/벡터 파일을 업로드합니다.\n3. 대량 메타데이터 가져오기 옵션을 사용합니다.\n4. 이 ZIP에서 각 CSV를 업로드합니다.\n5. 파일 이름이 정확히 일치하는지 확인하십시오.",
+      "instructionsGeneric": "1. {{platform}} 기여자 계정에 로그인합니다.\n2. 먼저 미디어 파일을 업로드합니다.\n3. 대량 메타데이터 / CSV 가져오기 옵션을 사용합니다.\n4. 이 ZIP에서 각 CSV 파일을 업로드합니다.\n5. CSV 파일의 파일 이름은 업로드된 파일과 정확히 일치해야 합니다.",
+      "instructionsShutterstock": "1. Shutterstock 기여자 계정에 로그인: https://submit.shutterstock.com\n2. 먼저 업로드 페이지를 통해 IMAGE 파일을 업로드합니다.\n3. 업로드가 완료되면 \"편집\"으로 이동 → \"CSV를 통한 대량 편집\"을 사용합니다.\n4. 이 ZIP에서 각 CSV 파일을 하나씩 업로드합니다.\n5. 파일 이름이 정확히 일치해야 합니다.",
+      "note1": "모든 CSV 파일은 BOM이 있는 UTF-8로 인코딩됩니다 (Excel에서 \"CSV UTF-8\"로 엽니다).",
+      "note2": "Excel/Google Sheet에서 편집하는 경우, 인코딩을 유지하려면 \"CSV UTF-8\"로 저장하십시오.",
+      "note3": "각 CSV는 최대 5,000행을 포함합니다 (플랫폼 안전 한도).",
+      "note4": "CSV를 업로드하기 전에 미디어 파일을 먼저 업로드하십시오.",
+      "note5": "CSV에 있는 파일 이름은 업로드한 파일 이름과 정확히 일치해야 합니다.",
+      "platform": "플랫폼",
+      "totalFiles": "총 CSV 파일",
+      "totalItems": "총 항목",
+      "uploadInstructions": "업로드 지침"
+    },
+    "removingWords": "금지된 단어 제거 중...",
+    "scanError": "스캔 오류",
+    "scanNow": "지금 스캔",
+    "scanning": "스캔 중...",
+    "uploadOrder": "이미지를 먼저 업로드한 다음 CSV를 업로드하십시오",
+    "utf8Encoding": "CSV 파일은 UTF-8로 인코딩되어야 합니다"
   },
   "calendar": {
     "title": "2026년 이벤트 캘린더",
@@ -288,5 +329,19 @@
     "serverError": "서버에 연결하는 데 문제가 있습니다. VPN을 끄고 시도해 보세요.",
     "slowConnection": "연결이 느립니다 ({{seconds}}초). VPN을 끄면 도움이 될 수 있습니다.",
     "retry": "재시도"
+  },
+  "tutorials": {
+    "badge": "비디오 튜토리얼",
+    "comingSoon": "비디오 곧 제공 예정",
+    "contactSupport": "맞춤형 지원을 위해 지원 팀에 문의하세요",
+    "metadataDesc": "AI로 이미지를 업로드하고 SEO에 최적화된 제목, 설명 및 태그를 생성합니다",
+    "metadataTitle": "메타데이터 생성",
+    "needHelp": "여전히 도움이 필요하신가요?",
+    "pricingDesc": "관리자용: 사용자를 위한 가격 플랜, 크레딧 및 기능을 구성합니다",
+    "pricingTitle": "관리자: 가격 설정",
+    "signupDesc": "몇 분 안에 계정을 만들고 프로필을 설정하는 방법을 배우세요",
+    "signupTitle": "시작하기",
+    "subtitle": "AI 기반 메타데이터 생성 플랫폼을 최대한 활용하기 위한 단계별 비디오 가이드를 시청하세요",
+    "title": "PromptNest 사용법 알아보기"
   }
 }
