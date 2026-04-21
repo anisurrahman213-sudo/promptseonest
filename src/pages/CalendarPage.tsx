@@ -155,6 +155,11 @@ export default function CalendarPage() {
     toast.success('Jumped to today');
   };
 
+  const allEvents = useMemo(
+    () => [...stockMarketEvents, ...photographyEvents, ...customEvents],
+    [customEvents]
+  );
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
