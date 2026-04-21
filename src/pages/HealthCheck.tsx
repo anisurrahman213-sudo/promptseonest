@@ -14,6 +14,7 @@ import {
   Activity, Database, ShieldCheck, FileCheck2, TestTube, Code2, Package, FileSpreadsheet,
 } from 'lucide-react';
 import { stockPlatforms } from '@/lib/stockPlatformFormats';
+import { AIPipelineTest } from '@/components/admin/AIPipelineTest';
 
 type CheckStatus = 'pass' | 'warn' | 'fail';
 
@@ -235,6 +236,11 @@ export function HealthCheckPanel({ embedded = false }: { embedded?: boolean }) {
             </AlertDescription>
           </Alert>
         )}
+
+        {/* AI pipeline live test */}
+        <Section title="AI Pipeline Live Test" icon={TestTube}>
+          <AIPipelineTest />
+        </Section>
 
         {/* Static / frontend checks */}
         <Section title="Frontend & Build" icon={Package}>
