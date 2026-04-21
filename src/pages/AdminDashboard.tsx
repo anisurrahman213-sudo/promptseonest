@@ -124,14 +124,15 @@ export default function AdminDashboard() {
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">Admin Dashboard</h1>
             <p className="text-muted-foreground">Manage users & credits</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate('/admin/health')} className="gap-2">
+          <Button variant="default" size="sm" onClick={() => navigate('/admin/health')} className="gap-2 bg-gradient-to-r from-primary to-primary/80 shadow-md">
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Health Check</span>
+            <span className="sm:hidden">Health</span>
           </Button>
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full max-w-5xl grid-cols-7">
+          <TabsList className="grid w-full max-w-6xl grid-cols-8">
             <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" /><span className="hidden sm:inline">Users</span></TabsTrigger>
             <TabsTrigger value="credits" className="gap-2"><CreditCard className="h-4 w-4" /><span className="hidden sm:inline">Credits</span></TabsTrigger>
             <TabsTrigger value="generations" className="gap-2"><Trash2 className="h-4 w-4" /><span className="hidden sm:inline">Generations</span></TabsTrigger>
@@ -139,6 +140,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="demo" className="gap-2"><Play className="h-4 w-4" /><span className="hidden sm:inline">Demo</span></TabsTrigger>
             <TabsTrigger value="hero" className="gap-2"><Wallpaper className="h-4 w-4" /><span className="hidden sm:inline">Hero BG</span></TabsTrigger>
             <TabsTrigger value="features" className="gap-2"><ImageIcon className="h-4 w-4" /><span className="hidden sm:inline">Features</span></TabsTrigger>
+            <TabsTrigger value="health" onClick={() => navigate('/admin/health')} className="gap-2 text-primary data-[state=active]:text-primary"><Activity className="h-4 w-4" /><span className="hidden sm:inline">Health</span></TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-6">
