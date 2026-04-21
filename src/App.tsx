@@ -90,6 +90,9 @@ const App = () => (
                   <Route path="/extension" element={<ExtensionDownload />} />
                   <Route path="/keyword-research" element={<KeywordResearch />} />
                   <Route path="/platform-converter" element={<PlatformConverter />} />
+                  <Route path="/rejection-analyzer" element={<RejectionAnalyzer />} />
+                  <Route path="/submission-tracker" element={<SubmissionTracker />} />
+                  <Route path="/trending-keywords" element={<TrendingKeywords />} />
                   <Route path="/admin/health" element={<AdminDashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
