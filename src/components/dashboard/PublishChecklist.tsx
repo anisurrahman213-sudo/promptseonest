@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Loader2,
   Cloud,
+  Activity,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -22,10 +23,12 @@ import { cn } from '@/lib/utils';
 import {
   cacheBustAndReload,
   fetchLatestBuildInfo,
+  pingDeploymentEndpoint,
   recordDeployment,
   getRunningBuildTime,
   isNewerBuild,
   type BuildInfo,
+  type PingResult,
 } from '@/lib/cacheBust';
 import { toast } from 'sonner';
 import { useIsAdmin } from '@/hooks/usePaymentRequests';
