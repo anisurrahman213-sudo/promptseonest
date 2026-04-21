@@ -391,11 +391,15 @@ function displayResults(result) {
   ftc.textContent = `${tLen}/${PLATFORM_RULES[currentPlatform].titleMax}`;
   ftc.className = 'field-counter ' + (tLen <= PLATFORM_RULES[currentPlatform].titleMax ? 'ok' : 'bad');
 
-  // Alt titles
+  // Alt titles (CSP-safe: no inline handlers)
   const altSection = document.getElementById('altTitlesSection');
   if (result.alt_titles?.length) {
     altSection.innerHTML = '<div style="font-size:11px;font-weight:600;margin-bottom:4px;color:var(--pn-text-muted)">Alternative Titles</div>' +
-      result.alt_titles.map(t => `<div class="alt-title-item"><span>${escHtml(t)}</span><button class="btn-copy" onclick="copyText('${escAttr(t)}',this)">📋</button></div>`).join('');
+      result.alt_titles.map(t => `<div class="alt-title-item"><span>${escHtml(t)}</span><button class="btn-copy alt-copy-btn" data-text="${escHtml(t)}">📋</button></div>`).join('');
+    // Attach event listeners (MV3 CSP forbids inline onclick)
+    altSection.querySelectorAll('.alt-copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => copyText(btn.dataset.text || '', btn));
+    });
   } else {
     altSection.innerHTML = '';
   }
