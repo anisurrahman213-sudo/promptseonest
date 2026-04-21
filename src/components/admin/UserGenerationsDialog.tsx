@@ -216,7 +216,20 @@ export function UserGenerationsDialog({ open, onOpenChange, user }: UserGenerati
           {selected && (
             <>
               <DialogHeader>
-                <DialogTitle className="truncate">{selected.title || selected.image_name}</DialogTitle>
+                <DialogTitle className="truncate flex items-center gap-2">
+                  {(() => {
+                    const s = getGenerationStatus(selected);
+                    const cfg = statusConfig[s];
+                    const Icon = cfg.icon;
+                    return (
+                      <Badge className={cn('gap-1 text-[10px] px-2 py-0.5 shrink-0', cfg.className)}>
+                        <Icon className="h-3 w-3" />
+                        {cfg.label}
+                      </Badge>
+                    );
+                  })()}
+                  <span className="truncate">{selected.title || selected.image_name}</span>
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-3">
                 <div className="rounded-lg overflow-hidden bg-muted max-h-[50vh] flex items-center justify-center">
