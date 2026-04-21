@@ -287,6 +287,30 @@ const filteredEvents = allEvents.filter((event) => {
             </div>
           </motion.div>
 
+          {/* Category Filters (Stock/Photography/Personal) */}
+          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Category:</span>
+              <ToggleGroup type="multiple" value={categoryFilters} onValueChange={(value) => { if (value.length > 0) setCategoryFilters(value); }} className="bg-muted/30 rounded-lg p-1 flex-wrap">
+                <ToggleGroupItem value="stock" aria-label="Toggle Stock Category" className="data-[state=on]:bg-emerald-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-emerald-400/50">
+                  <TrendingUp className="h-3 w-3" /><span>Stock</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="photography" aria-label="Toggle Photography Category" className="data-[state=on]:bg-purple-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-purple-400/50">
+                  <Camera className="h-3 w-3" /><span>Photography</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="personal" aria-label="Toggle Personal Category" className="data-[state=on]:bg-amber-500/80 data-[state=on]:text-white px-2.5 py-1 text-xs gap-1.5 border border-transparent data-[state=on]:border-amber-400/50">
+                  <User className="h-3 w-3" /><span>Personal</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+            {(searchQuery.trim() || categoryFilters.length < 3) && (
+              <div className="text-xs text-muted-foreground">
+                Showing {monthEvents.filter(e => e.month === currentMonth).length} events
+                {searchQuery.trim() && <span> for "{searchQuery}"</span>}
+              </div>
+            )}
+          </motion.div>
+
           {/* Main Content */}
           <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <CalendarGrid currentMonth={currentMonth} year={year} monthEvents={monthEvents} onDateClick={handleDateClick} />
