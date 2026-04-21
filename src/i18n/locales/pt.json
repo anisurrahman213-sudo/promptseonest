@@ -43,7 +43,8 @@
     "paymentHistory": "Histórico de Pagamentos",
     "adminPanel": "Painel Admin",
     "upgradePlan": "Atualizar Plano",
-    "pricing": "Preços"
+    "pricing": "Preços",
+    "tutorials": "Ajuda"
   },
   "landing": {
     "badge": "Análise de Imagens com IA",
@@ -214,10 +215,7 @@
     "buyNow": "Comprar Agora",
     "getLifetimeAccess": "Acesso Vitalício",
     "needMore": "Precisa de mais créditos ou planos personalizados?",
-    "contactUs": "Entre em contato",
-    "perMonth": "/mês",
-    "oneTime": "pagamento único",
-    "unlimited": "Ilimitado"
+    "contactUs": "Entre em contato"
   },
   "payment": {
     "title": "Histórico de Pagamentos",
@@ -241,7 +239,50 @@
     "downloadCsv": "Baixar CSV",
     "copyToClipboard": "Copiar para Área de Transferência",
     "exportSuccess": "Exportado com sucesso",
-    "noData": "Sem dados para exportar"
+    "noData": "Sem dados para exportar",
+    "allClean": "Todos os metadados limpos!",
+    "autoFixAll": "Corrigir Todos Automaticamente",
+    "autoFixFailed": "Correção automática falhou",
+    "autoFixNotAvailable": "Correção automática não disponível",
+    "clickToScan": "Clique no botão \"Escanear Agora\" para iniciar a varredura",
+    "excelSheets": "Salvar como → CSV UTF-8 (Delimitado por vírgulas)",
+    "filenameMatch": "Metadados não serão aplicados se o nome do arquivo não corresponder",
+    "fixedPartial": "{{fixed}} corrigidos, {{failed}} falharam",
+    "fixedSuccess": "{{count}} item(s) corrigido(s) com sucesso!",
+    "fixing": "Corrigindo...",
+    "importantInstructions": "Instruções Importantes",
+    "issuesFound": "{{count}} problema(s) encontrado(s)",
+    "issuesFoundWarning": "{{count}} problema(s) encontrado(s)",
+    "noForbiddenWords": "Nenhuma palavra proibida encontrada",
+    "noIssuesFound": "Nenhum problema encontrado! Todos os metadados estão limpos.",
+    "qualityCheck": "Verificação de Qualidade do Conteúdo",
+    "qualityCheckDesc": "Verifique todos os metadados antes da exportação para encontrar palavras proibidas",
+    "readme": {
+      "filesInZip": "Arquivos neste ZIP",
+      "footer": "Gerado por PromptSEONest — https://promptseonest.com",
+      "generated": "Gerado",
+      "heading": "Exportação de Metadados {{platform}}",
+      "importantNotes": "Notas Importantes",
+      "instructionsAdobe": "1. Faça login no portal do Contribuidor Adobe Stock: https://contributor.stock.adobe.com\n2. Carregue seus arquivos de IMAGEM PRIMEIRO (arrastar e soltar ou via FTP).\n3. Aguarde até que as imagens terminem de processar.\n4. Vá para \"Upload\" → clique em \"Upload spreadsheet\" e selecione cada arquivo CSV.\n5. Os nomes dos arquivos no CSV devem corresponder EXATAMENTE aos nomes dos arquivos de imagem enviados.\n6. Máximo de 5.000 linhas por CSV (esta exportação já está em conformidade).",
+      "instructionsFreepik": "1. Faça login no Freepik Contributor: https://contributor.freepik.com\n2. Carregue seus arquivos de imagem/vetor primeiro.\n3. Use a opção de importação em massa de metadados.\n4. Carregue cada CSV deste ZIP.\n5. Certifique-se de que os nomes dos arquivos correspondam exatamente.",
+      "instructionsGeneric": "1. Faça login na sua conta de contribuidor {{platform}}.\n2. Carregue seus arquivos de mídia primeiro.\n3. Use a opção de importação em massa de metadados / CSV.\n4. Carregue cada arquivo CSV deste ZIP.\n5. Os nomes dos arquivos no CSV devem corresponder exatamente aos arquivos enviados.",
+      "instructionsShutterstock": "1. Faça login no Shutterstock Contributor: https://submit.shutterstock.com\n2. Carregue seus arquivos de IMAGEM primeiro através da página de Upload.\n3. Uma vez carregado, vá para \"Editar\" → use \"Edição em massa via CSV\".\n4. Carregue cada arquivo CSV deste ZIP um por um.\n5. Os nomes dos arquivos devem corresponder exatamente.",
+      "note1": "Todos os arquivos CSV são codificados em UTF-8 com BOM (abra no Excel como \"CSV UTF-8\").",
+      "note2": "Se você editar no Excel/Google Sheets, salve como \"CSV UTF-8\" para manter a codificação.",
+      "note3": "Cada CSV contém no máximo 5.000 linhas (limite seguro da plataforma).",
+      "note4": "Carregue seus arquivos de mídia ANTES do CSV.",
+      "note5": "Os nomes dos arquivos no CSV devem corresponder exatamente aos nomes dos seus arquivos enviados.",
+      "platform": "Plataforma",
+      "totalFiles": "Total de arquivos CSV",
+      "totalItems": "Total de itens",
+      "uploadInstructions": "Instruções de Upload"
+    },
+    "removingWords": "Removendo palavras proibidas...",
+    "scanError": "Erro ao escanear",
+    "scanNow": "Escanear Agora",
+    "scanning": "Escaneando...",
+    "uploadOrder": "Envie as imagens primeiro, depois o CSV",
+    "utf8Encoding": "O arquivo CSV deve ser codificado em UTF-8"
   },
   "calendar": {
     "title": "Calendário de Eventos 2026",
@@ -288,5 +329,19 @@
     "serverError": "Problemas para conectar ao servidor. Tente desativar a VPN.",
     "slowConnection": "Conexão lenta ({{seconds}}s). Desativar a VPN pode ajudar.",
     "retry": "Tentar novamente"
+  },
+  "tutorials": {
+    "badge": "Tutoriais em Vídeo",
+    "comingSoon": "Vídeo em breve",
+    "contactSupport": "Entre em contato com nossa equipe de suporte para assistência personalizada",
+    "metadataDesc": "Envie imagens/vídeos e gere títulos, descrições e tags otimizados para SEO com IA",
+    "metadataTitle": "Gerar Metadados",
+    "needHelp": "Ainda precisa de ajuda?",
+    "pricingDesc": "Para administradores: Configure planos de preços, créditos e recursos para seus usuários",
+    "pricingTitle": "Administrador: Configuração de Preços",
+    "signupDesc": "Aprenda a criar sua conta e configurar seu perfil em poucos minutos",
+    "signupTitle": "Primeiros Passos",
+    "subtitle": "Assista a guias em vídeo passo a passo para aproveitar ao máximo nossa plataforma de geração de metadados com IA",
+    "title": "Aprenda a usar o PromptNest"
   }
 }

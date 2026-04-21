@@ -43,7 +43,8 @@
     "paymentHistory": "भुगतान इतिहास",
     "adminPanel": "व्यवस्थापक पैनल",
     "upgradePlan": "प्लान अपग्रेड करें",
-    "pricing": "मूल्य निर्धारण"
+    "pricing": "मूल्य निर्धारण",
+    "tutorials": "सहायता"
   },
   "landing": {
     "badge": "AI-संचालित छवि विश्लेषण",
@@ -214,10 +215,7 @@
     "buyNow": "अभी खरीदें",
     "getLifetimeAccess": "आजीवन एक्सेस प्राप्त करें",
     "needMore": "अधिक क्रेडिट या कस्टम प्लान चाहिए?",
-    "contactUs": "हमसे संपर्क करें",
-    "perMonth": "/महीना",
-    "oneTime": "एकमुश्त",
-    "unlimited": "असीमित"
+    "contactUs": "हमसे संपर्क करें"
   },
   "payment": {
     "title": "भुगतान इतिहास",
@@ -261,7 +259,30 @@
       "instructionsShutterstock": "1. Shutterstock Contributor में लॉगिन करें: https://submit.shutterstock.com\n2. Upload page से पहले अपनी IMAGE फ़ाइलें अपलोड करें।\n3. अपलोड के बाद \"Edit\" → \"Bulk edit via CSV\" का उपयोग करें।\n4. इस ZIP की प्रत्येक CSV फ़ाइल एक-एक करके अपलोड करें।\n5. Filenames बिल्कुल मेल खाने चाहिए।",
       "instructionsFreepik": "1. Freepik Contributor में लॉगिन करें: https://contributor.freepik.com\n2. पहले अपनी image/vector फ़ाइलें अपलोड करें।\n3. Bulk metadata import option का उपयोग करें।\n4. इस ZIP की प्रत्येक CSV अपलोड करें।\n5. सुनिश्चित करें कि filenames बिल्कुल मेल खाते हैं।",
       "instructionsGeneric": "1. अपने {{platform}} contributor account में लॉगिन करें।\n2. पहले अपनी मीडिया फ़ाइलें अपलोड करें।\n3. Bulk metadata / CSV import option का उपयोग करें।\n4. इस ZIP की प्रत्येक CSV फ़ाइल अपलोड करें।\n5. CSV में filenames अपलोड की गई फ़ाइलों से बिल्कुल मेल खाने चाहिए।"
-    }
+    },
+    "allClean": "सभी मेटाडेटा साफ़ हैं!",
+    "autoFixAll": "सभी को ऑटो-फिक्स करें",
+    "autoFixFailed": "ऑटो-फिक्स विफल रहा",
+    "autoFixNotAvailable": "ऑटो-फिक्स उपलब्ध नहीं है",
+    "clickToScan": "स्कैन करना शुरू करने के लिए \"अभी स्कैन करें\" बटन पर क्लिक करें",
+    "excelSheets": "इस रूप में सहेजें → CSV UTF-8 (कॉमा से अलग किया गया)",
+    "filenameMatch": "यदि फ़ाइलनाम मेल नहीं खाता है तो मेटाडेटा लागू नहीं होगा",
+    "fixedPartial": "{{fixed}} ठीक किए गए, {{failed}} विफल रहे",
+    "fixedSuccess": "{{count}} आइटम सफलतापूर्वक ठीक किए गए!",
+    "fixing": "ठीक किया जा रहा है...",
+    "importantInstructions": "महत्वपूर्ण निर्देश",
+    "issuesFound": "{{count}} समस्याएँ मिलीं",
+    "issuesFoundWarning": "{{count}} समस्याएँ मिलीं",
+    "noForbiddenWords": "कोई निषिद्ध शब्द नहीं मिला",
+    "noIssuesFound": "कोई समस्या नहीं मिली! सभी मेटाडेटा साफ़ हैं।",
+    "qualityCheck": "सामग्री गुणवत्ता जांच",
+    "qualityCheckDesc": "निषिद्ध शब्दों को खोजने के लिए निर्यात से पहले सभी मेटाडेटा स्कैन करें",
+    "removingWords": "निषिद्ध शब्द हटाए जा रहे हैं...",
+    "scanError": "स्कैनिंग में त्रुटि",
+    "scanNow": "अभी स्कैन करें",
+    "scanning": "स्कैन किया जा रहा है...",
+    "uploadOrder": "पहले छवियां अपलोड करें, फिर सीएसवी",
+    "utf8Encoding": "सीएसवी फ़ाइल UTF-8 एन्कोडेड होनी चाहिए"
   },
   "calendar": {
     "title": "इवेंट कैलेंडर 2026",
@@ -308,5 +329,19 @@
     "serverError": "सर्वर से कनेक्ट करने में समस्या। VPN बंद करके देखें।",
     "slowConnection": "धीमा कनेक्शन ({{seconds}} सेकंड)। VPN बंद करने से मदद मिल सकती है।",
     "retry": "पुनः प्रयास करें"
+  },
+  "tutorials": {
+    "badge": "वीडियो ट्यूटोरियल",
+    "comingSoon": "वीडियो जल्द आ रहा है",
+    "contactSupport": "व्यक्तिगत सहायता के लिए हमारी सहायता टीम से संपर्क करें",
+    "metadataDesc": "छवियां/वीडियो अपलोड करें और AI के साथ SEO-अनुकूलित शीर्षक, विवरण और टैग जेनरेट करें",
+    "metadataTitle": "मेटाडेटा जेनरेट करें",
+    "needHelp": "अभी भी सहायता चाहिए?",
+    "pricingDesc": "प्रशासकों के लिए: अपने उपयोगकर्ताओं के लिए मूल्य निर्धारण योजनाएं, क्रेडिट और सुविधाएँ कॉन्फ़िगर करें",
+    "pricingTitle": "व्यवस्थापक: मूल्य निर्धारण सेटअप",
+    "signupDesc": "जानें कि कुछ ही मिनटों में अपना खाता कैसे बनाएं और अपनी प्रोफ़ाइल कैसे सेट करें",
+    "signupTitle": "शुरुआत करना",
+    "subtitle": "हमारे AI-संचालित मेटाडेटा जनरेशन प्लेटफ़ॉर्म का अधिकतम लाभ उठाने के लिए चरण-दर-चरण वीडियो गाइड देखें",
+    "title": "PromptNest का उपयोग करना सीखें"
   }
 }

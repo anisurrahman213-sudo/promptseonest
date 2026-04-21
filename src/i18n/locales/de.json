@@ -43,7 +43,8 @@
     "paymentHistory": "Zahlungsverlauf",
     "adminPanel": "Admin-Panel",
     "upgradePlan": "Plan upgraden",
-    "pricing": "Preise"
+    "pricing": "Preise",
+    "tutorials": "Hilfe"
   },
   "landing": {
     "badge": "KI-gestützte Bildanalyse",
@@ -214,10 +215,7 @@
     "buyNow": "Jetzt kaufen",
     "getLifetimeAccess": "Lebenslanger Zugang",
     "needMore": "Mehr Credits oder individuelle Pläne?",
-    "contactUs": "Kontaktieren Sie uns",
-    "perMonth": "/Monat",
-    "oneTime": "einmalig",
-    "unlimited": "Unbegrenzt"
+    "contactUs": "Kontaktieren Sie uns"
   },
   "payment": {
     "title": "Zahlungsverlauf",
@@ -241,7 +239,50 @@
     "downloadCsv": "CSV herunterladen",
     "copyToClipboard": "In Zwischenablage kopieren",
     "exportSuccess": "Erfolgreich exportiert",
-    "noData": "Keine Daten zum Exportieren"
+    "noData": "Keine Daten zum Exportieren",
+    "allClean": "Alle Metadaten sauber!",
+    "autoFixAll": "Alles automatisch reparieren",
+    "autoFixFailed": "Automatische Reparatur fehlgeschlagen",
+    "autoFixNotAvailable": "Automatische Reparatur nicht verfügbar",
+    "clickToScan": "Klicken Sie auf \"Jetzt scannen\", um den Scan zu starten",
+    "excelSheets": "Speichern unter → CSV UTF-8 (Komma-getrennt)",
+    "filenameMatch": "Metadaten werden nicht angewendet, wenn Dateiname nicht übereinstimmt",
+    "fixedPartial": "{{fixed}} behoben, {{failed}} fehlgeschlagen",
+    "fixedSuccess": "{{count}} Element(e) erfolgreich behoben!",
+    "fixing": "Wird repariert...",
+    "importantInstructions": "Wichtige Anweisungen",
+    "issuesFound": "{{count}} Probleme gefunden",
+    "issuesFoundWarning": "{{count}} Problem(e) gefunden",
+    "noForbiddenWords": "Keine verbotenen Wörter gefunden",
+    "noIssuesFound": "Keine Probleme gefunden! Alle Metadaten sind sauber.",
+    "qualityCheck": "Inhaltsqualitätsprüfung",
+    "qualityCheckDesc": "Scannen Sie alle Metadaten vor dem Export, um verbotene Wörter zu finden",
+    "readme": {
+      "filesInZip": "Dateien in dieser ZIP-Datei",
+      "footer": "Generiert von PromptSEONest – https://promptseonest.com",
+      "generated": "Generiert",
+      "heading": "{{platform}} Metadatenexport",
+      "importantNotes": "Wichtige Hinweise",
+      "instructionsAdobe": "1. Melden Sie sich im Adobe Stock Contributor-Portal an: https://contributor.stock.adobe.com\n2. Laden Sie ZUERST Ihre BILDDATEIEN hoch (per Drag & Drop oder FTP).\n3. Warten Sie, bis die Bilder verarbeitet wurden.\n4. Gehen Sie zu \"Upload\" → klicken Sie auf \"Upload spreadsheet\" und wählen Sie jede CSV-Datei aus.\n5. Dateinamen in der CSV müssen EXAKT mit den hochgeladenen Bilddateinamen übereinstimmen.\n6. Maximal 5.000 Zeilen pro CSV (dieser Export entspricht dem bereits).",
+      "instructionsFreepik": "1. Melden Sie sich bei Freepik Contributor an: https://contributor.freepik.com\n2. Laden Sie zuerst Ihre Bilder/Vektordateien hoch.\n3. Verwenden Sie die Option zum Massenimport von Metadaten.\n4. Laden Sie jede CSV-Datei aus diesem ZIP-Archiv hoch.\n5. Stellen Sie sicher, dass die Dateinamen exakt übereinstimmen.",
+      "instructionsGeneric": "1. Melden Sie sich bei Ihrem {{platform}} Anbieterkonto an.\n2. Laden Sie zuerst Ihre Mediendateien hoch.\n3. Verwenden Sie die Option für den Massenimport von Metadaten / CSV-Import.\n4. Laden Sie jede CSV-Datei aus diesem ZIP-Archiv hoch.\n5. Dateinamen in der CSV müssen exakt mit den hochgeladenen Dateien übereinstimmen.",
+      "instructionsShutterstock": "1. Melden Sie sich bei Shutterstock Contributor an: https://submit.shutterstock.com\n2. Laden Sie ZUERST Ihre BILDDATEIEN über die Upload-Seite hoch.\n3. Nach dem Hochladen gehen Sie zu \"Bearbeiten\" → verwenden Sie \"Massenbearbeitung via CSV\".\n4. Laden Sie jede CSV-Datei aus diesem ZIP-Archiv einzeln hoch.\n5. Dateinamen müssen exakt übereinstimmen.",
+      "note1": "Alle CSV-Dateien sind UTF-8-kodiert mit BOM (in Excel als \"CSV UTF-8\" öffnen).",
+      "note2": "Wenn Sie in Excel/Google Sheets bearbeiten, speichern Sie als \"CSV UTF-8\", um die Kodierung beizubehalten.",
+      "note3": "Jede CSV enthält maximal 5.000 Zeilen (plattformübergreifendes Limit).",
+      "note4": "Laden Sie Ihre Mediendateien VOR der CSV hoch.",
+      "note5": "Dateinamen in der CSV müssen exakt mit Ihren hochgeladenen Dateinamen übereinstimmen.",
+      "platform": "Plattform",
+      "totalFiles": "Gesamtzahl der CSV-Dateien",
+      "totalItems": "Gesamtzahl der Elemente",
+      "uploadInstructions": "Upload-Anweisungen"
+    },
+    "removingWords": "Verbotene Wörter werden entfernt...",
+    "scanError": "Fehler beim Scannen",
+    "scanNow": "Jetzt scannen",
+    "scanning": "Wird gescannt...",
+    "uploadOrder": "Zuerst Bilder hochladen, dann CSV",
+    "utf8Encoding": "CSV-Datei muss UTF-8-kodiert sein"
   },
   "calendar": {
     "title": "Event-Kalender 2026",
@@ -288,5 +329,19 @@
     "serverError": "Problem bei der Verbindung zum Server. Versuchen Sie, VPN auszuschalten.",
     "slowConnection": "Langsame Verbindung ({{seconds}}s). VPN ausschalten könnte helfen.",
     "retry": "Erneut versuchen"
+  },
+  "tutorials": {
+    "badge": "Video-Tutorials",
+    "comingSoon": "Video in Kürze verfügbar",
+    "contactSupport": "Kontaktieren Sie unser Support-Team für persönliche Unterstützung",
+    "metadataDesc": "Laden Sie Bilder/Videos hoch und generieren Sie SEO-optimierte Titel, Beschreibungen und Tags mit KI",
+    "metadataTitle": "Metadaten generieren",
+    "needHelp": "Brauchen Sie noch Hilfe?",
+    "pricingDesc": "Für Administratoren: Konfigurieren Sie Preispläne, Credits und Funktionen für Ihre Benutzer",
+    "pricingTitle": "Admin: Preiseinrichtung",
+    "signupDesc": "Erfahren Sie, wie Sie Ihr Konto erstellen und Ihr Profil in wenigen Minuten einrichten können",
+    "signupTitle": "Erste Schritte",
+    "subtitle": "Sehen Sie sich Schritt-für-Schritt-Videoanleitungen an, um das Beste aus unserer KI-gestützten Metadatengenerierungsplattform herauszuholen",
+    "title": "Lernprogramm: PromptNest verwenden"
   }
 }

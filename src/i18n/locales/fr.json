@@ -43,7 +43,8 @@
     "paymentHistory": "Historique des Paiements",
     "adminPanel": "Panneau Admin",
     "upgradePlan": "Améliorer le Plan",
-    "pricing": "Tarifs"
+    "pricing": "Tarifs",
+    "tutorials": "Aide"
   },
   "landing": {
     "badge": "Analyse d'Images par IA",
@@ -214,10 +215,7 @@
     "buyNow": "Acheter Maintenant",
     "getLifetimeAccess": "Accès à Vie",
     "needMore": "Besoin de plus de crédits ou de plans personnalisés ?",
-    "contactUs": "Contactez-nous",
-    "perMonth": "/mois",
-    "oneTime": "paiement unique",
-    "unlimited": "Illimité"
+    "contactUs": "Contactez-nous"
   },
   "payment": {
     "title": "Historique des Paiements",
@@ -241,7 +239,50 @@
     "downloadCsv": "Télécharger CSV",
     "copyToClipboard": "Copier dans le Presse-papiers",
     "exportSuccess": "Exporté avec succès",
-    "noData": "Aucune donnée à exporter"
+    "noData": "Aucune donnée à exporter",
+    "allClean": "Toutes les métadonnées sont propres !",
+    "autoFixAll": "Corriger tout automatiquement",
+    "autoFixFailed": "Correction automatique échouée",
+    "autoFixNotAvailable": "Correction automatique non disponible",
+    "clickToScan": "Cliquez sur le bouton « Scanner maintenant » pour lancer le balayage",
+    "excelSheets": "Enregistrer sous → CSV UTF-8 (délimité par des virgules)",
+    "filenameMatch": "Les métadonnées ne seront pas appliquées si le nom de fichier ne correspond pas",
+    "fixedPartial": "{{fixed}} corrigés, {{failed}} échoués",
+    "fixedSuccess": "{{count}} élément(s) corrigé(s) avec succès !",
+    "fixing": "Correction en cours...",
+    "importantInstructions": "Instructions importantes",
+    "issuesFound": "{{count}} problème(s) trouvé(s)",
+    "issuesFoundWarning": "{{count}} problème(s) trouvé(s)",
+    "noForbiddenWords": "Aucun mot interdit trouvé",
+    "noIssuesFound": "Aucun problème trouvé ! Toutes les métadonnées sont propres.",
+    "qualityCheck": "Contrôle qualité du contenu",
+    "qualityCheckDesc": "Analysez toutes les métadonnées avant l'exportation pour trouver les mots interdits",
+    "readme": {
+      "filesInZip": "Fichiers dans ce ZIP",
+      "footer": "Généré par PromptSEONest — https://promptseonest.com",
+      "generated": "Généré",
+      "heading": "Exportation des métadonnées {{platform}}",
+      "importantNotes": "Notes importantes",
+      "instructionsAdobe": "1. Connectez-vous au portail contributeur Adobe Stock : https://contributor.stock.adobe.com\n2. Téléchargez D'ABORD vos fichiers IMAGE (glisser-déposer ou via FTP).\n3. Attendez que le traitement des images soit terminé.\n4. Allez dans « Télécharger » → cliquez sur « Télécharger une feuille de calcul » et sélectionnez chaque fichier CSV.\n5. Les noms de fichiers dans le CSV doivent correspondre EXACTEMENT aux noms de fichiers d'image téléchargés.\n6. Maximum 5 000 lignes par CSV (cette exportation est déjà conforme).",
+      "instructionsFreepik": "1. Connectez-vous à Freepik Contributor : https://contributor.freepik.com\n2. Téléchargez d'abord vos fichiers image/vectoriels.\n3. Utilisez l'option d'importation de métadonnées en masse.\n4. Téléchargez chaque CSV de ce ZIP.\n5. Assurez-vous que les noms de fichiers correspondent exactement.",
+      "instructionsGeneric": "1. Connectez-vous à votre compte contributeur {{platform}}.\n2. Téléchargez d'abord vos fichiers multimédias.\n3. Utilisez l'option d'importation de métadonnées / CSV en masse.\n4. Téléchargez chaque fichier CSV de ce ZIP.\n5. Les noms de fichiers dans le CSV doivent correspondre exactement aux fichiers téléchargés.",
+      "instructionsShutterstock": "1. Connectez-vous à Shutterstock Contributor : https://submit.shutterstock.com\n2. Téléchargez d'abord vos fichiers IMAGE via la page de téléchargement.\n3. Une fois téléchargé, allez dans « Modifier » → utilisez « Modifier en masse via CSV ».\n4. Téléchargez chaque fichier CSV de ce ZIP un par un.\n5. Les noms de fichiers doivent correspondre exactement.",
+      "note1": "Tous les fichiers CSV sont encodés en UTF-8 avec BOM (ouvrir dans Excel sous le nom « CSV UTF-8 »).",
+      "note2": "Si vous modifiez dans Excel/Google Sheets, enregistrez au format « CSV UTF-8 » pour conserver l'encodage.",
+      "note3": "Chaque CSV contient un maximum de 5 000 lignes (limite sécurisée de la plateforme).",
+      "note4": "Téléchargez vos fichiers multimédias AVANT le CSV.",
+      "note5": "Les noms de fichiers dans le CSV doivent correspondre exactement aux noms de vos fichiers téléchargés.",
+      "platform": "Plateforme",
+      "totalFiles": "Nombre total de fichiers CSV",
+      "totalItems": "Nombre total d'éléments",
+      "uploadInstructions": "Instructions de téléchargement"
+    },
+    "removingWords": "Suppression des mots interdits...",
+    "scanError": "Erreur de numérisation",
+    "scanNow": "Scanner maintenant",
+    "scanning": "Numérisation...",
+    "uploadOrder": "Téléchargez les images d'abord, puis le CSV",
+    "utf8Encoding": "Le fichier CSV doit être encodé en UTF-8"
   },
   "calendar": {
     "title": "Calendrier des Événements 2026",
@@ -288,5 +329,19 @@
     "serverError": "Problème de connexion au serveur. Essayez de désactiver le VPN.",
     "slowConnection": "Connexion lente ({{seconds}}s). Désactiver le VPN peut aider.",
     "retry": "Réessayer"
+  },
+  "tutorials": {
+    "badge": "Tutoriels vidéo",
+    "comingSoon": "Vidéo bientôt disponible",
+    "contactSupport": "Contactez notre équipe de support pour une assistance personnalisée",
+    "metadataDesc": "Importez des images/vidéos et générez des titres, descriptions et tags optimisés pour le SEO grâce à l'IA",
+    "metadataTitle": "Générer des métadonnées",
+    "needHelp": "Besoin d'aide ?",
+    "pricingDesc": "Pour les administrateurs : Configurez les plans tarifaires, les crédits et les fonctionnalités pour vos utilisateurs",
+    "pricingTitle": "Admin : Configuration des tarifs",
+    "signupDesc": "Apprenez à créer votre compte et à configurer votre profil en quelques minutes",
+    "signupTitle": "Démarrage rapide",
+    "subtitle": "Regardez des guides vidéo étape par étape pour tirer le meilleur parti de notre plateforme de génération de métadonnées basée sur l'IA",
+    "title": "Apprenez à utiliser PromptNest"
   }
 }

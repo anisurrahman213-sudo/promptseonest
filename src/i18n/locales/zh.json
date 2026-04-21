@@ -43,7 +43,8 @@
     "paymentHistory": "付款历史",
     "adminPanel": "管理面板",
     "upgradePlan": "升级计划",
-    "pricing": "价格"
+    "pricing": "价格",
+    "tutorials": "帮助"
   },
   "landing": {
     "badge": "AI驱动的图像分析",
@@ -214,10 +215,7 @@
     "buyNow": "立即购买",
     "getLifetimeAccess": "获得终身访问",
     "needMore": "需要更多积分或自定义计划？",
-    "contactUs": "联系我们",
-    "perMonth": "/月",
-    "oneTime": "一次性",
-    "unlimited": "无限制"
+    "contactUs": "联系我们"
   },
   "payment": {
     "title": "付款历史",
@@ -241,7 +239,50 @@
     "downloadCsv": "下载CSV",
     "copyToClipboard": "复制到剪贴板",
     "exportSuccess": "导出成功",
-    "noData": "没有数据可导出"
+    "noData": "没有数据可导出",
+    "allClean": "所有元数据均已清理！",
+    "autoFixAll": "全部自动修复",
+    "autoFixFailed": "自动修复失败",
+    "autoFixNotAvailable": "自动修复不可用",
+    "clickToScan": "点击“立即扫描”按钮开始扫描",
+    "excelSheets": "另存为 → CSV UTF-8 (逗号分隔)",
+    "filenameMatch": "如果文件名不匹配，元数据将不会被应用",
+    "fixedPartial": "已修复{{fixed}}个，{{failed}}个失败",
+    "fixedSuccess": "{{count}}个项目修复成功！",
+    "fixing": "正在修复...",
+    "importantInstructions": "重要说明",
+    "issuesFound": "发现{{count}}个问题",
+    "issuesFoundWarning": "发现{{count}}个问题",
+    "noForbiddenWords": "未发现禁用词",
+    "noIssuesFound": "未发现任何问题！所有元数据均已清理。",
+    "qualityCheck": "内容质量检查",
+    "qualityCheckDesc": "在导出前扫描所有元数据以查找禁用词",
+    "readme": {
+      "filesInZip": "此ZIP文件中的文件",
+      "footer": "PromptSEONest 生成 — https://promptseonest.com",
+      "generated": "生成日期",
+      "heading": "{{platform}} 元数据导出",
+      "importantNotes": "重要注意事项",
+      "instructionsAdobe": "1. 登录 Adobe Stock 供稿人门户：https://contributor.stock.adobe.com\n2. 首先上传您的 IMAGE 文件（拖放或通过FTP）。\n3. 等待图片处理完成。\n4. 进入“上传”→ 点击“上传电子表格”并选择每个 CSV 文件。\n5. CSV 中的文件名必须与上传的图片文件名完全匹配。\n6. 每个 CSV 最多5,000行（本次导出已符合）。",
+      "instructionsFreepik": "1. 登录 Freepik 供稿人：https://contributor.freepik.com\n2. 首先上传您的图片/矢量文件。\n3. 使用批量元数据导入选项。\n4. 上传此 ZIP 文件中的每个 CSV 文件。\n5. 确保文件名完全匹配。",
+      "instructionsGeneric": "1. 登录您的 {{platform}} 供稿人账户。\n2. 首先上传您的媒体文件。\n3. 使用批量元数据/CSV 导入选项。\n4. 上传此 ZIP 文件中的每个 CSV 文件。\n5. CSV 中的文件名必须与上传的文件完全匹配。",
+      "instructionsShutterstock": "1. 登录 Shutterstock 供稿人：https://submit.shutterstock.com\n2. 首先通过上传页面上传您的 IMAGE 文件。\n3. 上传后，进入“编辑”→ 使用“通过 CSV 批量编辑”。\n4. 逐个上传此 ZIP 文件中的每个 CSV 文件。\n5. 文件名必须完全匹配。",
+      "note1": "所有 CSV 文件均采用 UTF-8 BOM 编码（在 Excel 中打开时选择“CSV UTF-8”）。",
+      "note2": "如果您在 Excel/Google 表格中编辑，请保存为“CSV UTF-8”以保留编码。",
+      "note3": "每个 CSV 最多包含 5,000 行（平台安全限制）。",
+      "note4": "请在上传 CSV 之前上传您的媒体文件。",
+      "note5": "CSV 中的文件名必须与您上传的文件名完全匹配。",
+      "platform": "平台",
+      "totalFiles": "CSV 文件总数",
+      "totalItems": "项目总数",
+      "uploadInstructions": "上传说明"
+    },
+    "removingWords": "正在移除禁用词...",
+    "scanError": "扫描出错",
+    "scanNow": "立即扫描",
+    "scanning": "正在扫描...",
+    "uploadOrder": "先上传图片，再上传 CSV",
+    "utf8Encoding": "CSV 文件必须是 UTF-8 编码"
   },
   "calendar": {
     "title": "2026年活动日历",
@@ -288,5 +329,19 @@
     "serverError": "连接服务器时遇到问题。请尝试关闭VPN。",
     "slowConnection": "连接缓慢（{{seconds}}秒）。关闭VPN可能会有所帮助。",
     "retry": "重试"
+  },
+  "tutorials": {
+    "badge": "视频教程",
+    "comingSoon": "视频即将推出",
+    "contactSupport": "联系我们的支持团队以获取个性化帮助",
+    "metadataDesc": "上传图片/视频，并使用AI生成经过SEO优化的标题、描述和标签",
+    "metadataTitle": "生成元数据",
+    "needHelp": "还需要帮助吗？",
+    "pricingDesc": "管理员：为您的用户配置定价方案、信用点数和功能",
+    "pricingTitle": "管理员：定价设置",
+    "signupDesc": "了解如何在几分钟内创建您的账户并设置您的个人资料",
+    "signupTitle": "开始使用",
+    "subtitle": "观看分步视频指南，充分利用我们由AI驱动的元数据生成平台",
+    "title": "学习如何使用 PromptNest"
   }
 }
