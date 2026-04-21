@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles, Trash2, Volume2, VolumeX } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles, Trash2, Volume2, VolumeX, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import { languages } from "@/i18n/config";
 
 type Message = {
   role: "user" | "assistant";
