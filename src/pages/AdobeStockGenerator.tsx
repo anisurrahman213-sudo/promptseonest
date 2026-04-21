@@ -19,7 +19,7 @@ import {
   Upload, Copy, CheckCircle, Loader2, Sparkles, AlertTriangle,
   ImageIcon, FileText, Tag, MessageSquare, ClipboardCopy, Info, XCircle, Check,
   ChevronLeft, ChevronRight, Download, Trash2, RotateCcw, Images,
-  ShieldAlert, ListChecks, TrendingUp, ArrowRight
+  ShieldAlert, ListChecks, TrendingUp, ArrowRight, Search, ArrowRightLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -453,11 +453,13 @@ export default function AdobeStockGenerator() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Stock Contributor Tools</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { icon: ShieldAlert, title: 'Rejection Analyzer', desc: 'Find out why your submissions were rejected', path: '/rejection-analyzer', color: 'text-destructive', bg: 'bg-destructive/10' },
                 { icon: ListChecks, title: 'Submission Tracker', desc: 'Track your stock platform submissions', path: '/submission-tracker', color: 'text-primary', bg: 'bg-primary/10' },
                 { icon: TrendingUp, title: 'Trending Keywords', desc: 'Discover hot keywords across platforms', path: '/trending-keywords', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                { icon: Search, title: 'Keyword Research', desc: 'Research high-value keywords by subject', path: '/keyword-research', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                { icon: ArrowRightLeft, title: 'Platform Converter', desc: 'Convert metadata across stock platforms', path: '/platform-converter', color: 'text-purple-500', bg: 'bg-purple-500/10' },
               ].map((tool) => (
                 <button
                   key={tool.path}
