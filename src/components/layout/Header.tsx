@@ -354,7 +354,7 @@ export function Header() {
                     onClick={() => handleNavigate('/metadata-fixer')}
                   >
                     <Wrench className="mr-2 h-4 w-4" />
-                    Metadata Fixer
+                    {t('header.metadataFixer')}
                   </Button>
                   <Button 
                     variant="ghost" 
@@ -362,7 +362,7 @@ export function Header() {
                     onClick={() => handleNavigate('/extension')}
                   >
                     <Chrome className="mr-2 h-4 w-4" />
-                    Extension
+                    {t('header.extension')}
                   </Button>
                   <Button 
                     variant="ghost" 
