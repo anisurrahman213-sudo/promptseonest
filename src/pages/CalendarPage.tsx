@@ -1,16 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Star, TrendingUp, Plus, Filter, Download } from 'lucide-react';
+import { Calendar, Star, TrendingUp, Plus, Filter, Download, Camera, Search, CalendarCheck } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { CalendarEvent, CustomEventDB, stockMarketEvents } from '@/components/calendar/calendarData';
+import {
+  CalendarEvent,
+  CustomEventDB,
+  stockMarketEvents,
+  type EventCategory,
+  type RecurringMode,
+} from '@/components/calendar/calendarData';
+import { photographyEvents } from '@/components/calendar/photographyEvents';
 import { exportMonthToICS } from '@/components/calendar/calendarUtils';
 import { CalendarGrid } from '@/components/calendar/CalendarGrid';
 import { EventList } from '@/components/calendar/EventList';
@@ -18,22 +27,29 @@ import { EventDetailDialog } from '@/components/calendar/EventDetailDialog';
 import { AddEventDialog } from '@/components/calendar/AddEventDialog';
 import { MonthSelector } from '@/components/calendar/MonthSelector';
 
+const YEAR_OPTIONS = [2025, 2026, 2027, 2028];
+
 export default function CalendarPage() {
   const { user, loading: authLoading } = useAuth();
-  const [currentMonth, setCurrentMonth] = useState(0);
+  const today = new Date();
+  const [year, setYear] = useState<number>(today.getFullYear() >= 2025 ? today.getFullYear() : 2026);
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'holiday', 'custom']);
-  
+  const [activeFilters, setActiveFilters] = useState<string[]>(['stock', 'photography', 'holiday', 'custom']);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Add/Edit form state
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newEventDate, setNewEventDate] = useState('1');
   const [newEventMonth, setNewEventMonth] = useState('0');
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventDescription, setNewEventDescription] = useState('');
-  
-  const year = 2026;
+  const [newEventCategory, setNewEventCategory] = useState<EventCategory>('stock');
+  const [newEventRecurring, setNewEventRecurring] = useState<RecurringMode>('none');
 
   useEffect(() => {
     if (user) fetchCustomEvents();
@@ -45,29 +61,84 @@ export default function CalendarPage() {
       .from('custom_events')
       .select('*')
       .eq('user_id', user.id);
-    
+
     if (error) { console.error('Error fetching custom events:', error); return; }
-    
-    const events: CalendarEvent[] = (data as CustomEventDB[]).map(event => ({
-      date: event.date, month: event.month, title: event.title,
-      description: event.description || '',
-      motivation: "Your custom stock market event - Stay focused on your goals!",
-      icon: TrendingUp, color: "from-primary to-accent",
-      type: 'stock' as const, isCustom: true, id: event.id,
-    }));
+
+    const events: CalendarEvent[] = (data as CustomEventDB[]).map((event) => {
+      const cat = (event.category as EventCategory) || 'stock';
+      const color =
+        cat === 'photography' ? 'from-purple-500 to-pink-500'
+          : cat === 'personal' ? 'from-amber-500 to-orange-500'
+            : 'from-emerald-500 to-teal-500';
+      const icon = cat === 'photography' ? Camera : cat === 'personal' ? Star : TrendingUp;
+      return {
+        date: event.date,
+        month: event.month,
+        title: event.title,
+        description: event.description || '',
+        motivation: 'Your custom event — stay on top of your plan!',
+        icon,
+        color,
+        type: 'stock' as const,
+        isCustom: true,
+        id: event.id,
+        category: cat,
+        recurring: (event.recurring as RecurringMode) || 'none',
+      };
+    });
     setCustomEvents(events);
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setNewEventTitle('');
+    setNewEventDescription('');
+    setNewEventCategory('stock');
+    setNewEventRecurring('none');
   };
 
   const handleAddEvent = async () => {
     if (!user || !newEventTitle.trim()) { toast.error('Please enter an event title'); return; }
     setIsLoading(true);
-    const { error } = await supabase.from('custom_events').insert({
-      user_id: user.id, date: parseInt(newEventDate), month: parseInt(newEventMonth),
-      title: newEventTitle.trim(), description: newEventDescription.trim() || null, event_type: 'stock',
-    });
-    if (error) { toast.error('Failed to add event'); console.error(error); }
-    else { toast.success('Custom event added!'); setNewEventTitle(''); setNewEventDescription(''); setIsAddDialogOpen(false); fetchCustomEvents(); }
+
+    const payload = {
+      user_id: user.id,
+      date: parseInt(newEventDate),
+      month: parseInt(newEventMonth),
+      title: newEventTitle.trim(),
+      description: newEventDescription.trim() || null,
+      event_type: 'stock',
+      category: newEventCategory,
+      recurring: newEventRecurring,
+    };
+
+    const { error } = editingId
+      ? await supabase.from('custom_events').update(payload).eq('id', editingId).eq('user_id', user.id)
+      : await supabase.from('custom_events').insert(payload);
+
+    if (error) {
+      toast.error(editingId ? 'Failed to update event' : 'Failed to add event');
+      console.error(error);
+    } else {
+      toast.success(editingId ? 'Event updated!' : 'Custom event added!');
+      resetForm();
+      setIsAddDialogOpen(false);
+      fetchCustomEvents();
+    }
     setIsLoading(false);
+  };
+
+  const handleEditEvent = (event: CalendarEvent) => {
+    if (!event.id) return;
+    setEditingId(event.id);
+    setNewEventDate(event.date.toString());
+    setNewEventMonth(event.month.toString());
+    setNewEventTitle(event.title);
+    setNewEventDescription(event.description);
+    setNewEventCategory(event.category || 'stock');
+    setNewEventRecurring(event.recurring || 'none');
+    setIsDialogOpen(false);
+    setIsAddDialogOpen(true);
   };
 
   const handleDeleteEvent = async (eventId: string) => {
@@ -76,6 +147,18 @@ export default function CalendarPage() {
     if (error) { toast.error('Failed to delete event'); console.error(error); }
     else { toast.success('Event deleted'); fetchCustomEvents(); setIsDialogOpen(false); }
   };
+
+  const jumpToToday = () => {
+    const now = new Date();
+    setYear(now.getFullYear());
+    setCurrentMonth(now.getMonth());
+    toast.success('Jumped to today');
+  };
+
+  const allEvents = useMemo(
+    () => [...stockMarketEvents, ...photographyEvents, ...customEvents],
+    [customEvents]
+  );
 
   if (authLoading) {
     return (
@@ -90,17 +173,32 @@ export default function CalendarPage() {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  const allEvents = [...stockMarketEvents, ...customEvents];
-  const filteredEvents = allEvents.filter(event => {
-    if (event.isCustom && activeFilters.includes('custom')) return true;
-    if (event.type === 'stock' && !event.isCustom && activeFilters.includes('stock')) return true;
-    if (['holiday', 'celebration', 'creative', 'motivation'].includes(event.type) && activeFilters.includes('holiday')) return true;
-    return false;
+  const filteredEvents = allEvents.filter((event) => {
+    // Category filter
+    if (event.isCustom) {
+      if (!activeFilters.includes('custom')) return false;
+    } else if (event.type === 'stock') {
+      if (!activeFilters.includes('stock')) return false;
+    } else if (['holiday', 'celebration', 'motivation'].includes(event.type)) {
+      if (!activeFilters.includes('holiday')) return false;
+    } else if (event.type === 'creative') {
+      if (!activeFilters.includes('photography')) return false;
+    }
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      if (!event.title.toLowerCase().includes(q) && !event.description.toLowerCase().includes(q)) {
+        return false;
+      }
+    }
+    return true;
   });
-  const monthEvents = filteredEvents.filter(e => e.month === currentMonth);
+
+  const monthEvents = filteredEvents.filter((e) => e.month === currentMonth);
 
   const handleDateClick = (day: number) => {
-    const event = monthEvents.find(e => e.date === day);
+    const event = monthEvents.find((e) => e.date === day);
     if (event) { setSelectedEvent(event); setIsDialogOpen(true); }
   };
 
@@ -108,32 +206,65 @@ export default function CalendarPage() {
     <div className="min-h-screen bg-background">
       <SEOHead title="Content Calendar" description="Plan your stock photography content with our AI-powered calendar. Never miss trending topics and seasonal opportunities." path="/calendar" keywords="content calendar, stock photo planning, seasonal photography" />
       <Header />
-      
+
       <main className="container py-6 sm:py-10 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <motion.div className="text-center mb-8 sm:mb-12" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary">
               <TrendingUp className="h-4 w-4" />
-              📈 Stock Market Calendar 2026
+              📈 Stock Market & Photography Calendar
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
               Worldwide <span className="text-gradient">Stock Events</span>
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
-              Track global market holidays, trading events & plan your stock content strategy. Add your own custom events!
+              Track global market holidays, seasonal photography trends & plan your content strategy.
             </p>
+          </motion.div>
+
+          {/* Year + Today + Search */}
+          <motion.div
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+          >
+            <Select value={year.toString()} onValueChange={(v) => setYear(parseInt(v))}>
+              <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {YEAR_OPTIONS.map((y) => (
+                  <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button onClick={jumpToToday} size="sm" variant="outline" className="gap-2">
+              <CalendarCheck className="h-4 w-4" />
+              Today
+            </Button>
+
+            <div className="relative w-full sm:w-64">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search events..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
           </motion.div>
 
           {/* Filter & Controls */}
           <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
             <div className="flex items-center gap-3">
               <Filter className="h-4 w-4 text-muted-foreground" />
-              <ToggleGroup type="multiple" value={activeFilters} onValueChange={(value) => { if (value.length > 0) setActiveFilters(value); }} className="bg-muted/30 rounded-lg p-1">
+              <ToggleGroup type="multiple" value={activeFilters} onValueChange={(value) => { if (value.length > 0) setActiveFilters(value); }} className="bg-muted/30 rounded-lg p-1 flex-wrap">
                 <ToggleGroupItem value="stock" aria-label="Toggle Stock Events" className="data-[state=on]:bg-emerald-500 data-[state=on]:text-white px-3 py-1.5 text-xs sm:text-sm gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5" /><span className="hidden sm:inline">Stock</span>
                 </ToggleGroupItem>
-                <ToggleGroupItem value="holiday" aria-label="Toggle Holiday Events" className="data-[state=on]:bg-purple-500 data-[state=on]:text-white px-3 py-1.5 text-xs sm:text-sm gap-1.5">
+                <ToggleGroupItem value="photography" aria-label="Toggle Photography Events" className="data-[state=on]:bg-purple-500 data-[state=on]:text-white px-3 py-1.5 text-xs sm:text-sm gap-1.5">
+                  <Camera className="h-3.5 w-3.5" /><span className="hidden sm:inline">Photo</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="holiday" aria-label="Toggle Holiday Events" className="data-[state=on]:bg-pink-500 data-[state=on]:text-white px-3 py-1.5 text-xs sm:text-sm gap-1.5">
                   <Star className="h-3.5 w-3.5" /><span className="hidden sm:inline">Holiday</span>
                 </ToggleGroupItem>
                 <ToggleGroupItem value="custom" aria-label="Toggle Custom Events" className="data-[state=on]:bg-amber-500 data-[state=on]:text-white px-3 py-1.5 text-xs sm:text-sm gap-1.5">
@@ -142,10 +273,10 @@ export default function CalendarPage() {
               </ToggleGroup>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={() => { setNewEventMonth(currentMonth.toString()); setIsAddDialogOpen(true); }} size="sm" className="gap-2">
+              <Button onClick={() => { resetForm(); setNewEventMonth(currentMonth.toString()); setIsAddDialogOpen(true); }} size="sm" className="gap-2">
                 <Plus className="h-4 w-4" /><span className="hidden sm:inline">Add Event</span>
               </Button>
-              <Button onClick={() => exportMonthToICS(monthEvents, currentMonth)} size="sm" variant="outline" className="gap-2">
+              <Button onClick={() => exportMonthToICS(monthEvents, currentMonth, year)} size="sm" variant="outline" className="gap-2">
                 <Download className="h-4 w-4" /><span className="hidden sm:inline">Export Month</span>
               </Button>
             </div>
@@ -154,21 +285,33 @@ export default function CalendarPage() {
           {/* Main Content */}
           <motion.div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <CalendarGrid currentMonth={currentMonth} year={year} monthEvents={monthEvents} onDateClick={handleDateClick} />
-            <EventList currentMonth={currentMonth} monthEvents={monthEvents} onEventClick={(event) => { setSelectedEvent(event); setIsDialogOpen(true); }} onAddEvent={() => { setNewEventMonth(currentMonth.toString()); setIsAddDialogOpen(true); }} />
+            <EventList currentMonth={currentMonth} monthEvents={monthEvents} onEventClick={(event) => { setSelectedEvent(event); setIsDialogOpen(true); }} onAddEvent={() => { resetForm(); setNewEventMonth(currentMonth.toString()); setIsAddDialogOpen(true); }} />
           </motion.div>
 
           <MonthSelector currentMonth={currentMonth} onMonthChange={setCurrentMonth} filteredEvents={filteredEvents} />
         </div>
       </main>
 
-      <EventDetailDialog event={selectedEvent} open={isDialogOpen} onOpenChange={setIsDialogOpen} onDeleteEvent={handleDeleteEvent} year={year} />
+      <EventDetailDialog
+        event={selectedEvent}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onDeleteEvent={handleDeleteEvent}
+        onEditEvent={handleEditEvent}
+        year={year}
+      />
       <AddEventDialog
-        open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}
+        open={isAddDialogOpen}
+        onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) resetForm(); }}
         newEventDate={newEventDate} setNewEventDate={setNewEventDate}
         newEventMonth={newEventMonth} setNewEventMonth={setNewEventMonth}
         newEventTitle={newEventTitle} setNewEventTitle={setNewEventTitle}
         newEventDescription={newEventDescription} setNewEventDescription={setNewEventDescription}
-        isLoading={isLoading} onSubmit={handleAddEvent}
+        newEventCategory={newEventCategory} setNewEventCategory={setNewEventCategory}
+        newEventRecurring={newEventRecurring} setNewEventRecurring={setNewEventRecurring}
+        isLoading={isLoading}
+        isEditMode={!!editingId}
+        onSubmit={handleAddEvent}
       />
     </div>
   );
