@@ -155,10 +155,10 @@ const Index = () => {
   const whatYouGetItems = [t('landing.feature1'), t('landing.feature2'), t('landing.feature3'), t('landing.feature4'), t('landing.feature5'), t('landing.feature6')];
   return <div className="min-h-screen bg-background">
       <SEOHead
-        title="AI-Powered Image SEO Generator"
-        description="Generate SEO-optimized titles, descriptions, and 49 unique tags for your images using AI. Perfect for Adobe Stock, Shutterstock, Freepik, and Midjourney."
+        title="Free Adobe Stock Metadata Generator — 100% Compliant Keywords"
+        description="Generate perfect Adobe Stock metadata instantly. Fix multi-word keywords, optimise titles, and get 100% compliance score. Free AI-powered tool for stock contributors."
         path="/"
-        keywords="image seo, ai seo generator, stock photo tags, image title generator, adobe stock, shutterstock, freepik"
+        keywords="adobe stock metadata generator, stock photo keyword generator, adobe stock keywords, metadata generator free, keyword fixer, seo tool, shutterstock keywords, freepik metadata, 49 keywords adobe stock, image seo"
       />
       {/* Skip Navigation Link for Accessibility */}
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none">
@@ -530,6 +530,56 @@ const Index = () => {
                   100% Free
                 </div>
               </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section - SEO content */}
+      <section aria-label="Frequently Asked Questions" className="py-12 sm:py-24 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-8 sm:mb-12 text-center">
+              <h2 className="mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-sm sm:text-lg text-muted-foreground">
+                Everything you need to know about Adobe Stock metadata optimization
+              </p>
+            </div>
+            <div className="space-y-4">
+              {[
+                {
+                  q: "What is Adobe Stock metadata?",
+                  a: "Adobe Stock metadata includes the title, keywords, and description that help buyers find your images. Optimised metadata significantly increases your image visibility and sales."
+                },
+                {
+                  q: "Why must Adobe Stock keywords be single words?",
+                  a: 'Adobe Stock requires all keywords to be individual single words. Multi-word phrases like "solar panel" must be split into "solar" and "panel" separately. PromptSEONest automatically fixes this.'
+                },
+                {
+                  q: "How many keywords does Adobe Stock allow?",
+                  a: "Adobe Stock allows exactly 49 keywords per image. PromptSEONest automatically generates and validates exactly 49 single-word keywords for every image."
+                },
+                {
+                  q: "Is PromptSEONest free to use?",
+                  a: "Yes, PromptSEONest offers a free plan with daily credits. Upgrade to Pro for unlimited metadata generation."
+                },
+                {
+                  q: "Does PromptSEONest work for Shutterstock and Freepik?",
+                  a: "Yes, PromptSEONest supports Adobe Stock, Shutterstock, and Freepik with platform-specific keyword rules for each."
+                }
+              ].map((faq) => (
+                <details key={faq.q} className="group rounded-lg border border-border/50 bg-card/50 p-4 sm:p-5 backdrop-blur-sm transition-all hover:border-primary/30">
+                  <summary className="flex cursor-pointer items-center justify-between gap-4 text-sm sm:text-base font-semibold text-foreground">
+                    <span>{faq.q}</span>
+                    <ArrowRight className="h-4 w-4 flex-shrink-0 text-primary transition-transform group-open:rotate-90" />
+                  </summary>
+                  <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
+                    {faq.a}
+                  </p>
+                </details>
+              ))}
             </div>
           </div>
         </div>
