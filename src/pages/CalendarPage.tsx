@@ -200,7 +200,47 @@ const filteredEvents = allEvents.filter((event) => {
     return true;
   });
 
-  const monthEvents = filteredEvents.filter((e) => e.month === currentMonth);
+const monthEvents = filteredEvents.filter((e) => e.month === currentMonth);
+
+  // Category counts for current month + search query (independent of category filter selection)
+  const categoryCounts = useMemo(() => {
+    const counts = { stock: 0, photography: 0, personal: 0 };
+    allEvents.forEach((event) => {
+      if (event.month !== currentMonth) return;
+
+      // Apply search filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        if (!event.title.toLowerCase().includes(q) && !event.description.toLowerCase().includes(q)) {
+          return;
+        }
+      }
+
+      // Apply event type filter
+      if (event.isCustom) {
+        if (!activeFilters.includes('custom')) return;
+      } else if (event.type === 'stock') {
+        if (!activeFilters.includes('stock')) return;
+      } else if (['holiday', 'celebration', 'motivation'].includes(event.type)) {
+        if (!activeFilters.includes('holiday')) return;
+      } else if (event.type === 'creative') {
+        if (!activeFilters.includes('photography')) return;
+      }
+
+      // Count by category
+      if (event.isCustom) {
+        const cat = event.category || 'stock';
+        if (cat === 'stock') counts.stock++;
+        else if (cat === 'photography') counts.photography++;
+        else if (cat === 'personal') counts.personal++;
+      } else if (event.type === 'stock') {
+        counts.stock++;
+      } else if (event.type === 'creative') {
+        counts.photography++;
+      }
+    });
+    return counts;
+  }, [allEvents, currentMonth, searchQuery, activeFilters]);
 
   const handleDateClick = (day: number) => {
     const event = monthEvents.find((e) => e.date === day);
