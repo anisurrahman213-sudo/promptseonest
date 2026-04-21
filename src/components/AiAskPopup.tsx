@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles, Trash2, Volume2, VolumeX } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles, Trash2, Volume2, VolumeX, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import { languages } from "@/i18n/config";
 
 type Message = {
   role: "user" | "assistant";
@@ -149,6 +151,13 @@ export function AiAskPopup() {
   });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [chatLanguage, setChatLanguage] = useState<string>(() => {
+    try {
+      return localStorage.getItem("promptnest-chat-language") || i18n.language || "en";
+    } catch {
+      return i18n.language || "en";
+    }
+  });
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
       return localStorage.getItem("promptnest-chat-sound") !== "false";
@@ -158,6 +167,14 @@ export function AiAskPopup() {
   });
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Save chat language preference
+  const handleLanguageChange = (lang: string) => {
+    setChatLanguage(lang);
+    try {
+      localStorage.setItem("promptnest-chat-language", lang);
+    } catch {}
+  };
 
   // Toggle sound and save preference
   const toggleSound = () => {
@@ -220,7 +237,7 @@ export function AiAskPopup() {
 
     await streamChat({
       messages: [...messages, userMsg],
-      language: i18n.language,
+      language: chatLanguage,
       onDelta: upsertAssistant,
       onDone: () => {
         setIsLoading(false);
@@ -235,7 +252,7 @@ export function AiAskPopup() {
         ]);
       },
     });
-  }, [input, isLoading, messages, soundEnabled]);
+  }, [input, isLoading, messages, soundEnabled, chatLanguage]);
 
   // Handle suggested question click
   const handleSuggestedQuestion = (question: string) => {
@@ -261,7 +278,7 @@ export function AiAskPopup() {
 
       streamChat({
         messages: [...messages, userMsg],
-        language: i18n.language,
+        language: chatLanguage,
         onDelta: upsertAssistant,
         onDone: () => {
           setIsLoading(false);
@@ -320,6 +337,27 @@ export function AiAskPopup() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  <Select value={chatLanguage} onValueChange={handleLanguageChange}>
+                    <SelectTrigger
+                      className="h-8 w-auto min-w-[64px] gap-1 border-0 bg-white/15 hover:bg-white/25 text-primary-foreground text-xs px-2 focus:ring-0 focus:ring-offset-0 [&>svg:last-child]:opacity-70"
+                      title={t("aiChat.selectLanguage", "Reply language")}
+                    >
+                      <Globe className="h-3.5 w-3.5 shrink-0" />
+                      <span className="text-base leading-none">
+                        {languages.find((l) => l.code === chatLanguage)?.flag || "🌐"}
+                      </span>
+                    </SelectTrigger>
+                    <SelectContent align="end" className="max-h-72">
+                      {languages.map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code}>
+                          <span className="flex items-center gap-2">
+                            <span>{lang.flag}</span>
+                            <span>{lang.name}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Button
                     variant="ghost"
                     size="icon"
