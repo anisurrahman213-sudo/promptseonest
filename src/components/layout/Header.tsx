@@ -123,27 +123,15 @@ export function Header() {
               </Button>
 
               {isAdmin && (
-                <>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-primary"
-                    onClick={() => handleNavigate('/admin/payments')}
-                  >
-                    <ShieldCheck className="h-4 w-4 mr-1" />
-                    {t('header.admin')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full text-primary"
-                    onClick={() => handleNavigate('/admin/health')}
-                    aria-label="Health Check"
-                    title="Health Check"
-                  >
-                    <Activity className="h-5 w-5" />
-                  </Button>
-                </>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-primary"
+                  onClick={() => handleNavigate('/admin-dashboard')}
+                >
+                  <ShieldCheck className="h-4 w-4 mr-1" />
+                  {t('header.admin')}
+                </Button>
               )}
 
 
