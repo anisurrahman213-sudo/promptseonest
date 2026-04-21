@@ -294,7 +294,7 @@ export function PublishChecklist() {
 
             <div className="mt-4 flex flex-col sm:flex-row gap-2">
               <Button
-                onClick={markPublished}
+                onClick={handlePublishedAndRefresh}
                 className={cn(
                   'gap-2 flex-1',
                   hasUnpublishedChanges
@@ -303,7 +303,15 @@ export function PublishChecklist() {
                 )}
               >
                 <Rocket className="h-4 w-4" />
-                {hasUnpublishedChanges ? "I've published — mark as live" : 'Re-confirm published'}
+                {hasUnpublishedChanges ? "I've published — clear cache & reload" : 'Clear cache & reload'}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={markPublished}
+                className="gap-2"
+                title="Mark as published without reloading"
+              >
+                Mark only
               </Button>
               <Button
                 variant="outline"
