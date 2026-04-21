@@ -386,6 +386,51 @@ export type Database = {
         }
         Relationships: []
       }
+      submission_tracking: {
+        Row: {
+          created_at: string
+          generation_id: string | null
+          id: string
+          image_name: string
+          notes: string | null
+          platform: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          status: Database["public"]["Enums"]["submission_status"]
+          submitted_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          generation_id?: string | null
+          id?: string
+          image_name: string
+          notes?: string | null
+          platform: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          submitted_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          generation_id?: string | null
+          id?: string
+          image_name?: string
+          notes?: string | null
+          platform?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tutorial_videos: {
         Row: {
           created_at: string
@@ -527,6 +572,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      submission_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -655,6 +701,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      submission_status: ["pending", "approved", "rejected"],
     },
   },
 } as const
