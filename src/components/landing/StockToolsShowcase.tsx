@@ -1,4 +1,3 @@
-import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -79,13 +78,12 @@ const TOOLS: ToolItem[] = [
   },
 ];
 
-const StockToolsShowcase = forwardRef<HTMLElement>(function StockToolsShowcase(_props, ref) {
+export default function StockToolsShowcase() {
   const { user } = useAuth();
   const { t } = useTranslation();
 
   return (
     <section
-      ref={ref}
       aria-label={t("stockTools.badge")}
       className="relative py-14 sm:py-24 overflow-hidden"
     >
