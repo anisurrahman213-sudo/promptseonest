@@ -337,6 +337,25 @@ export function AiAskPopup() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  <Select value={chatLanguage} onValueChange={handleLanguageChange}>
+                    <SelectTrigger
+                      className="h-8 w-auto min-w-[60px] gap-1 border-0 bg-white/15 hover:bg-white/25 text-primary-foreground text-xs px-2 focus:ring-0 focus:ring-offset-0"
+                      title={t("aiChat.selectLanguage", "Reply language")}
+                    >
+                      <Globe className="h-3.5 w-3.5 shrink-0" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent align="end" className="max-h-72">
+                      {languages.map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code}>
+                          <span className="flex items-center gap-2">
+                            <span>{lang.flag}</span>
+                            <span>{lang.name}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Button
                     variant="ghost"
                     size="icon"
