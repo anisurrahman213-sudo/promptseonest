@@ -98,6 +98,7 @@ export default function StockToolsShowcase() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
           className="mx-auto mb-10 sm:mb-14 max-w-2xl text-center"
@@ -124,6 +125,7 @@ export default function StockToolsShowcase() {
                 key={tool.key}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.4, delay: Math.min(index * 0.07, 0.4) }}
               >
@@ -178,6 +180,7 @@ export default function StockToolsShowcase() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-10 sm:mt-14 mx-auto max-w-3xl"
