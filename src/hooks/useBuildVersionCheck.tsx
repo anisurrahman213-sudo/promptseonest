@@ -46,9 +46,19 @@ export function useBuildVersionCheck(opts: Options = {}) {
       if (!current) return;
       if (!isNewerBuild(info.buildTime, current)) return;
 
+      // Reload-loop guard: if we already attempted to reload for this exact
+      // target build in this browser, do NOT prompt or auto-reload again.
+      // Otherwise a stale-cached client and a fresh server can ping-pong
+      // forever (toast → reload → same old bundle → toast → ...).
+      const RELOAD_KEY = 'pn_attempted_reload_for_build';
+      let attempted: string | null = null;
+      try { attempted = sessionStorage.getItem(RELOAD_KEY); } catch {/* ignore */}
+      if (attempted === info.buildTime) return;
+
       setUpdateAvailable(true);
 
       if (!promptUser) {
+        try { sessionStorage.setItem(RELOAD_KEY, info.buildTime); } catch {/* ignore */}
         await cacheBustAndReload();
         return;
       }
@@ -60,7 +70,10 @@ export function useBuildVersionCheck(opts: Options = {}) {
         duration: Infinity,
         action: {
           label: 'Reload now',
-          onClick: () => { void cacheBustAndReload(); },
+          onClick: () => {
+            try { sessionStorage.setItem(RELOAD_KEY, info.buildTime); } catch {/* ignore */}
+            void cacheBustAndReload();
+          },
         },
       });
     };
