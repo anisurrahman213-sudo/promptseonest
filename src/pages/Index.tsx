@@ -15,10 +15,11 @@ import { Sparkles, Image, Tags, Download, Zap, Shield, ArrowRight, CheckCircle2,
 import { getOptimizedImageUrl, getResponsiveSrcSet } from "@/lib/imageOptimization";
 import extensionScreenshot from "@/assets/extension-screenshot-1.jpg";
 
-// Lazy load below-fold components
+// Eager import critical above-fold-ish content (Stock Tools is core landing content)
+import StockToolsShowcase from "@/components/landing/StockToolsShowcase";
+// Lazy load truly below-fold / non-critical components
 const DemoVideoSection = lazy(() => import("@/components/landing/DemoVideoSection"));
 const ProductHuntBanner = lazy(() => import("@/components/landing/ProductHuntBanner").then(m => ({ default: m.ProductHuntBanner })));
-const StockToolsShowcase = lazy(() => import("@/components/landing/StockToolsShowcase"));
 const iconMap: Record<string, LucideIcon> = {
   Sparkles,
   Tags,
@@ -338,10 +339,8 @@ const Index = () => {
         <DemoVideoSection />
       </Suspense>
 
-      {/* Stock Contributor Tools Showcase */}
-      <Suspense fallback={null}>
-        <StockToolsShowcase />
-      </Suspense>
+      {/* Stock Contributor Tools Showcase - eager loaded for reliability */}
+      <StockToolsShowcase />
 
       {/* Features Section */}
       <section aria-label="Features" className="py-12 sm:py-24 bg-muted/30">
