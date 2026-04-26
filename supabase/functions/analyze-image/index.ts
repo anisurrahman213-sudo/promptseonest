@@ -438,8 +438,8 @@ function parseAIResponseFallback(textContent: string): AnalysisResult | null {
   return null;
 }
 
-async function callAIGateway(
-  lovableApiKey: string,
+async function callGeminiApi(
+  geminiApiKey: string,
   systemPrompt: string,
   userPrompt: string,
   cleanedBase64: string,
@@ -453,26 +453,29 @@ async function callAIGateway(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${lovableApiKey}`,
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
-          messages: [
-            { role: "system", content: systemPrompt },
+          systemInstruction: {
+            parts: [{ text: systemPrompt }],
+          },
+          contents: [
             {
               role: "user",
-              content: [
-                { type: "text", text: userPrompt },
-                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${cleanedBase64}` } },
+              parts: [
+                { text: userPrompt },
+                { inlineData: { mimeType: "image/jpeg", data: cleanedBase64 } },
               ],
             },
           ],
-          temperature: 0.7,
-          max_tokens: 2048,
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8192,
+            responseMimeType: "application/json",
+          },
         }),
       });
 
@@ -482,8 +485,8 @@ async function callAIGateway(
       const errorText = await response.text();
       lastError = errorText;
 
-      if (response.status === 402) {
-        return { ok: false, error: "AI credits exhausted", code: "AI_CREDITS_EXHAUSTED" };
+      if (response.status === 400 || response.status === 403) {
+        return { ok: false, error: "Gemini API key invalid or not permitted", code: "GEMINI_KEY_INVALID" };
       }
 
       const isRetryable = response.status === 429 || response.status >= 500;
@@ -502,15 +505,22 @@ async function callAIGateway(
 
   if (!response || !response.ok) {
     if (lastStatus === 429) {
-      return { ok: false, error: "Rate limited after retries", code: "RATE_LIMITED" };
+      return { ok: false, error: "Gemini rate limit or quota exceeded", code: "RATE_LIMITED" };
     }
     return { ok: false, error: lastError || "AI processing failed", code: "AI_PROCESSING_FAILED" };
   }
 
   const aiResponse = await response.json();
-  const textContent = aiResponse.choices?.[0]?.message?.content;
+  const candidate = aiResponse.candidates?.[0];
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    return { ok: false, error: "Gemini response was truncated. Please retry.", code: "MAX_TOKENS" };
+  }
+  const textContent = candidate?.content?.parts
+    ?.map((part: { text?: string }) => part.text || "")
+    .join("\n")
+    .trim();
   if (!textContent) {
-    return { ok: false, error: "No response from AI" };
+    return { ok: false, error: "No response from Gemini" };
   }
 
   try {
