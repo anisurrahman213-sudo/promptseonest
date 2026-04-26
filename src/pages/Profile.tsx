@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { User, Phone, Mail, Shield, Loader2, Save, Eye, EyeOff, AlertTriangle, ArrowRight } from 'lucide-react';
+import { ApiStatusPanel } from '@/components/ApiStatusPanel';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -147,6 +148,11 @@ export default function Profile() {
             <h1 className="font-display text-3xl font-bold">{t('profile.title')}</h1>
             <p className="text-muted-foreground">{user?.email}</p>
           </div>
+        </div>
+
+        {/* API Status Panel */}
+        <div className="mb-6">
+          <ApiStatusPanel />
         </div>
 
         {/* Profile Info Card */}
