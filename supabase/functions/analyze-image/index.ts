@@ -438,8 +438,8 @@ function parseAIResponseFallback(textContent: string): AnalysisResult | null {
   return null;
 }
 
-async function callAIGateway(
-  lovableApiKey: string,
+async function callGeminiApi(
+  geminiApiKey: string,
   systemPrompt: string,
   userPrompt: string,
   cleanedBase64: string,
@@ -453,26 +453,29 @@ async function callAIGateway(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${lovableApiKey}`,
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
-          messages: [
-            { role: "system", content: systemPrompt },
+          systemInstruction: {
+            parts: [{ text: systemPrompt }],
+          },
+          contents: [
             {
               role: "user",
-              content: [
-                { type: "text", text: userPrompt },
-                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${cleanedBase64}` } },
+              parts: [
+                { text: userPrompt },
+                { inlineData: { mimeType: "image/jpeg", data: cleanedBase64 } },
               ],
             },
           ],
-          temperature: 0.7,
-          max_tokens: 2048,
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 8192,
+            responseMimeType: "application/json",
+          },
         }),
       });
 
@@ -482,8 +485,8 @@ async function callAIGateway(
       const errorText = await response.text();
       lastError = errorText;
 
-      if (response.status === 402) {
-        return { ok: false, error: "AI credits exhausted", code: "AI_CREDITS_EXHAUSTED" };
+      if (response.status === 400 || response.status === 403) {
+        return { ok: false, error: "Gemini API key invalid or not permitted", code: "GEMINI_KEY_INVALID" };
       }
 
       const isRetryable = response.status === 429 || response.status >= 500;
@@ -502,15 +505,22 @@ async function callAIGateway(
 
   if (!response || !response.ok) {
     if (lastStatus === 429) {
-      return { ok: false, error: "Rate limited after retries", code: "RATE_LIMITED" };
+      return { ok: false, error: "Gemini rate limit or quota exceeded", code: "RATE_LIMITED" };
     }
     return { ok: false, error: lastError || "AI processing failed", code: "AI_PROCESSING_FAILED" };
   }
 
   const aiResponse = await response.json();
-  const textContent = aiResponse.choices?.[0]?.message?.content;
+  const candidate = aiResponse.candidates?.[0];
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    return { ok: false, error: "Gemini response was truncated. Please retry.", code: "MAX_TOKENS" };
+  }
+  const textContent = candidate?.content?.parts
+    ?.map((part: { text?: string }) => part.text || "")
+    .join("\n")
+    .trim();
   if (!textContent) {
-    return { ok: false, error: "No response from AI" };
+    return { ok: false, error: "No response from Gemini" };
   }
 
   try {
@@ -527,7 +537,7 @@ async function callAIGateway(
 async function processBatch(
   items: BatchItem[],
   settings: MetadataSettings,
-  lovableApiKey: string,
+  geminiApiKey: string,
 ): Promise<BatchResult[]> {
   const { systemPrompt, userPrompt: baseUserPrompt } = buildPrompt('image', settings);
   
@@ -542,7 +552,7 @@ async function processBatch(
       const mediaType = item.mediaType || 'image';
       const { systemPrompt: sp, userPrompt: up } = buildPrompt(mediaType, settings);
       
-      const result = await callAIGateway(lovableApiKey, sp, up, cleaned);
+      const result = await callGeminiApi(geminiApiKey, sp, up, cleaned);
       
       if (!result.ok || !result.data) {
         return { index, success: false, error: result.error, code: result.code };
@@ -587,16 +597,16 @@ Deno.serve(async (req) => {
         imageType: 'none', prefix: '', suffix: '', negativeTitleWords: '', negativeKeywords: '',
       };
 
-      const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-      if (!lovableApiKey) {
+      const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+      if (!geminiApiKey) {
         return new Response(
-          JSON.stringify({ error: "AI service not configured" }),
+          JSON.stringify({ error: "Gemini API key not configured" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       console.log(`📦 Batch processing ${items.length} items`);
-      const results = await processBatch(items, settings, lovableApiKey);
+      const results = await processBatch(items, settings, geminiApiKey);
       console.log(`✅ Batch complete: ${results.filter(r => r.success).length}/${items.length} succeeded`);
 
       return new Response(
@@ -623,10 +633,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) {
+    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+    if (!geminiApiKey) {
       return new Response(
-        JSON.stringify({ error: "AI service not configured" }),
+        JSON.stringify({ error: "Gemini API key not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -639,7 +649,7 @@ Deno.serve(async (req) => {
 
     console.log(`Processing ${mediaType}: ${imageName}`);
     const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings);
-    const aiResult = await callAIGateway(lovableApiKey, systemPrompt, userPrompt, cleanedBase64);
+    const aiResult = await callGeminiApi(geminiApiKey, systemPrompt, userPrompt, cleanedBase64);
 
     if (!aiResult.ok || !aiResult.data) {
       if (aiResult.code === "RATE_LIMITED") {
