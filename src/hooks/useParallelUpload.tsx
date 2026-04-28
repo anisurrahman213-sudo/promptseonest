@@ -6,10 +6,11 @@ import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 
-// Process many files concurrently for maximum speed
-const MAX_CONCURRENT = 80;
-const STAGGER_DELAY_MS = 50;
-const BATCH_SIZE = 5; // Send 5 images per batch AI call
+// Tuned for Gemini free tier limits (avoid 429 rate limits)
+// gemini-2.5-flash-lite: ~30 RPM. We process 8 in parallel with stagger.
+const MAX_CONCURRENT = 8;
+const STAGGER_DELAY_MS = 250;
+const BATCH_SIZE = 3; // Send 3 images per batch AI call (smaller = faster response)
 
 interface UseParallelUploadOptions {
   userId: string;

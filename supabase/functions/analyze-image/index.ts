@@ -444,16 +444,16 @@ async function callGeminiApi(
   userPrompt: string,
   cleanedBase64: string,
 ): Promise<{ ok: boolean; data?: AnalysisResult; error?: string; code?: string }> {
-  const MAX_RETRIES = 5;
-  const INITIAL_BACKOFF_MS = 2000;
-  const MAX_BACKOFF_MS = 15000;
+  const MAX_RETRIES = 3;
+  const INITIAL_BACKOFF_MS = 1500;
+  const MAX_BACKOFF_MS = 6000;
   let response: Response | null = null;
   let lastError = "";
   let lastStatus: number | null = null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiApiKey}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
