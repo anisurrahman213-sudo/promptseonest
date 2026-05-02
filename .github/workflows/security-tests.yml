@@ -50,6 +50,7 @@ jobs:
             --no-check \
             --reporter=pretty \
             --fail-fast=0 \
+            ./fixtures.test.ts \
             ./index.test.ts \
             ./auth-rls.test.ts \
             ./negative-path.test.ts
