@@ -24,7 +24,16 @@ const SUPABASE_URL =
 const SUPABASE_ANON_KEY =
   Deno.env.get("VITE_SUPABASE_PUBLISHABLE_KEY") ??
   Deno.env.get("SUPABASE_ANON_KEY")!;
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const SERVICE_ROLE_KEY =
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+  Deno.env.get("SUPABASE_SECRET_KEYS") ??
+  Deno.env.get("SUPABASE_SECRET_KEY");
+
+if (!SERVICE_ROLE_KEY) {
+  console.warn(
+    "[auth-rls.test] SUPABASE_SERVICE_ROLE_KEY not found — authenticated tests will be skipped.",
+  );
+}
 
 const admin = SERVICE_ROLE_KEY
   ? createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
