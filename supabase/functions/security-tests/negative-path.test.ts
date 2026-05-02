@@ -41,7 +41,6 @@ const HUGE_STRING = "x".repeat(20_000);
  * ============================================================ */
 
 Deno.test("Negative RPC: add_credits with missing params must fail", async () => {
-  // @ts-expect-error: intentionally missing required params
   const { data, error } = await anon.rpc("add_credits", {});
   assert(error || data === null, `add_credits({}) must not succeed; got data=${JSON.stringify(data)}`);
 });
@@ -49,7 +48,6 @@ Deno.test("Negative RPC: add_credits with missing params must fail", async () =>
 Deno.test("Negative RPC: add_credits with wrong-typed credits (string) must fail", async () => {
   const { error } = await anon.rpc("add_credits", {
     p_user_id: FAKE_UUID,
-    // @ts-expect-error: wrong type on purpose
     p_credits: "9999",
   });
   assert(error, "add_credits with string credits must reject");
@@ -73,7 +71,6 @@ Deno.test("Negative RPC: add_credits with invalid UUID format must fail", async 
 });
 
 Deno.test("Negative RPC: has_role with missing _role must fail", async () => {
-  // @ts-expect-error: missing _role
   const { error } = await anon.rpc("has_role", { _user_id: FAKE_UUID });
   assert(error, "has_role missing _role must reject");
 });
@@ -110,7 +107,6 @@ Deno.test("Negative RPC: is_account_locked with empty email must fail or return 
 });
 
 Deno.test("Negative RPC: deduct_credit ignores extra params from anon", async () => {
-  // @ts-expect-error: passing params to no-arg function
   const { error } = await anon.rpc("deduct_credit", { p_user_id: FAKE_UUID });
   assert(error, "Anon must not invoke deduct_credit regardless of extra params");
 });
