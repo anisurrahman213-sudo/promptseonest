@@ -1,18 +1,22 @@
 /**
  * Authenticated per-user RLS ownership tests.
  *
- * Provisions two ephemeral users via the service role, signs them in with the
- * anon client, and asserts that:
- *   - Each user can only read/write their own generations, submissions, payments.
- *   - User B cannot read, update, or delete User A's rows (cross-tenant isolation).
- *   - deduct_credit() actually decrements the caller's credit balance.
- *   - Privileged RPCs (add_credits, get_admin_user_view) reject non-admins.
+ * Uses signUp() + a direct DB connection (SUPABASE_DB_URL) to:
+ *   - Auto-confirm test users (so they can sign in immediately)
+ *   - Clean up rows + auth users after each test
  *
- * Requires: SUPABASE_SERVICE_ROLE_KEY in the Edge Functions secret store.
+ * Asserts:
+ *   - Each user can only read/write their own generations, submissions, payments.
+ *   - User B cannot read/update/delete User A's rows (cross-tenant isolation).
+ *   - Users cannot self-promote payment status or set admin-only submission fields.
+ *   - deduct_credit() never affects another user; non-admins can't call add_credits.
+ *   - Direct UPDATE on user_profiles.credits is blocked by RLS/trigger.
+ *
  * Run via: supabase--test_edge_functions
  */
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { Client as PgClient } from "https://deno.land/x/postgres@v0.19.3/mod.ts";
 import {
   assert,
   assertEquals,
@@ -23,47 +27,54 @@ const SUPABASE_URL =
   Deno.env.get("VITE_SUPABASE_URL") ?? Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY =
   Deno.env.get("VITE_SUPABASE_PUBLISHABLE_KEY") ??
-  Deno.env.get("SUPABASE_ANON_KEY")!;
-const SERVICE_ROLE_KEY =
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
-  Deno.env.get("SUPABASE_SECRET_KEYS") ??
-  Deno.env.get("SUPABASE_SECRET_KEY");
+  Deno.env.get("SUPABASE_ANON_KEY") ??
+  Deno.env.get("VITE_SUPABASE_ANON_KEY")!;
+const DB_URL = Deno.env.get("SUPABASE_DB_URL") ?? Deno.env.get("DB_URL");
 
-if (!SERVICE_ROLE_KEY) {
-  console.warn(
-    "[auth-rls.test] SUPABASE_SERVICE_ROLE_KEY not found — authenticated tests will be skipped.",
-  );
+const HAS_DB = !!DB_URL;
+if (!HAS_DB) {
+  console.warn("[auth-rls.test] SUPABASE_DB_URL missing — authenticated tests will be skipped.");
 }
-
-const admin = SERVICE_ROLE_KEY
-  ? createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    })
-  : null;
 
 interface TestUser {
   id: string;
   email: string;
-  password: string;
   client: SupabaseClient;
 }
 
 const createdUserIds: string[] = [];
 
-async function provisionUser(label: string): Promise<TestUser> {
-  if (!admin) throw new Error("SUPABASE_SERVICE_ROLE_KEY missing — cannot provision test users");
+async function withDb<T>(fn: (db: PgClient) => Promise<T>): Promise<T> {
+  const db = new PgClient(DB_URL!);
+  await db.connect();
+  try {
+    return await fn(db);
+  } finally {
+    await db.end();
+  }
+}
 
-  const email = `sec-test-${label}-${crypto.randomUUID()}@example.test`;
+async function provisionUser(label: string): Promise<TestUser> {
+  const email = `sec-${label}-${crypto.randomUUID().slice(0, 8)}@sec-test.local`;
   const password = `Pw_${crypto.randomUUID()}`;
 
-  const { data: created, error: createErr } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
+  const tmp = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
-  if (createErr || !created.user) throw createErr ?? new Error("createUser failed");
 
-  createdUserIds.push(created.user.id);
+  const { data: signUp, error: signUpErr } = await tmp.auth.signUp({ email, password });
+  if (signUpErr || !signUp.user) throw signUpErr ?? new Error("signUp failed");
+
+  const userId = signUp.user.id;
+  createdUserIds.push(userId);
+
+  // Force-confirm email so signInWithPassword works regardless of project setting.
+  await withDb(async (db) => {
+    await db.queryArray(
+      `UPDATE auth.users SET email_confirmed_at = now(), confirmed_at = now() WHERE id = $1`,
+      [userId],
+    );
+  });
 
   const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -71,26 +82,53 @@ async function provisionUser(label: string): Promise<TestUser> {
   const { error: signInErr } = await client.auth.signInWithPassword({ email, password });
   if (signInErr) throw signInErr;
 
-  return { id: created.user.id, email, password, client };
+  return { id: userId, email, client };
 }
 
 async function cleanupUsers() {
-  if (!admin) return;
-  for (const uid of createdUserIds) {
-    await admin.from("submission_tracking").delete().eq("user_id", uid);
-    await admin.from("payment_requests").delete().eq("user_id", uid);
-    await admin.from("generations").delete().eq("user_id", uid);
-    await admin.from("user_profiles").delete().eq("user_id", uid);
-    await admin.auth.admin.deleteUser(uid).catch(() => {});
-  }
-  createdUserIds.length = 0;
+  if (!HAS_DB || createdUserIds.length === 0) return;
+  await withDb(async (db) => {
+    const ids = createdUserIds.splice(0);
+    // Delete dependent data first (no FK cascade defined for these), then auth.users.
+    await db.queryArray(
+      `DELETE FROM public.submission_tracking WHERE user_id = ANY($1::uuid[])`,
+      [ids],
+    );
+    await db.queryArray(
+      `DELETE FROM public.payment_requests WHERE user_id = ANY($1::uuid[])`,
+      [ids],
+    );
+    await db.queryArray(
+      `DELETE FROM public.generations WHERE user_id = ANY($1::uuid[])`,
+      [ids],
+    );
+    await db.queryArray(
+      `DELETE FROM public.user_profiles WHERE user_id = ANY($1::uuid[])`,
+      [ids],
+    );
+    await db.queryArray(
+      `DELETE FROM public.user_roles WHERE user_id = ANY($1::uuid[])`,
+      [ids],
+    );
+    await db.queryArray(`DELETE FROM auth.users WHERE id = ANY($1::uuid[])`, [ids]);
+  });
+}
+
+async function readWithDb<T = Record<string, unknown>>(
+  sql: string,
+  params: unknown[] = [],
+): Promise<T[]> {
+  return await withDb(async (db) => {
+    const res = await db.queryObject<T>(sql, params);
+    return res.rows;
+  });
 }
 
 /* --------------------------- generations ---------------------------- */
 
 Deno.test({
-  name: "Auth RLS: user can insert + read own generation; peer cannot see it",
-  ignore: !admin,
+  name: "Auth RLS: user can insert + read own generation; peer cannot",
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -113,33 +151,27 @@ Deno.test({
         .select()
         .single();
       assertEquals(insErr, null, `Owner insert must succeed: ${insErr?.message}`);
-      assert(inserted, "Inserted row returned");
+      assert(inserted);
 
-      // Owner sees it
       const { data: ownRows } = await userA.client
         .from("generations")
         .select("id")
         .eq("id", inserted!.id);
       assertEquals(ownRows?.length, 1);
 
-      // Peer cannot see it
       const { data: peerRows } = await userB.client
         .from("generations")
         .select("id")
         .eq("id", inserted!.id);
       assertEquals(peerRows?.length ?? 0, 0, "Peer must not read another user's generation");
 
-      // Peer cannot delete it
-      const { error: delErr } = await userB.client
-        .from("generations")
-        .delete()
-        .eq("id", inserted!.id);
-      // RLS hides the row; delete may "succeed" with 0 affected rows but never actually delete.
-      const { data: stillThere } = await userA.client
-        .from("generations")
-        .select("id")
-        .eq("id", inserted!.id);
-      assertEquals(stillThere?.length, 1, `Peer must not delete (delErr=${delErr?.message ?? "none"})`);
+      // Peer DELETE must not affect the row
+      await userB.client.from("generations").delete().eq("id", inserted!.id);
+      const stillThere = await readWithDb<{ id: string }>(
+        `SELECT id FROM public.generations WHERE id = $1`,
+        [inserted!.id],
+      );
+      assertEquals(stillThere.length, 1, "Peer must not delete another user's generation");
     } finally {
       await cleanupUsers();
     }
@@ -147,8 +179,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Auth RLS: user CANNOT insert generation with another user_id",
-  ignore: !admin,
+  name: "Auth RLS: user CANNOT insert generation with another user_id (forged ownership)",
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -157,7 +189,7 @@ Deno.test({
 
     try {
       const { error } = await userA.client.from("generations").insert({
-        user_id: userB.id, // forging ownership
+        user_id: userB.id,
         image_url: "https://example.test/x.jpg",
         image_name: "x.jpg",
         prompt: "p",
@@ -176,8 +208,8 @@ Deno.test({
 /* ------------------------ submission_tracking ----------------------- */
 
 Deno.test({
-  name: "Auth RLS: user cannot update admin-only fields on own submission",
-  ignore: !admin,
+  name: "Auth RLS: user cannot self-approve own submission (admin-only fields locked)",
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -195,7 +227,6 @@ Deno.test({
         .single();
       assertEquals(insErr, null, `Submission insert: ${insErr?.message}`);
 
-      // Try to self-approve — must be blocked by WITH CHECK
       const { error: updErr } = await userA.client
         .from("submission_tracking")
         .update({
@@ -206,7 +237,14 @@ Deno.test({
         .eq("id", sub!.id);
       assert(updErr, "User must not be able to set status/rejection_reason/reviewed_at");
 
-      // Notes update (allowed) should still work
+      // Verify status really stayed pending in DB
+      const rows = await readWithDb<{ status: string }>(
+        `SELECT status FROM public.submission_tracking WHERE id = $1`,
+        [sub!.id],
+      );
+      assertEquals(rows[0]?.status, "pending");
+
+      // Allowed fields (notes) should still update
       const { error: noteErr } = await userA.client
         .from("submission_tracking")
         .update({ notes: "my note" })
@@ -220,7 +258,7 @@ Deno.test({
 
 Deno.test({
   name: "Auth RLS: peer cannot read another user's submissions",
-  ignore: !admin,
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -242,7 +280,7 @@ Deno.test({
         .from("submission_tracking")
         .select("id")
         .eq("id", sub!.id);
-      assertEquals(peerView?.length ?? 0, 0, "Peer must not read another user's submission");
+      assertEquals(peerView?.length ?? 0, 0);
     } finally {
       await cleanupUsers();
     }
@@ -253,29 +291,22 @@ Deno.test({
 
 Deno.test({
   name: "Auth RLS: user can create pending payment; cannot create approved payment",
-  ignore: !admin,
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
     const user = await provisionUser("pay");
 
     try {
-      // Allowed — pending only
-      const { data: ok, error: okErr } = await user.client
-        .from("payment_requests")
-        .insert({
-          user_id: user.id,
-          plan_name: "Pro",
-          amount: 100,
-          payment_method: "bkash",
-          status: "pending",
-        })
-        .select()
-        .single();
-      assertEquals(okErr, null, `Pending payment insert should succeed: ${okErr?.message}`);
-      assert(ok);
+      const { error: okErr } = await user.client.from("payment_requests").insert({
+        user_id: user.id,
+        plan_name: "Pro",
+        amount: 100,
+        payment_method: "bkash",
+        status: "pending",
+      });
+      assertEquals(okErr, null, `Pending insert should succeed: ${okErr?.message}`);
 
-      // Forbidden — pre-approved
       const { error: cheatErr } = await user.client.from("payment_requests").insert({
         user_id: user.id,
         plan_name: "Pro",
@@ -283,7 +314,7 @@ Deno.test({
         payment_method: "bkash",
         status: "approved",
       });
-      assert(cheatErr, "User must not be able to insert non-pending payment");
+      assert(cheatErr, "User must not insert non-pending payment");
     } finally {
       await cleanupUsers();
     }
@@ -291,8 +322,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Auth RLS: peer cannot read or update another user's payment request",
-  ignore: !admin,
+  name: "Auth RLS: peer cannot read or approve another user's payment request",
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -318,18 +349,16 @@ Deno.test({
         .eq("id", pay!.id);
       assertEquals(peerView?.length ?? 0, 0, "Peer must not read another user's payment");
 
-      // Peer attempts to approve themselves into the owner's payment
       await peer.client
         .from("payment_requests")
         .update({ status: "approved" })
         .eq("id", pay!.id);
 
-      const { data: stillPending } = await admin!
-        .from("payment_requests")
-        .select("status")
-        .eq("id", pay!.id)
-        .single();
-      assertEquals(stillPending?.status, "pending", "Peer must not flip another user's payment status");
+      const rows = await readWithDb<{ status: string }>(
+        `SELECT status FROM public.payment_requests WHERE id = $1`,
+        [pay!.id],
+      );
+      assertEquals(rows[0]?.status, "pending", "Peer must not flip another user's payment status");
     } finally {
       await cleanupUsers();
     }
@@ -339,8 +368,8 @@ Deno.test({
 /* ---------------------------- credits ------------------------------- */
 
 Deno.test({
-  name: "Auth RPC: deduct_credit decrements caller's credits and only the caller's",
-  ignore: !admin,
+  name: "Auth RPC: deduct_credit only affects caller; never another user",
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -348,41 +377,25 @@ Deno.test({
     const userB = await provisionUser("creditB");
 
     try {
-      const { data: beforeA } = await admin!
-        .from("user_profiles")
-        .select("credits")
-        .eq("user_id", userA.id)
-        .single();
-      const { data: beforeB } = await admin!
-        .from("user_profiles")
-        .select("credits")
-        .eq("user_id", userB.id)
-        .single();
+      const before = await readWithDb<{ user_id: string; credits: number }>(
+        `SELECT user_id, credits FROM public.user_profiles WHERE user_id = ANY($1::uuid[])`,
+        [[userA.id, userB.id]],
+      );
+      const beforeA = before.find((r) => r.user_id === userA.id)?.credits ?? 0;
+      const beforeB = before.find((r) => r.user_id === userB.id)?.credits ?? 0;
 
-      // Free Mode (no active paid plans) returns true without deducting.
-      // Either way: A's deduction must NEVER touch B.
       const { error: rpcErr } = await userA.client.rpc("deduct_credit");
       assertEquals(rpcErr, null, `deduct_credit error: ${rpcErr?.message}`);
 
-      const { data: afterA } = await admin!
-        .from("user_profiles")
-        .select("credits")
-        .eq("user_id", userA.id)
-        .single();
-      const { data: afterB } = await admin!
-        .from("user_profiles")
-        .select("credits")
-        .eq("user_id", userB.id)
-        .single();
-
-      // B's credits must be unchanged regardless of mode
-      assertEquals(afterB?.credits, beforeB?.credits, "Other user's credits must not change");
-
-      // A's credits either stayed equal (free mode) or decreased — never increased
-      assert(
-        (afterA?.credits ?? 0) <= (beforeA?.credits ?? 0),
-        `Caller credits must not increase: before=${beforeA?.credits} after=${afterA?.credits}`,
+      const after = await readWithDb<{ user_id: string; credits: number }>(
+        `SELECT user_id, credits FROM public.user_profiles WHERE user_id = ANY($1::uuid[])`,
+        [[userA.id, userB.id]],
       );
+      const afterA = after.find((r) => r.user_id === userA.id)?.credits ?? 0;
+      const afterB = after.find((r) => r.user_id === userB.id)?.credits ?? 0;
+
+      assertEquals(afterB, beforeB, "Other user's credits must not change");
+      assert(afterA <= beforeA, `Caller credits must not increase (before=${beforeA} after=${afterA})`);
     } finally {
       await cleanupUsers();
     }
@@ -391,7 +404,7 @@ Deno.test({
 
 Deno.test({
   name: "Auth RPC: non-admin cannot call add_credits",
-  ignore: !admin,
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -404,12 +417,11 @@ Deno.test({
       });
       assert(error, "Non-admin must not invoke add_credits");
 
-      const { data: profile } = await admin!
-        .from("user_profiles")
-        .select("credits")
-        .eq("user_id", user.id)
-        .single();
-      assertNotEquals(profile?.credits, 9999, "Credits must not have jumped");
+      const rows = await readWithDb<{ credits: number }>(
+        `SELECT credits FROM public.user_profiles WHERE user_id = $1`,
+        [user.id],
+      );
+      assertNotEquals(rows[0]?.credits, 9999, "Credits must not have jumped");
     } finally {
       await cleanupUsers();
     }
@@ -418,7 +430,7 @@ Deno.test({
 
 Deno.test({
   name: "Auth RPC: non-admin cannot call get_admin_user_view",
-  ignore: !admin,
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
@@ -433,35 +445,31 @@ Deno.test({
   },
 });
 
-/* --------------------- user_profiles credit lock -------------------- */
-
 Deno.test({
   name: "Auth RLS: user cannot directly UPDATE their own credits via user_profiles",
-  ignore: !admin,
+  ignore: !HAS_DB,
   sanitizeOps: false,
   sanitizeResources: false,
   fn: async () => {
     const user = await provisionUser("credLock");
 
     try {
-      const { data: before } = await admin!
-        .from("user_profiles")
-        .select("credits")
-        .eq("user_id", user.id)
-        .single();
+      const beforeRows = await readWithDb<{ credits: number }>(
+        `SELECT credits FROM public.user_profiles WHERE user_id = $1`,
+        [user.id],
+      );
+      const before = beforeRows[0]?.credits;
 
       await user.client
         .from("user_profiles")
         .update({ credits: 9999 })
         .eq("user_id", user.id);
 
-      const { data: after } = await admin!
-        .from("user_profiles")
-        .select("credits")
-        .eq("user_id", user.id)
-        .single();
-
-      assertEquals(after?.credits, before?.credits, "Direct credit update must be blocked by RLS/trigger");
+      const afterRows = await readWithDb<{ credits: number }>(
+        `SELECT credits FROM public.user_profiles WHERE user_id = $1`,
+        [user.id],
+      );
+      assertEquals(afterRows[0]?.credits, before, "Direct credit update must be blocked");
     } finally {
       await cleanupUsers();
     }
