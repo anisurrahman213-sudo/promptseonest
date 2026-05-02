@@ -1,0 +1,61 @@
+name: Security Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deno-security-tests:
+    name: Deno RLS & RPC Authorization Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Verify required secrets
+        run: |
+          if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error::Missing required secrets VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY."
+            echo "::error::Add them under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::warning::SUPABASE_SERVICE_ROLE_KEY not set — authenticated RLS tests will be skipped."
+          fi
+
+      - name: Run security test suite
+        working-directory: supabase/functions/security-tests
+        run: |
+          deno test \
+            --allow-net \
+            --allow-env \
+            --allow-read \
+            --no-check \
+            --reporter=pretty \
+            --fail-fast=0 \
+            ./index.test.ts \
+            ./auth-rls.test.ts \
+            ./negative-path.test.ts
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "::error::Security test regression detected. An RLS policy or RPC authorization check failed."
+          echo "::error::Review the failing assertions above before merging."
