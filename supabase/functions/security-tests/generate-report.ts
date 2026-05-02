@@ -35,6 +35,10 @@ type SuiteResult = {
 
 const SUITES: Array<{ file: string; scope: string }> = [
   {
+    file: "fixtures.test.ts",
+    scope: "Fixture infrastructure — deterministic seed users, admin role, pricing plan and credit balances provision/teardown cleanly",
+  },
+  {
     file: "index.test.ts",
     scope: "Anonymous access — RLS read/write denial on protected tables and SECURITY DEFINER RPC gating",
   },
