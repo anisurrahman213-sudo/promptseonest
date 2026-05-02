@@ -136,12 +136,13 @@ Deno.test("RLS: anon CAN read active pricing_plans", async () => {
 
 /* --------------------- SECURITY DEFINER functions ---------------------- */
 
-Deno.test("RPC: anon cannot call has_role", async () => {
-  const { error } = await anon.rpc("has_role", {
+Deno.test("RPC: has_role is callable by anon (required for public RLS) but only returns false for non-members", async () => {
+  const { data, error } = await anon.rpc("has_role", {
     _user_id: "00000000-0000-0000-0000-000000000000",
     _role: "admin",
   });
-  assert(error, "Anon must not be able to call has_role");
+  assertEquals(error, null);
+  assertEquals(data, false);
 });
 
 Deno.test("RPC: anon cannot call get_credit_cost", async () => {
