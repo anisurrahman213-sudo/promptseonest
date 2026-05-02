@@ -54,6 +54,30 @@ jobs:
             ./auth-rls.test.ts \
             ./negative-path.test.ts
 
+      - name: Generate audit report
+        if: always()
+        run: |
+          deno run \
+            --allow-net --allow-env --allow-read --allow-run --allow-write \
+            supabase/functions/security-tests/generate-report.ts || true
+
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f supabase/functions/security-tests/security-report.md ]; then
+            cat supabase/functions/security-tests/security-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload security report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report-${{ github.run_id }}
+          path: |
+            supabase/functions/security-tests/security-report.json
+            supabase/functions/security-tests/security-report.md
+          retention-days: 90
+
       - name: Report failure
         if: failure()
         run: |
