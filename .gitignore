@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Security test audit reports
+supabase/functions/security-tests/security-report.json
+supabase/functions/security-tests/security-report.md
