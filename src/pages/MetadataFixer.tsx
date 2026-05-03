@@ -167,6 +167,12 @@ export default function MetadataFixer() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Free Metadata Fixer — Adobe Stock Title, Keywords & Description"
+        description="Fix Adobe Stock metadata in seconds. Repair multi-word keywords, optimise titles to 70-200 chars, and refine descriptions to 200-500 chars with 100-point compliance scoring. Free AI tool."
+        path="/metadata-fixer"
+        keywords="metadata fixer, adobe stock title fixer, keyword fixer, stock metadata repair, 49 single word keywords, seo metadata tool"
+      />
       {/* Header */}
       <div className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-20">
         <div className="max-w-[1440px] mx-auto px-4 py-3 flex items-center gap-3">
