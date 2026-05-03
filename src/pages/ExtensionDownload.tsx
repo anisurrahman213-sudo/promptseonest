@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Download, Chrome, Settings, Globe, ChevronLeft, ChevronRight, X, Images } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useCallback } from "react";
+import { SEOHead } from "@/components/SEOHead";
 
 import screenshot1 from "@/assets/extension-screenshot-1.jpg";
 import screenshot2 from "@/assets/extension-screenshot-2.jpg";
