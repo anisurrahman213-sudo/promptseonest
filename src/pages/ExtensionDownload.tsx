@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Download, Chrome, Settings, Globe, ChevronLeft, ChevronRight, X, Images } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useCallback } from "react";
+import { SEOHead } from "@/components/SEOHead";
 
 import screenshot1 from "@/assets/extension-screenshot-1.jpg";
 import screenshot2 from "@/assets/extension-screenshot-2.jpg";
@@ -155,6 +156,12 @@ export default function ExtensionDownload() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="PromptSEONest Chrome Extension — Adobe Stock, Shutterstock & Freepik Auto-Fill"
+        description="Free Chrome extension that auto-fills metadata on Adobe Stock, Shutterstock and Freepik upload pages. Real-time compliance scoring, 49-keyword validator, and right-click image analyzer."
+        path="/extension"
+        keywords="adobe stock chrome extension, shutterstock auto fill, freepik metadata extension, stock metadata browser extension"
+      />
       <div className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
