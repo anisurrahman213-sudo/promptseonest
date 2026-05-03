@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { SEOHead } from "@/components/SEOHead";
 
 // ── Types ──
 
