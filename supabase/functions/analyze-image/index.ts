@@ -444,9 +444,9 @@ async function callGeminiApi(
   userPrompt: string,
   cleanedBase64: string,
 ): Promise<{ ok: boolean; data?: AnalysisResult; error?: string; code?: string }> {
-  const MAX_RETRIES = 3;
-  const INITIAL_BACKOFF_MS = 1500;
-  const MAX_BACKOFF_MS = 6000;
+  const MAX_RETRIES = 5;
+  const INITIAL_BACKOFF_MS = 800;
+  const MAX_BACKOFF_MS = 8000;
   let response: Response | null = null;
   let lastError = "";
   let lastStatus: number | null = null;

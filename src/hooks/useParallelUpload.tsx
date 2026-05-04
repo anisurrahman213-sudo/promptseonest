@@ -6,11 +6,11 @@ import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 
-// Tuned for Gemini free tier limits (avoid 429 rate limits)
-// gemini-2.5-flash-lite: ~30 RPM. We process 8 in parallel with stagger.
-const MAX_CONCURRENT = 8;
-const STAGGER_DELAY_MS = 250;
-const BATCH_SIZE = 3; // Send 3 images per batch AI call (smaller = faster response)
+// MASSIVE PARALLELISM — 500 files in ~10s requires extreme concurrency
+// Each edge invocation = 1 image (avoids CPU/wall-time limits per request)
+// Modern browsers/Supabase handle 25-30 concurrent fetches well
+const UPLOAD_CONCURRENCY = 25;   // parallel compress + storage uploads
+const ANALYZE_CONCURRENCY = 30;  // parallel edge function invocations
 
 interface UseParallelUploadOptions {
   userId: string;
@@ -28,6 +28,31 @@ interface PreparedFile {
   startTime: number;
 }
 
+// Generic semaphore-based parallel runner — keeps N tasks in-flight constantly
+async function runWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  const runners = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (true) {
+      const i = nextIndex++;
+      if (i >= items.length) return;
+      try {
+        results[i] = await worker(items[i], i);
+      } catch (err) {
+        results[i] = err as any;
+      }
+    }
+  });
+
+  await Promise.all(runners);
+  return results;
+}
+
 export function useParallelUpload({
   userId,
   metadataSettings,
@@ -37,7 +62,7 @@ export function useParallelUpload({
 }: UseParallelUploadOptions) {
   const successCountRef = useRef(0);
 
-  // Step 1: Compress + Upload a single file, return base64 + publicUrl
+  // Step 1: Compress + Upload a single file
   const prepareFile = useCallback(async (
     mediaFile: MediaFile,
     index: number
@@ -49,52 +74,53 @@ export function useParallelUpload({
     try {
       let base64: string;
       let publicUrl: string;
-      
+
       if (mediaFile.type === 'video') {
         base64 = await extractVideoFramesGrid(file, {
           frameCount: 4, gridCols: 2, frameWidth: 320, quality: 0.4
         });
-        
+
         const frameGridBlob = await fetch(`data:image/jpeg;base64,${base64}`).then(r => r.blob());
         const frameFileName = file.name.replace(/\.[^/.]+$/, '') + '_frames.jpg';
         const frameFilePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${frameFileName}`;
         const videoFilePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
-        
+
         const [frameUploadResult, videoUploadResult] = await Promise.all([
           supabase.storage.from('images').upload(frameFilePath, frameGridBlob, { contentType: 'image/jpeg' }),
           supabase.storage.from('videos').upload(videoFilePath, file, { contentType: file.type })
         ]);
-        
+
         if (frameUploadResult.error || videoUploadResult.error) {
           onFileStatusUpdate(index, { status: 'error', errorMessage: 'Upload failed', endTime: Date.now() });
           return null;
         }
-        
+
         const { data: videoUrlData } = supabase.storage.from('videos').getPublicUrl(videoFilePath);
         publicUrl = videoUrlData.publicUrl;
       } else {
+        // Aggressive compression for fast AI calls (small payloads)
         const compressedFile = await compressImage(file, {
-          maxWidth: 1200, maxHeight: 1200, quality: 0.35, maxSizeKB: 150, aggressive: true
+          maxWidth: 1024, maxHeight: 1024, quality: 0.4, maxSizeKB: 200, aggressive: true
         });
-        
+
         const base64Promise = new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve((reader.result as string).split(',')[1]);
           reader.onerror = reject;
           reader.readAsDataURL(compressedFile);
         });
-        
+
         const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
         const uploadPromise = supabase.storage.from('images').upload(filePath, compressedFile);
-        
+
         const [extractedBase64, uploadResult] = await Promise.all([base64Promise, uploadPromise]);
         base64 = extractedBase64;
-        
+
         if (uploadResult.error) {
           onFileStatusUpdate(index, { status: 'error', errorMessage: 'Upload failed', endTime: Date.now() });
           return null;
         }
-        
+
         const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
         publicUrl = urlData.publicUrl;
       }
@@ -107,155 +133,86 @@ export function useParallelUpload({
     }
   }, [userId, onFileStatusUpdate]);
 
-  // Step 2: Send batch AI analysis and save results
-  const analyzeBatch = useCallback(async (prepared: PreparedFile[]): Promise<boolean[]> => {
-    if (prepared.length === 0) return [];
+  // Step 2: Analyze a single prepared file (one edge function invocation per file)
+  const analyzeOne = useCallback(async (prep: PreparedFile): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-image', {
+        body: {
+          imageBase64: prep.base64,
+          imageName: prep.mediaFile.file.name,
+          mediaType: prep.mediaFile.type,
+          settings: metadataSettings,
+        },
+      });
 
-    // Try batch mode first
-    if (prepared.length > 1) {
-      try {
-        const batchItems = prepared.map(p => ({
-          imageBase64: p.base64,
-          imageName: p.mediaFile.file.name,
-          mediaType: p.mediaFile.type,
-        }));
-
-        const { data, error } = await supabase.functions.invoke('analyze-image', {
-          body: { batch: batchItems, settings: metadataSettings }
-        });
-
-        if (!error && data?.batch && data?.results) {
-          const results: boolean[] = [];
-          
-          // Process each result from the batch
-          const savePromises = data.results.map(async (result: any, idx: number) => {
-            const prep = prepared[idx];
-            if (!result.success || !result.data) {
-              onFileStatusUpdate(prep.index, { 
-                status: 'error', 
-                errorMessage: result.error || 'Analysis failed', 
-                endTime: Date.now() 
-              });
-              return false;
-            }
-
-            // Deduct credit and save
-            const [creditResult, saveResult] = await Promise.all([
-              supabase.rpc('deduct_credit'),
-              supabase.from('generations').insert({
-                user_id: userId,
-                image_name: prep.mediaFile.file.name,
-                image_url: prep.publicUrl,
-                prompt: result.data.prompt,
-                title: result.data.title,
-                description: result.data.description,
-                tags: result.data.tags,
-                media_type: prep.mediaFile.type,
-                category: result.data.category || ''
-              }).select().single()
-            ]);
-
-            if (!creditResult.data || saveResult.error) {
-              onFileStatusUpdate(prep.index, { 
-                status: 'error', 
-                errorMessage: saveResult.error ? 'Save failed' : 'Credit deduction failed', 
-                endTime: Date.now() 
-              });
-              return false;
-            }
-
-            onFileStatusUpdate(prep.index, { status: 'success', endTime: Date.now() });
-            onSuccess(saveResult.data);
-            onCreditRefresh();
-            return true;
-          });
-
-          return Promise.all(savePromises);
-        }
-      } catch (batchError) {
-        console.warn('Batch mode failed, falling back to single:', batchError);
-      }
-    }
-
-    // Fallback: process individually
-    return Promise.all(prepared.map(async (prep) => {
-      try {
-        const { data, error } = await supabase.functions.invoke('analyze-image', {
-          body: { 
-            imageBase64: prep.base64,
-            imageName: prep.mediaFile.file.name,
-            mediaType: prep.mediaFile.type,
-            settings: metadataSettings
-          }
-        });
-
-        if (error || data?.error) {
-          onFileStatusUpdate(prep.index, { status: 'error', errorMessage: data?.error || 'Analysis failed', endTime: Date.now() });
-          return false;
-        }
-
-        const [creditResult, saveResult] = await Promise.all([
-          supabase.rpc('deduct_credit'),
-          supabase.from('generations').insert({
-            user_id: userId,
-            image_name: prep.mediaFile.file.name,
-            image_url: prep.publicUrl,
-            prompt: data.data.prompt,
-            title: data.data.title,
-            description: data.data.description,
-            tags: data.data.tags,
-            media_type: prep.mediaFile.type,
-            category: data.data.category || ''
-          }).select().single()
-        ]);
-
-        if (!creditResult.data || saveResult.error) {
-          onFileStatusUpdate(prep.index, { status: 'error', errorMessage: 'Save failed', endTime: Date.now() });
-          return false;
-        }
-
-        onFileStatusUpdate(prep.index, { status: 'success', endTime: Date.now() });
-        onSuccess(saveResult.data);
-        onCreditRefresh();
-        return true;
-      } catch {
-        onFileStatusUpdate(prep.index, { status: 'error', errorMessage: 'Processing error', endTime: Date.now() });
+      if (error || !data?.success || !data?.data) {
+        const msg = data?.error || error?.message || 'Analysis failed';
+        onFileStatusUpdate(prep.index, { status: 'error', errorMessage: msg, endTime: Date.now() });
         return false;
       }
-    }));
+
+      const [creditResult, saveResult] = await Promise.all([
+        supabase.rpc('deduct_credit'),
+        supabase.from('generations').insert({
+          user_id: userId,
+          image_name: prep.mediaFile.file.name,
+          image_url: prep.publicUrl,
+          prompt: data.data.prompt,
+          title: data.data.title,
+          description: data.data.description,
+          tags: data.data.tags,
+          media_type: prep.mediaFile.type,
+          category: data.data.category || '',
+        }).select().single(),
+      ]);
+
+      if (saveResult.error) {
+        onFileStatusUpdate(prep.index, { status: 'error', errorMessage: 'Save failed', endTime: Date.now() });
+        return false;
+      }
+      if (creditResult.data === false) {
+        onFileStatusUpdate(prep.index, { status: 'error', errorMessage: 'Insufficient credits', endTime: Date.now() });
+        return false;
+      }
+
+      onFileStatusUpdate(prep.index, { status: 'success', endTime: Date.now() });
+      onSuccess(saveResult.data);
+      onCreditRefresh();
+      return true;
+    } catch (err) {
+      onFileStatusUpdate(prep.index, {
+        status: 'error',
+        errorMessage: err instanceof Error ? err.message : 'Processing error',
+        endTime: Date.now(),
+      });
+      return false;
+    }
   }, [userId, metadataSettings, onFileStatusUpdate, onSuccess, onCreditRefresh]);
 
   const processFilesInParallel = useCallback(async (
     mediaFiles: MediaFile[]
   ): Promise<number> => {
     successCountRef.current = 0;
-    
-    // Phase 1: Compress + Upload all files in parallel batches
-    const preparedFiles: (PreparedFile | null)[] = [];
-    
-    for (let i = 0; i < mediaFiles.length; i += MAX_CONCURRENT) {
-      const batch = mediaFiles.slice(i, Math.min(i + MAX_CONCURRENT, mediaFiles.length));
-      const batchResults = await Promise.all(
-        batch.map((file, batchIdx) => 
-          new Promise<PreparedFile | null>(resolve => 
-            setTimeout(() => prepareFile(file, i + batchIdx).then(resolve), batchIdx * STAGGER_DELAY_MS)
-          )
-        )
-      );
-      preparedFiles.push(...batchResults);
-    }
 
-    // Phase 2: Batch AI analysis — send BATCH_SIZE files per request
-    const validFiles = preparedFiles.filter((f): f is PreparedFile => f !== null);
-    
-    for (let i = 0; i < validFiles.length; i += BATCH_SIZE) {
-      const batch = validFiles.slice(i, Math.min(i + BATCH_SIZE, validFiles.length));
-      const results = await analyzeBatch(batch);
-      successCountRef.current += results.filter(Boolean).length;
-    }
-    
+    // Phase 1: Compress + Upload — 25 in parallel constantly
+    const preparedResults = await runWithConcurrency(
+      mediaFiles,
+      UPLOAD_CONCURRENCY,
+      (file, idx) => prepareFile(file, idx)
+    );
+
+    const validFiles = preparedResults.filter((f): f is PreparedFile => !!f && typeof f === 'object' && 'base64' in f);
+
+    // Phase 2: AI analysis — 30 edge function invocations in parallel constantly
+    const results = await runWithConcurrency(
+      validFiles,
+      ANALYZE_CONCURRENCY,
+      (prep) => analyzeOne(prep)
+    );
+
+    successCountRef.current = results.filter(Boolean).length;
     return successCountRef.current;
-  }, [prepareFile, analyzeBatch]);
+  }, [prepareFile, analyzeOne]);
 
   return { processFilesInParallel };
 }
