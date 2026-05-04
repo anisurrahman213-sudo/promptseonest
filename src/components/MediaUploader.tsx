@@ -45,7 +45,7 @@ interface MediaUploaderProps {
     setCompressionFiles([]);
     
     // File size validation
-    const IMAGE_MIN_SIZE = 10 * 1024; // 10KB
+    const IMAGE_MIN_SIZE = 1 * 1024; // 1KB
     const IMAGE_MAX_SIZE = 100 * 1024 * 1024; // 100MB
     const VIDEO_MIN_SIZE = 1 * 1024 * 1024; // 1MB
     const VIDEO_MAX_SIZE = 500 * 1024 * 1024; // 500MB
@@ -71,7 +71,7 @@ interface MediaUploaderProps {
         }
       } else if (isImage) {
         if (file.size < IMAGE_MIN_SIZE) {
-          rejected.push(`${file.name}: Image must be at least 10KB`);
+          rejected.push(`${file.name}: Image must be at least 1KB`);
         } else if (file.size > IMAGE_MAX_SIZE) {
           rejected.push(`${file.name}: Image must be under 100MB`);
         } else {
@@ -376,7 +376,7 @@ interface MediaUploaderProps {
                   : 'Drag & drop files here, or click to select'}
             </motion.p>
              <div className="text-xs sm:text-sm text-muted-foreground px-4 space-y-1">
-               <p>Supports common image (min 10KB, max 100MB), video (min 1MB, max 500MB), SVG, and EPS formats. Max {maxFiles} files.</p>
+               <p>Supports common image (min 1KB, max 100MB), video (min 1MB, max 500MB), SVG, and EPS formats. Max {maxFiles} files.</p>
                <p className="flex items-center justify-center gap-1.5 text-primary/70">
                  <Clipboard className="w-3 h-3" />
                  <span>Ctrl+V to paste from clipboard</span>
