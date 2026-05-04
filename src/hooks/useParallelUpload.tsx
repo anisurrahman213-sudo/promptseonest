@@ -5,6 +5,16 @@ import { compressImage } from '@/lib/imageCompression';
 import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
+import { mapUploadError, type FriendlyError } from '@/lib/uploadErrorMessages';
+
+// Helper to build error status update from a FriendlyError
+const errStatus = (err: FriendlyError): Partial<ProcessingFile> => ({
+  status: 'error',
+  errorMessage: err.message,
+  errorHint: err.hint,
+  errorCategory: err.category,
+  endTime: Date.now(),
+});
 
 // MASSIVE PARALLELISM — 500 files in ~10s requires extreme concurrency
 // Each edge invocation = 1 image (avoids CPU/wall-time limits per request)
