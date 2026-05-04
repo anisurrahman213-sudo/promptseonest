@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, CheckCircle2, XCircle, Clock, Timer } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, Clock, Timer, AlertCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import type { UploadErrorCategory } from '@/lib/uploadErrorMessages';
 
 export interface ProcessingFile {
   name: string;
   status: 'pending' | 'processing' | 'success' | 'error';
   errorMessage?: string;
+  errorHint?: string;
+  errorCategory?: UploadErrorCategory;
   startTime?: number;
   endTime?: number;
 }
@@ -108,8 +111,16 @@ function ProcessingFileRow({ file, index }: { file: ProcessingFile; index: numbe
       {/* File info */}
       <div className="flex-1 min-w-0">
         <p className="truncate font-medium">{file.name}</p>
-        {file.errorMessage && (
-          <p className="text-destructive text-xs truncate">{file.errorMessage}</p>
+        {file.status === 'error' && file.errorMessage && (
+          <div className="flex items-start gap-1 mt-0.5">
+            <AlertCircle className="h-3 w-3 text-destructive shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-destructive text-xs font-medium truncate">{file.errorMessage}</p>
+              {file.errorHint && (
+                <p className="text-muted-foreground text-[10px] sm:text-xs truncate">{file.errorHint}</p>
+              )}
+            </div>
+          </div>
         )}
       </div>
 

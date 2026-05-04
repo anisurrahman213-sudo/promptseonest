@@ -5,6 +5,16 @@ import { compressImage } from '@/lib/imageCompression';
 import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
+import { mapUploadError, type FriendlyError } from '@/lib/uploadErrorMessages';
+
+// Helper to build error status update from a FriendlyError
+const errStatus = (err: FriendlyError): Partial<ProcessingFile> => ({
+  status: 'error',
+  errorMessage: err.message,
+  errorHint: err.hint,
+  errorCategory: err.category,
+  endTime: Date.now(),
+});
 
 // MASSIVE PARALLELISM — 500 files in ~10s requires extreme concurrency
 // Each edge invocation = 1 image (avoids CPU/wall-time limits per request)
@@ -91,7 +101,8 @@ export function useParallelUpload({
         ]);
 
         if (frameUploadResult.error || videoUploadResult.error) {
-          onFileStatusUpdate(index, { status: 'error', errorMessage: 'Upload failed', endTime: Date.now() });
+          const rawMsg = frameUploadResult.error?.message || videoUploadResult.error?.message;
+          onFileStatusUpdate(index, errStatus(mapUploadError({ rawMessage: rawMsg, context: 'upload' })));
           return null;
         }
 
@@ -117,7 +128,7 @@ export function useParallelUpload({
         base64 = extractedBase64;
 
         if (uploadResult.error) {
-          onFileStatusUpdate(index, { status: 'error', errorMessage: 'Upload failed', endTime: Date.now() });
+          onFileStatusUpdate(index, errStatus(mapUploadError({ rawMessage: uploadResult.error.message, context: 'upload' })));
           return null;
         }
 
@@ -128,7 +139,8 @@ export function useParallelUpload({
       return { index, mediaFile, base64, publicUrl, startTime };
     } catch (error) {
       console.error('Prepare error:', error);
-      onFileStatusUpdate(index, { status: 'error', errorMessage: 'Processing error', endTime: Date.now() });
+      const rawMsg = error instanceof Error ? error.message : '';
+      onFileStatusUpdate(index, errStatus(mapUploadError({ rawMessage: rawMsg, context: 'upload' })));
       return null;
     }
   }, [userId, onFileStatusUpdate]);
@@ -146,8 +158,9 @@ export function useParallelUpload({
       });
 
       if (error || !data?.success || !data?.data) {
-        const msg = data?.error || error?.message || 'Analysis failed';
-        onFileStatusUpdate(prep.index, { status: 'error', errorMessage: msg, endTime: Date.now() });
+        const rawMsg = data?.error || error?.message;
+        const code = data?.code;
+        onFileStatusUpdate(prep.index, errStatus(mapUploadError({ code, rawMessage: rawMsg, context: 'analyze' })));
         return false;
       }
 
@@ -167,11 +180,11 @@ export function useParallelUpload({
       ]);
 
       if (saveResult.error) {
-        onFileStatusUpdate(prep.index, { status: 'error', errorMessage: 'Save failed', endTime: Date.now() });
+        onFileStatusUpdate(prep.index, errStatus(mapUploadError({ rawMessage: saveResult.error.message, context: 'save' })));
         return false;
       }
       if (creditResult.data === false) {
-        onFileStatusUpdate(prep.index, { status: 'error', errorMessage: 'Insufficient credits', endTime: Date.now() });
+        onFileStatusUpdate(prep.index, errStatus(mapUploadError({ context: 'credit' })));
         return false;
       }
 
@@ -180,11 +193,8 @@ export function useParallelUpload({
       onCreditRefresh();
       return true;
     } catch (err) {
-      onFileStatusUpdate(prep.index, {
-        status: 'error',
-        errorMessage: err instanceof Error ? err.message : 'Processing error',
-        endTime: Date.now(),
-      });
+      const rawMsg = err instanceof Error ? err.message : '';
+      onFileStatusUpdate(prep.index, errStatus(mapUploadError({ rawMessage: rawMsg, context: 'analyze' })));
       return false;
     }
   }, [userId, metadataSettings, onFileStatusUpdate, onSuccess, onCreditRefresh]);
