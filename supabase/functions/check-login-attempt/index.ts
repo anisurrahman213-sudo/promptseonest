@@ -170,6 +170,27 @@ Deno.serve(async (req) => {
     }
 
     if (action === "reset") {
+      // SECURITY: require a valid JWT — proves the caller actually signed in
+      // before we clear failed-attempt counters. Without this, anyone could
+      // wipe an account's lockout to brute-force indefinitely.
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user } } = await userClient.auth.getUser();
+      if (!user) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Reset attempts on successful login
       await supabase
         .from("login_attempts")
