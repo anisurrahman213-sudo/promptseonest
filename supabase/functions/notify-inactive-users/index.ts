@@ -104,6 +104,14 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Authorize: allow service-role caller (cron) or signed-in admin
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const isServiceRole = authHeader === `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`;
+  if (!isServiceRole) {
+    const auth = await requireAdmin(req, corsHeaders);
+    if (!auth.ok) return auth.response;
+  }
+
   try {
     console.log("Starting inactive user notification check...");
 
