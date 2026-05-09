@@ -1,8 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { writeFileSync } from "node:fs";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+import { generateSitemapXml } from "./scripts/generate-sitemap";
 
 // https://vitejs.dev/config/
 // Stable build timestamp shared between `define` and the build-info plugin
@@ -36,6 +38,37 @@ function buildInfoPlugin(): any {
   };
 }
 
+/**
+ * Auto-generate sitemap.xml from SITEMAP_ROUTES on dev start AND every build.
+ * lastmod is derived from each page file's mtime — edit a page, get a fresh date.
+ */
+function sitemapPlugin(): any {
+  const root = path.resolve(__dirname);
+  const writePublic = () => {
+    try {
+      writeFileSync(path.join(root, "public", "sitemap.xml"), generateSitemapXml(root));
+    } catch (e) {
+      console.warn("[sitemap] Failed to write public/sitemap.xml:", e);
+    }
+  };
+  return {
+    name: "pn-sitemap",
+    buildStart() {
+      writePublic();
+    },
+    configureServer() {
+      writePublic();
+    },
+    generateBundle(this: any) {
+      this.emitFile({
+        type: "asset",
+        fileName: "sitemap.xml",
+        source: generateSitemapXml(root),
+      });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   define: {
     __BUILD_TIME__: JSON.stringify(BUILD_TIME),
@@ -50,6 +83,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     buildInfoPlugin(),
+    sitemapPlugin(),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
