@@ -1,4 +1,6 @@
 // Generate trending stock photography keywords/themes based on time of year & user-provided context
+import { requireUser } from "../_shared/auth.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -18,6 +20,9 @@ Be specific (not "business" — say "remote team async meeting"). Focus on Adobe
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const auth = await requireUser(req, corsHeaders);
+  if (!auth.ok) return auth.response;
 
   try {
     const { niche, region } = await req.json().catch(() => ({}));
