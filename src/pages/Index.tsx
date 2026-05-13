@@ -157,8 +157,8 @@ const Index = () => {
   const whatYouGetItems = [t('landing.feature1'), t('landing.feature2'), t('landing.feature3'), t('landing.feature4'), t('landing.feature5'), t('landing.feature6')];
   return <div className="min-h-screen bg-background">
       <SEOHead
-        title="Free Adobe Stock Metadata Generator — 100% Compliant Keywords"
-        description="Generate perfect Adobe Stock metadata instantly. Fix multi-word keywords, optimise titles, and get 100% compliance score. Free AI-powered tool for stock contributors."
+        title="Free Adobe Stock Metadata Generator"
+        description="Generate 100% Adobe Stock-compliant metadata in seconds. Fix multi-word keywords and optimise titles with our free AI tool for stock contributors."
         path="/"
         keywords="adobe stock metadata generator, stock photo keyword generator, adobe stock keywords, metadata generator free, keyword fixer, seo tool, shutterstock keywords, freepik metadata, 49 keywords adobe stock, image seo"
       />
