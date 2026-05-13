@@ -424,6 +424,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const auth = await requireUser(req, corsHeaders);
+  if (!auth.ok) return auth.response;
+
   try {
     const { messages, language = "en" } = await req.json();
 
