@@ -576,12 +576,13 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const authHeader = req.headers.get("authorization") || "";
-    const userIdentifier = authHeader.replace("Bearer ", "").slice(0, 20) || 
-                          req.headers.get("x-forwarded-for") || "anonymous";
+  // Require authenticated caller — prevents anonymous Gemini quota drain
+  const auth = await requireUser(req, corsHeaders);
+  if (!auth.ok) return auth.response;
 
-    const rateLimit = checkRateLimit(userIdentifier);
+  try {
+    // Per-user rate limit (keyed on real user id from verified JWT)
+    const rateLimit = checkRateLimit(auth.userId);
     if (!rateLimit.allowed) {
       return new Response(
         JSON.stringify({ error: "Rate limit exceeded", retryAfter: Math.ceil(rateLimit.resetIn / 1000) }),
@@ -594,6 +595,12 @@ Deno.serve(async (req) => {
     // ============= BATCH MODE =============
     if (body.batch && Array.isArray(body.batch)) {
       const items: BatchItem[] = body.batch;
+      if (items.length > MAX_BATCH_SIZE) {
+        return new Response(
+          JSON.stringify({ error: `Batch size exceeds limit (max ${MAX_BATCH_SIZE} items per request)` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const settings: MetadataSettings = body.settings || {
         exportPlatform: 'adobe_stock', titleLength: 60, titleLengthMix: true,
         descriptionLength: 200, descriptionLengthFixed: false, keywordsCount: 49,
