@@ -157,8 +157,8 @@ export default function ExtensionDownload() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="PromptSEONest Chrome Extension — Adobe Stock, Shutterstock & Freepik Auto-Fill"
-        description="Free Chrome extension that auto-fills metadata on Adobe Stock, Shutterstock and Freepik upload pages. Real-time compliance scoring, 49-keyword validator, and right-click image analyzer."
+        title="Adobe Stock Chrome Extension"
+        description="Free Chrome extension that auto-fills metadata on Adobe Stock, Shutterstock & Freepik. Real-time compliance scoring and 49-keyword validator built in."
         path="/extension"
         keywords="adobe stock chrome extension, shutterstock auto fill, freepik metadata extension, stock metadata browser extension"
       />
