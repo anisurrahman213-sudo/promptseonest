@@ -319,7 +319,7 @@ export default function MetadataFixer() {
                 <CardContent className="flex flex-col items-center justify-center py-24 text-center">
                   <ArrowRight className="h-12 w-12 text-muted-foreground/20 mb-3" />
                   <p className="text-muted-foreground font-medium">Fixed metadata appears here</p>
-                  <p className="text-xs text-muted-foreground/50 mt-1">Paste metadata on the left and click "Analyze & Fix All"</p>
+                  <p className="text-xs text-muted-foreground mt-1">Paste metadata on the left and click "Analyze & Fix All"</p>
                 </CardContent>
               </Card>
             )}
@@ -329,7 +329,7 @@ export default function MetadataFixer() {
                 <CardContent className="flex flex-col items-center justify-center py-24">
                   <Loader2 className="h-12 w-12 animate-spin text-primary mb-3" />
                   <p className="text-muted-foreground font-medium">AI is analyzing & fixing...</p>
-                  <p className="text-xs text-muted-foreground/50 mt-1">Applying 100% Adobe Stock SEO rules</p>
+                  <p className="text-xs text-muted-foreground mt-1">Applying 100% Adobe Stock SEO rules</p>
                 </CardContent>
               </Card>
             )}
