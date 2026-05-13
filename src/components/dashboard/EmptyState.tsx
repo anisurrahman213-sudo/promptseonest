@@ -87,7 +87,7 @@ export function EmptyState({ onUploadClick }: EmptyStateProps) {
       )}
 
       {/* Decorative elements */}
-      <div className="mt-8 sm:mt-12 flex items-center gap-3 sm:gap-4 text-muted-foreground/60 text-xs sm:text-sm">
+      <div className="mt-8 sm:mt-12 flex items-center gap-3 sm:gap-4 text-muted-foreground text-xs sm:text-sm">
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
           <span>{t('features.aiPoweredPrompts')}</span>
