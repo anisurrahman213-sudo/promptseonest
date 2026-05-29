@@ -631,7 +631,7 @@ Deno.serve(async (req) => {
     }
 
     // ============= SINGLE MODE (backward compatible) =============
-    const { imageBase64, imageName, mediaType = 'image', settings } = body;
+    const { imageBase64, imageName, mediaType = 'image', settings, exif } = body;
 
     if (!imageBase64) {
       return new Response(
