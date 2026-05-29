@@ -6,6 +6,7 @@ import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { mapUploadError, type FriendlyError } from '@/lib/uploadErrorMessages';
+import { extractExifContext, summarizeExif } from '@/lib/exifReader';
 
 // Helper to build error status update from a FriendlyError
 const errStatus = (err: FriendlyError): Partial<ProcessingFile> => ({
