@@ -236,25 +236,44 @@ export function useParallelUpload({
   ): Promise<number> => {
     successCountRef.current = 0;
 
-    // Phase 1: Compress + Upload — 25 in parallel constantly
+    // Phase 1: Compress + Upload — parallel
     const preparedResults = await runWithConcurrency(
       mediaFiles,
       UPLOAD_CONCURRENCY,
-      (file, idx) => prepareFile(file, idx)
+      async (file, idx) => {
+        try {
+          return await prepareFile(file, idx);
+        } catch (err) {
+          // Safety net: surface unexpected throws as visible errors instead of silent skips
+          console.error('Unexpected prepare error:', err);
+          const rawMsg = err instanceof Error ? err.message : 'Unknown error';
+          onFileStatusUpdate(idx, errStatus(mapUploadError({ rawMessage: rawMsg, context: 'upload' })));
+          return null;
+        }
+      }
     );
 
     const validFiles = preparedResults.filter((f): f is PreparedFile => !!f && typeof f === 'object' && 'base64' in f);
 
-    // Phase 2: AI analysis — 30 edge function invocations in parallel constantly
+    // Phase 2: AI analysis — parallel edge function invocations
     const results = await runWithConcurrency(
       validFiles,
       ANALYZE_CONCURRENCY,
-      (prep) => analyzeOne(prep)
+      async (prep) => {
+        try {
+          return await analyzeOne(prep);
+        } catch (err) {
+          console.error('Unexpected analyze error:', err);
+          const rawMsg = err instanceof Error ? err.message : 'Unknown error';
+          onFileStatusUpdate(prep.index, errStatus(mapUploadError({ rawMessage: rawMsg, context: 'analyze' })));
+          return false;
+        }
+      }
     );
 
     successCountRef.current = results.filter(Boolean).length;
     return successCountRef.current;
-  }, [prepareFile, analyzeOne]);
+  }, [prepareFile, analyzeOne, onFileStatusUpdate]);
 
   return { processFilesInParallel };
 }
