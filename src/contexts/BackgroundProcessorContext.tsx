@@ -194,23 +194,34 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
       }
 
       if (data?.success === false || data?.error) {
+        console.error('❌ Analysis returned error:', { success: data?.success, error: data?.error, code: data?.code });
         updateFileStatus(jobId, fileId, {
           status: 'error',
-          errorMessage: data.error || 'Analysis failed',
+          errorMessage: data?.error || 'Analysis failed',
+          endTime: Date.now()
+        });
+        return false;
+      }
+
+      // Defensive: ensure data.data exists with required fields
+      if (!data?.data?.prompt || !data?.data?.title) {
+        console.error('❌ Analysis response missing fields:', data);
+        updateFileStatus(jobId, fileId, {
+          status: 'error',
+          errorMessage: 'AI returned incomplete data',
           endTime: Date.now()
         });
         return false;
       }
 
       // Step 4: Deduct credit and save to database in parallel
-      // IMPORTANT: Use original file.name for Filename column (Adobe Stock requires exact match)
       const [creditResult, saveResult] = await Promise.all([
         supabase.rpc('deduct_credit'),
         supabase
           .from('generations')
           .insert({
             user_id: userId,
-            image_name: file.name, // Use ORIGINAL filename, not AI-generated name
+            image_name: file.name,
             image_url: publicUrl,
             prompt: data.data.prompt,
             title: data.data.title,
@@ -223,14 +234,19 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
           .single()
       ]);
 
-      if (!creditResult.data) {
-        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Credit deduction failed', endTime: Date.now() });
+      if (creditResult.error) {
+        console.error('❌ Credit RPC error:', creditResult.error);
+        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: `Credit error: ${creditResult.error.message}`, endTime: Date.now() });
+        return false;
+      }
+      if (creditResult.data === false) {
+        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Insufficient credits', endTime: Date.now() });
         return false;
       }
 
       if (saveResult.error) {
-        console.error('Save error:', saveResult.error);
-        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Save failed', endTime: Date.now() });
+        console.error('❌ Save error:', saveResult.error, 'payload:', { user_id: userId, image_name: file.name, has_data: !!data.data });
+        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: `Save failed: ${saveResult.error.message}`, endTime: Date.now() });
         return false;
       }
 
