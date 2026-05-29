@@ -1,5 +1,6 @@
 /// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 import { requireUser } from "../_shared/auth.ts";
+import { APP_CONTEXT } from "../_shared/app-knowledge.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -463,7 +464,7 @@ async function callGeminiApi(
         },
         body: JSON.stringify({
           systemInstruction: {
-            parts: [{ text: systemPrompt }],
+            parts: [{ text: APP_CONTEXT + "\n\n" + systemPrompt }],
           },
           contents: [
             {

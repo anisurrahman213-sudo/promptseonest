@@ -1,6 +1,7 @@
 // Analyze Adobe Stock rejection emails using Lovable AI
 // Categorizes the reason and provides actionable suggestions
 import { requireUser } from "../_shared/auth.ts";
+import { APP_CONTEXT } from "../_shared/app-knowledge.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,7 +65,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: APP_CONTEXT + "\n\n" + SYSTEM_PROMPT },
           { role: "user", content: `Analyze this rejection email/message:\n\n${rejectionText}` },
         ],
         tools: [{
