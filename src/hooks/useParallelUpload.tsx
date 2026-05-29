@@ -6,6 +6,7 @@ import { MediaFile } from '@/components/MediaUploader';
 import { ProcessingFile } from '@/components/dashboard/BulkProgress';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { mapUploadError, type FriendlyError } from '@/lib/uploadErrorMessages';
+import { extractExifContext, summarizeExif } from '@/lib/exifReader';
 
 // Helper to build error status update from a FriendlyError
 const errStatus = (err: FriendlyError): Partial<ProcessingFile> => ({
@@ -36,6 +37,7 @@ interface PreparedFile {
   base64: string;
   publicUrl: string;
   startTime: number;
+  exifSummary?: string | null;
 }
 
 // Generic semaphore-based parallel runner — keeps N tasks in-flight constantly
@@ -108,7 +110,11 @@ export function useParallelUpload({
 
         const { data: videoUrlData } = supabase.storage.from('videos').getPublicUrl(videoFilePath);
         publicUrl = videoUrlData.publicUrl;
+        return { index, mediaFile, base64, publicUrl, startTime };
       } else {
+        // Read EXIF from the ORIGINAL file (compression strips it) — runs in parallel
+        const exifPromise = extractExifContext(file).then(summarizeExif).catch(() => null);
+
         // Aggressive compression for fast AI calls (small payloads)
         const compressedFile = await compressImage(file, {
           maxWidth: 1024, maxHeight: 1024, quality: 0.4, maxSizeKB: 200, aggressive: true
@@ -124,7 +130,7 @@ export function useParallelUpload({
         const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
         const uploadPromise = supabase.storage.from('images').upload(filePath, compressedFile);
 
-        const [extractedBase64, uploadResult] = await Promise.all([base64Promise, uploadPromise]);
+        const [extractedBase64, uploadResult, exifSummary] = await Promise.all([base64Promise, uploadPromise, exifPromise]);
         base64 = extractedBase64;
 
         if (uploadResult.error) {
@@ -134,9 +140,9 @@ export function useParallelUpload({
 
         const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
         publicUrl = urlData.publicUrl;
-      }
 
-      return { index, mediaFile, base64, publicUrl, startTime };
+        return { index, mediaFile, base64, publicUrl, startTime, exifSummary };
+      }
     } catch (error) {
       console.error('Prepare error:', error);
       const rawMsg = error instanceof Error ? error.message : '';
@@ -154,6 +160,7 @@ export function useParallelUpload({
           imageName: prep.mediaFile.file.name,
           mediaType: prep.mediaFile.type,
           settings: metadataSettings,
+          exif: prep.exifSummary || undefined,
         },
       });
 

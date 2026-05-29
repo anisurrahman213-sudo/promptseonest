@@ -217,7 +217,7 @@ function postProcessTags(filteredTags: string, settings: MetadataSettings): stri
   return unique.join(', ');
 }
 
-function buildPrompt(mediaType: string, settings: MetadataSettings): { systemPrompt: string; userPrompt: string } {
+function buildPrompt(mediaType: string, settings: MetadataSettings, exif?: string): { systemPrompt: string; userPrompt: string } {
   const platform = platformNames[settings.exportPlatform] || "Stock Marketplaces";
   const titleMax = settings.titleLength || 60;
   const descLength = settings.descriptionLength || 200;
@@ -254,7 +254,11 @@ Your metadata must be:
 - Key moments and highlights`
     : '';
 
-  const userPrompt = `Analyze this ${mediaType === 'video' ? 'VIDEO (shown as a grid of 6 frames from different timestamps)' : 'image'} and generate HIGHLY UNIQUE, PLATFORM-OPTIMIZED metadata for ${platform}.${videoAnalysisNote}
+  const exifBlock = exif
+    ? `\n\nCAMERA EXIF METADATA (factual ground-truth — use to enrich keywords/description with accurate camera, lens, lighting, time-of-day, depth-of-field, and location concepts):\n${exif}\n`
+    : '';
+
+  const userPrompt = `Analyze this ${mediaType === 'video' ? 'VIDEO (shown as a grid of 6 frames from different timestamps)' : 'image'} and generate HIGHLY UNIQUE, PLATFORM-OPTIMIZED metadata for ${platform}.${videoAnalysisNote}${exifBlock}
 
 EXPORT SETTINGS:
 - Target Platform: ${platform}
@@ -627,7 +631,7 @@ Deno.serve(async (req) => {
     }
 
     // ============= SINGLE MODE (backward compatible) =============
-    const { imageBase64, imageName, mediaType = 'image', settings } = body;
+    const { imageBase64, imageName, mediaType = 'image', settings, exif } = body;
 
     if (!imageBase64) {
       return new Response(
@@ -659,7 +663,7 @@ Deno.serve(async (req) => {
     };
 
     console.log(`Processing ${mediaType}: ${imageName}`);
-    const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings);
+    const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings, typeof exif === 'string' ? exif : undefined);
     const aiResult = await callGeminiApi(geminiApiKey, systemPrompt, userPrompt, cleanedBase64);
 
     if (!aiResult.ok || !aiResult.data) {
