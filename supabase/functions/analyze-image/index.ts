@@ -668,16 +668,16 @@ Deno.serve(async (req) => {
         imageType: 'none', prefix: '', suffix: '', negativeTitleWords: '', negativeKeywords: '',
       };
 
-      const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
-      if (!geminiApiKey) {
+      const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+      if (!lovableApiKey) {
         return new Response(
-          JSON.stringify({ error: "Gemini API key not configured" }),
+          JSON.stringify({ error: "AI gateway key not configured" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       console.log(`📦 Batch processing ${items.length} items`);
-      const results = await processBatch(items, settings, geminiApiKey);
+      const results = await processBatch(items, settings, lovableApiKey);
       console.log(`✅ Batch complete: ${results.filter(r => r.success).length}/${items.length} succeeded`);
 
       return new Response(
@@ -704,10 +704,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!geminiApiKey) {
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!lovableApiKey) {
       return new Response(
-        JSON.stringify({ error: "Gemini API key not configured" }),
+        JSON.stringify({ error: "AI gateway key not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -720,7 +720,7 @@ Deno.serve(async (req) => {
 
     console.log(`Processing ${mediaType}: ${imageName}`);
     const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings, typeof exif === 'string' ? exif : undefined);
-    const aiResult = await callGeminiApi(geminiApiKey, systemPrompt, userPrompt, cleanedBase64);
+    const aiResult = await callAiGateway(lovableApiKey, systemPrompt, userPrompt, cleanedBase64);
 
     if (!aiResult.ok || !aiResult.data) {
       if (aiResult.code === "RATE_LIMITED") {
