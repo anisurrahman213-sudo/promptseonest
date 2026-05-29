@@ -254,7 +254,11 @@ Your metadata must be:
 - Key moments and highlights`
     : '';
 
-  const userPrompt = `Analyze this ${mediaType === 'video' ? 'VIDEO (shown as a grid of 6 frames from different timestamps)' : 'image'} and generate HIGHLY UNIQUE, PLATFORM-OPTIMIZED metadata for ${platform}.${videoAnalysisNote}
+  const exifBlock = exif
+    ? `\n\nCAMERA EXIF METADATA (factual ground-truth — use to enrich keywords/description with accurate camera, lens, lighting, time-of-day, depth-of-field, and location concepts):\n${exif}\n`
+    : '';
+
+  const userPrompt = `Analyze this ${mediaType === 'video' ? 'VIDEO (shown as a grid of 6 frames from different timestamps)' : 'image'} and generate HIGHLY UNIQUE, PLATFORM-OPTIMIZED metadata for ${platform}.${videoAnalysisNote}${exifBlock}
 
 EXPORT SETTINGS:
 - Target Platform: ${platform}
