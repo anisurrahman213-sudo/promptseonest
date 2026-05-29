@@ -601,7 +601,7 @@ async function callAiGateway(
 async function processBatch(
   items: BatchItem[],
   settings: MetadataSettings,
-  geminiApiKey: string,
+  lovableApiKey: string,
 ): Promise<BatchResult[]> {
   const { systemPrompt, userPrompt: baseUserPrompt } = buildPrompt('image', settings);
   
@@ -616,7 +616,7 @@ async function processBatch(
       const mediaType = item.mediaType || 'image';
       const { systemPrompt: sp, userPrompt: up } = buildPrompt(mediaType, settings);
       
-      const result = await callGeminiApi(geminiApiKey, sp, up, cleaned);
+      const result = await callAiGateway(lovableApiKey, sp, up, cleaned);
       
       if (!result.ok || !result.data) {
         return { index, success: false, error: result.error, code: result.code };
@@ -637,7 +637,7 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Require authenticated caller — prevents anonymous Gemini quota drain
+  // Require authenticated caller — prevents anonymous AI quota drain
   const auth = await requireUser(req, corsHeaders);
   if (!auth.ok) return auth.response;
 
