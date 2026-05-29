@@ -235,16 +235,39 @@ function splitCompound(word: string): string[] {
 
 function postProcessTags(filteredTags: string, settings: MetadataSettings): string {
   const isAdobeStock = !settings.exportPlatform || settings.exportPlatform === 'adobe_stock';
-  if (!isAdobeStock) return filteredTags;
-
   const maxKw = settings.keywordsCount || 49;
   const tagList = filteredTags.split(',').map((t: string) => t.trim()).filter(Boolean);
-  const processed = tagList
-    .flatMap((k: string) => splitCompound(k))
-    .map((k: string) => k.toLowerCase().trim())
-    .filter((k: string) => k.length > 1);
-  const unique = [...new Set(processed)].slice(0, maxKw);
-  return unique.join(', ');
+
+  // For Adobe Stock: enforce single-word, split compounds, lowercase
+  const processed = isAdobeStock
+    ? tagList.flatMap((k: string) => splitCompound(k)).map((k: string) => k.toLowerCase().trim()).filter((k: string) => k.length > 1)
+    : tagList.map((k) => k.trim()).filter((k) => k.length > 1);
+
+  // Dedup preserving order (first occurrence = highest priority for Adobe ranking)
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const k of processed) {
+    const key = k.toLowerCase();
+    if (!seen.has(key)) { seen.add(key); unique.push(k); }
+  }
+
+  // Pad with high-value fallback keywords if AI returned fewer than maxKw
+  if (unique.length < maxKw) {
+    for (const fb of FALLBACK_KEYWORDS) {
+      if (unique.length >= maxKw) break;
+      if (!seen.has(fb)) { seen.add(fb); unique.push(fb); }
+    }
+  }
+
+  return unique.slice(0, maxKw).join(', ');
+}
+
+// Hard-truncate title at max characters, breaking at word boundary when possible
+function truncateTitle(title: string, maxLen: number): string {
+  if (!title || title.length <= maxLen) return title;
+  const cut = title.slice(0, maxLen);
+  const lastSpace = cut.lastIndexOf(' ');
+  return (lastSpace > maxLen * 0.7 ? cut.slice(0, lastSpace) : cut).trim();
 }
 
 function buildPrompt(mediaType: string, settings: MetadataSettings, exif?: string): { systemPrompt: string; userPrompt: string } {
