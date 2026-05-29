@@ -80,7 +80,12 @@ const FORBIDDEN_WORDS = [
   'watermark', 'watermarked', 'logo', 'signature', 'copyright', 'copyrighted',
   'text overlay', 'overlay text', 'branded', 'branding', 'stamp', 'stamped',
   'marked', 'marker', 'insignia', 'emblem', 'seal', 'stock photo', 'stock image',
-  'sample', 'preview', 'demo', 'placeholder', 'licensed', 'royalty'
+  'sample', 'preview', 'demo', 'placeholder', 'licensed', 'royalty',
+  // Additional Adobe Stock rejection triggers
+  'qr code', 'barcode', 'bar code', 'trademark', 'trademarked', 'tm',
+  'caption', 'subtitle', 'lettering', 'inscription', 'tagline',
+  'editorial', 'newsworthy', 'press', 'celebrity', 'celebrities',
+  'nsfw', 'nude', 'nudity', 'explicit'
 ];
 
 const FORBIDDEN_PATTERNS = [
@@ -94,6 +99,10 @@ const FORBIDDEN_PATTERNS = [
   /\bstock\s+(photo|image)(s)?\b/gi,
   /\bsample\s*(image|photo)?\b/gi,
   /\bplaceholder\b/gi,
+  /\bqr\s*code(s)?\b/gi,
+  /\bbar\s*code(s)?\b/gi,
+  /\btrademark(ed|s)?\b/gi,
+  /\bcaption(s|ed)?\b/gi,
 ];
 
 function removeForbiddenWords(text: string): string {
@@ -145,6 +154,27 @@ const stockCategories = [
   "Landmarks", "Lifestyle", "Nature", "Objects", "Parks/Outdoor",
   "People", "Religion", "Science", "Signs/Symbols", "Sports/Recreation",
   "Technology", "Transportation", "Travel", "Vintage"
+];
+
+// Adobe Stock CSV requires numeric category 1-21. Map our 29 category names to closest Adobe slot.
+const ADOBE_CATEGORY_MAP: Record<string, number> = {
+  "Abstract": 8, "Animals/Wildlife": 1, "Architecture": 2, "Arts": 8,
+  "Backgrounds/Textures": 8, "Beauty/Fashion": 12, "Business": 3, "Celebrities": 13,
+  "Editorial": 17, "Education": 9, "Food and Drink": 7, "Healthcare/Medical": 16,
+  "Holidays": 15, "Industrial": 10, "Interiors": 2, "Landmarks": 21,
+  "Lifestyle": 12, "Nature": 5, "Objects": 8, "Parks/Outdoor": 11,
+  "People": 13, "Religion": 15, "Science": 16, "Signs/Symbols": 8,
+  "Sports/Recreation": 18, "Technology": 19, "Transportation": 20, "Travel": 21,
+  "Vintage": 8
+};
+
+// Generic high-value commercial keywords used as padding when AI returns too few
+const FALLBACK_KEYWORDS = [
+  'professional', 'commercial', 'creative', 'modern', 'contemporary', 'design',
+  'concept', 'lifestyle', 'minimal', 'aesthetic', 'composition', 'visual',
+  'detailed', 'editorial', 'corporate', 'premium', 'quality', 'inspiration',
+  'background', 'closeup', 'macro', 'natural', 'vibrant', 'elegant', 'stylish',
+  'trendy', 'authentic', 'organic', 'sophisticated', 'refined'
 ];
 
 const imageTypePrefixes: Record<string, string> = {
@@ -205,16 +235,39 @@ function splitCompound(word: string): string[] {
 
 function postProcessTags(filteredTags: string, settings: MetadataSettings): string {
   const isAdobeStock = !settings.exportPlatform || settings.exportPlatform === 'adobe_stock';
-  if (!isAdobeStock) return filteredTags;
-
   const maxKw = settings.keywordsCount || 49;
   const tagList = filteredTags.split(',').map((t: string) => t.trim()).filter(Boolean);
-  const processed = tagList
-    .flatMap((k: string) => splitCompound(k))
-    .map((k: string) => k.toLowerCase().trim())
-    .filter((k: string) => k.length > 1);
-  const unique = [...new Set(processed)].slice(0, maxKw);
-  return unique.join(', ');
+
+  // For Adobe Stock: enforce single-word, split compounds, lowercase
+  const processed = isAdobeStock
+    ? tagList.flatMap((k: string) => splitCompound(k)).map((k: string) => k.toLowerCase().trim()).filter((k: string) => k.length > 1)
+    : tagList.map((k) => k.trim()).filter((k) => k.length > 1);
+
+  // Dedup preserving order (first occurrence = highest priority for Adobe ranking)
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const k of processed) {
+    const key = k.toLowerCase();
+    if (!seen.has(key)) { seen.add(key); unique.push(k); }
+  }
+
+  // Pad with high-value fallback keywords if AI returned fewer than maxKw
+  if (unique.length < maxKw) {
+    for (const fb of FALLBACK_KEYWORDS) {
+      if (unique.length >= maxKw) break;
+      if (!seen.has(fb)) { seen.add(fb); unique.push(fb); }
+    }
+  }
+
+  return unique.slice(0, maxKw).join(', ');
+}
+
+// Hard-truncate title at max characters, breaking at word boundary when possible
+function truncateTitle(title: string, maxLen: number): string {
+  if (!title || title.length <= maxLen) return title;
+  const cut = title.slice(0, maxLen);
+  const lastSpace = cut.lastIndexOf(' ');
+  return (lastSpace > maxLen * 0.7 ? cut.slice(0, lastSpace) : cut).trim();
 }
 
 function buildPrompt(mediaType: string, settings: MetadataSettings, exif?: string): { systemPrompt: string; userPrompt: string } {
@@ -381,11 +434,15 @@ function cleanBase64(imageBase64: string): string | null {
 
 function processAnalysisResult(result: AnalysisResult, settings: MetadataSettings, imageName: string, mediaType: string) {
   const filteredPrompt = removeForbiddenWords(result.prompt);
-  const filteredTitle = removeForbiddenWords(result.title);
+  let filteredTitle = removeForbiddenWords(result.title);
   const filteredDescription = removeForbiddenWords(result.description);
   let filteredTags = cleanTags(result.tags);
   filteredTags = postProcessTags(filteredTags, settings);
-  
+
+  // Hard-enforce title max length (AI sometimes overshoots)
+  const titleMax = settings.titleLength || 70;
+  filteredTitle = truncateTitle(filteredTitle, titleMax);
+
   const allFilteredWords = [
     ...findForbiddenWords(result.prompt),
     ...findForbiddenWords(result.title),
@@ -393,17 +450,20 @@ function processAnalysisResult(result: AnalysisResult, settings: MetadataSetting
     ...findForbiddenWords(result.tags),
   ];
   const uniqueFilteredWords = [...new Set(allFilteredWords)];
-  
+
   if (uniqueFilteredWords.length > 0) {
     console.log(`⚠️ Filtered forbidden words: ${uniqueFilteredWords.join(', ')}`);
   }
+
+  const finalCategory = stockCategories.includes(result.category) ? result.category : "Objects";
 
   return {
     prompt: filteredPrompt,
     title: filteredTitle,
     description: filteredDescription,
     tags: filteredTags,
-    category: stockCategories.includes(result.category) ? result.category : "Objects",
+    category: finalCategory,
+    adobeCategory: ADOBE_CATEGORY_MAP[finalCategory] || 8, // numeric 1-21 for Adobe CSV
     imageName: imageName || `uploaded-${mediaType}`,
     mediaType,
     wasFiltered: uniqueFilteredWords.length > 0,
