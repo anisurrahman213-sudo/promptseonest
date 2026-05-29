@@ -110,8 +110,9 @@ export function useParallelUpload({
 
         const { data: videoUrlData } = supabase.storage.from('videos').getPublicUrl(videoFilePath);
         publicUrl = videoUrlData.publicUrl;
+        return { index, mediaFile, base64, publicUrl, startTime };
       } else {
-        // Read EXIF from the ORIGINAL file (compression strips it) — non-blocking, runs in parallel
+        // Read EXIF from the ORIGINAL file (compression strips it) — runs in parallel
         const exifPromise = extractExifContext(file).then(summarizeExif).catch(() => null);
 
         // Aggressive compression for fast AI calls (small payloads)
@@ -142,23 +143,6 @@ export function useParallelUpload({
 
         return { index, mediaFile, base64, publicUrl, startTime, exifSummary };
       }
-
-        const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
-        const uploadPromise = supabase.storage.from('images').upload(filePath, compressedFile);
-
-        const [extractedBase64, uploadResult] = await Promise.all([base64Promise, uploadPromise]);
-        base64 = extractedBase64;
-
-        if (uploadResult.error) {
-          onFileStatusUpdate(index, errStatus(mapUploadError({ rawMessage: uploadResult.error.message, context: 'upload' })));
-          return null;
-        }
-
-        const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
-        publicUrl = urlData.publicUrl;
-      }
-
-      return { index, mediaFile, base64, publicUrl, startTime };
     } catch (error) {
       console.error('Prepare error:', error);
       const rawMsg = error instanceof Error ? error.message : '';
