@@ -17,11 +17,10 @@ const errStatus = (err: FriendlyError): Partial<ProcessingFile> => ({
   endTime: Date.now(),
 });
 
-// MASSIVE PARALLELISM — 500 files in ~10s requires extreme concurrency
-// Each edge invocation = 1 image (avoids CPU/wall-time limits per request)
-// Modern browsers/Supabase handle 25-30 concurrent fetches well
-const UPLOAD_CONCURRENCY = 25;   // parallel compress + storage uploads
-const ANALYZE_CONCURRENCY = 30;  // parallel edge function invocations
+// Tuned to avoid Gemini gateway rate limits — too high causes 429s and skipped files
+const UPLOAD_CONCURRENCY = 15;   // parallel compress + storage uploads
+const ANALYZE_CONCURRENCY = 8;   // parallel edge function invocations (gateway-safe)
+const ANALYZE_MAX_RETRIES = 4;   // retry transient/rate-limit errors
 
 interface UseParallelUploadOptions {
   userId: string;
@@ -151,59 +150,85 @@ export function useParallelUpload({
     }
   }, [userId, onFileStatusUpdate]);
 
-  // Step 2: Analyze a single prepared file (one edge function invocation per file)
+  // Step 2: Analyze a single prepared file with retry on rate-limit / transient errors
   const analyzeOne = useCallback(async (prep: PreparedFile): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-image', {
-        body: {
-          imageBase64: prep.base64,
-          imageName: prep.mediaFile.file.name,
-          mediaType: prep.mediaFile.type,
-          settings: metadataSettings,
-          exif: prep.exifSummary || undefined,
-        },
-      });
+    let lastRawMsg: string | undefined;
+    let lastCode: string | undefined;
 
-      if (error || !data?.success || !data?.data) {
+    for (let attempt = 0; attempt < ANALYZE_MAX_RETRIES; attempt++) {
+      try {
+        const { data, error } = await supabase.functions.invoke('analyze-image', {
+          body: {
+            imageBase64: prep.base64,
+            imageName: prep.mediaFile.file.name,
+            mediaType: prep.mediaFile.type,
+            settings: metadataSettings,
+            exif: prep.exifSummary || undefined,
+          },
+        });
+
         const rawMsg = data?.error || error?.message;
         const code = data?.code;
-        onFileStatusUpdate(prep.index, errStatus(mapUploadError({ code, rawMessage: rawMsg, context: 'analyze' })));
-        return false;
-      }
+        const ok = !error && data?.success && data?.data;
 
-      const [creditResult, saveResult] = await Promise.all([
-        supabase.rpc('deduct_credit'),
-        supabase.from('generations').insert({
-          user_id: userId,
-          image_name: prep.mediaFile.file.name,
-          image_url: prep.publicUrl,
-          prompt: data.data.prompt,
-          title: data.data.title,
-          description: data.data.description,
-          tags: data.data.tags,
-          media_type: prep.mediaFile.type,
-          category: data.data.category || '',
-        }).select().single(),
-      ]);
+        if (!ok) {
+          lastRawMsg = rawMsg;
+          lastCode = code;
+          const isRateLimit =
+            code === 'RATE_LIMITED' ||
+            /rate.?limit|429|too many|temporar|timeout|fetch failed|network/i.test(rawMsg || '');
 
-      if (saveResult.error) {
-        onFileStatusUpdate(prep.index, errStatus(mapUploadError({ rawMessage: saveResult.error.message, context: 'save' })));
-        return false;
-      }
-      if (creditResult.data === false) {
-        onFileStatusUpdate(prep.index, errStatus(mapUploadError({ context: 'credit' })));
-        return false;
-      }
+          if (isRateLimit && attempt < ANALYZE_MAX_RETRIES - 1) {
+            // Exponential backoff with jitter: 800ms, 1.6s, 3.2s
+            const delay = 800 * Math.pow(2, attempt) + Math.random() * 400;
+            await new Promise((r) => setTimeout(r, delay));
+            continue;
+          }
 
-      onFileStatusUpdate(prep.index, { status: 'success', endTime: Date.now() });
-      onSuccess(saveResult.data);
-      onCreditRefresh();
-      return true;
-    } catch (err) {
-      const rawMsg = err instanceof Error ? err.message : '';
-      onFileStatusUpdate(prep.index, errStatus(mapUploadError({ rawMessage: rawMsg, context: 'analyze' })));
-      return false;
+          onFileStatusUpdate(prep.index, errStatus(mapUploadError({ code, rawMessage: rawMsg, context: 'analyze' })));
+          return false;
+        }
+
+        const [creditResult, saveResult] = await Promise.all([
+          supabase.rpc('deduct_credit'),
+          supabase.from('generations').insert({
+            user_id: userId,
+            image_name: prep.mediaFile.file.name,
+            image_url: prep.publicUrl,
+            prompt: data.data.prompt,
+            title: data.data.title,
+            description: data.data.description,
+            tags: data.data.tags,
+            media_type: prep.mediaFile.type,
+            category: data.data.category || '',
+          }).select().single(),
+        ]);
+
+        if (saveResult.error) {
+          onFileStatusUpdate(prep.index, errStatus(mapUploadError({ rawMessage: saveResult.error.message, context: 'save' })));
+          return false;
+        }
+        if (creditResult.data === false) {
+          onFileStatusUpdate(prep.index, errStatus(mapUploadError({ context: 'credit' })));
+          return false;
+        }
+
+        onFileStatusUpdate(prep.index, { status: 'success', endTime: Date.now() });
+        onSuccess(saveResult.data);
+        onCreditRefresh();
+        return true;
+      } catch (err) {
+        lastRawMsg = err instanceof Error ? err.message : '';
+        if (attempt < ANALYZE_MAX_RETRIES - 1) {
+          const delay = 800 * Math.pow(2, attempt) + Math.random() * 400;
+          await new Promise((r) => setTimeout(r, delay));
+          continue;
+        }
+      }
     }
+
+    onFileStatusUpdate(prep.index, errStatus(mapUploadError({ code: lastCode, rawMessage: lastRawMsg, context: 'analyze' })));
+    return false;
   }, [userId, metadataSettings, onFileStatusUpdate, onSuccess, onCreditRefresh]);
 
   const processFilesInParallel = useCallback(async (
