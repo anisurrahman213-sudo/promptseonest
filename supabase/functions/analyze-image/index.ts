@@ -156,6 +156,27 @@ const stockCategories = [
   "Technology", "Transportation", "Travel", "Vintage"
 ];
 
+// Adobe Stock CSV requires numeric category 1-21. Map our 29 category names to closest Adobe slot.
+const ADOBE_CATEGORY_MAP: Record<string, number> = {
+  "Abstract": 8, "Animals/Wildlife": 1, "Architecture": 2, "Arts": 8,
+  "Backgrounds/Textures": 8, "Beauty/Fashion": 12, "Business": 3, "Celebrities": 13,
+  "Editorial": 17, "Education": 9, "Food and Drink": 7, "Healthcare/Medical": 16,
+  "Holidays": 15, "Industrial": 10, "Interiors": 2, "Landmarks": 21,
+  "Lifestyle": 12, "Nature": 5, "Objects": 8, "Parks/Outdoor": 11,
+  "People": 13, "Religion": 15, "Science": 16, "Signs/Symbols": 8,
+  "Sports/Recreation": 18, "Technology": 19, "Transportation": 20, "Travel": 21,
+  "Vintage": 8
+};
+
+// Generic high-value commercial keywords used as padding when AI returns too few
+const FALLBACK_KEYWORDS = [
+  'professional', 'commercial', 'creative', 'modern', 'contemporary', 'design',
+  'concept', 'lifestyle', 'minimal', 'aesthetic', 'composition', 'visual',
+  'detailed', 'editorial', 'corporate', 'premium', 'quality', 'inspiration',
+  'background', 'closeup', 'macro', 'natural', 'vibrant', 'elegant', 'stylish',
+  'trendy', 'authentic', 'organic', 'sophisticated', 'refined'
+];
+
 const imageTypePrefixes: Record<string, string> = {
   none: "",
   photo: "Photo of ",
