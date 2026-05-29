@@ -37,6 +37,7 @@ interface PreparedFile {
   base64: string;
   publicUrl: string;
   startTime: number;
+  exifSummary?: string | null;
 }
 
 // Generic semaphore-based parallel runner — keeps N tasks in-flight constantly
