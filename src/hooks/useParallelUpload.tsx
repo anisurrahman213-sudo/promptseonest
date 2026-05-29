@@ -160,6 +160,7 @@ export function useParallelUpload({
           imageName: prep.mediaFile.file.name,
           mediaType: prep.mediaFile.type,
           settings: metadataSettings,
+          exif: prep.exifSummary || undefined,
         },
       });
 
