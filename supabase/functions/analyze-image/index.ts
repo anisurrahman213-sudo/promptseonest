@@ -434,11 +434,15 @@ function cleanBase64(imageBase64: string): string | null {
 
 function processAnalysisResult(result: AnalysisResult, settings: MetadataSettings, imageName: string, mediaType: string) {
   const filteredPrompt = removeForbiddenWords(result.prompt);
-  const filteredTitle = removeForbiddenWords(result.title);
+  let filteredTitle = removeForbiddenWords(result.title);
   const filteredDescription = removeForbiddenWords(result.description);
   let filteredTags = cleanTags(result.tags);
   filteredTags = postProcessTags(filteredTags, settings);
-  
+
+  // Hard-enforce title max length (AI sometimes overshoots)
+  const titleMax = settings.titleLength || 70;
+  filteredTitle = truncateTitle(filteredTitle, titleMax);
+
   const allFilteredWords = [
     ...findForbiddenWords(result.prompt),
     ...findForbiddenWords(result.title),
@@ -446,17 +450,20 @@ function processAnalysisResult(result: AnalysisResult, settings: MetadataSetting
     ...findForbiddenWords(result.tags),
   ];
   const uniqueFilteredWords = [...new Set(allFilteredWords)];
-  
+
   if (uniqueFilteredWords.length > 0) {
     console.log(`⚠️ Filtered forbidden words: ${uniqueFilteredWords.join(', ')}`);
   }
+
+  const finalCategory = stockCategories.includes(result.category) ? result.category : "Objects";
 
   return {
     prompt: filteredPrompt,
     title: filteredTitle,
     description: filteredDescription,
     tags: filteredTags,
-    category: stockCategories.includes(result.category) ? result.category : "Objects",
+    category: finalCategory,
+    adobeCategory: ADOBE_CATEGORY_MAP[finalCategory] || 8, // numeric 1-21 for Adobe CSV
     imageName: imageName || `uploaded-${mediaType}`,
     mediaType,
     wasFiltered: uniqueFilteredWords.length > 0,
