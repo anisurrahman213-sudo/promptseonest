@@ -31,20 +31,36 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { data, error } = await supabase
-      .from('deployment_versions')
-      .select('build_time, version, notes, created_at')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Retry transient DB errors (up to 3 attempts with short backoff)
+    let data: any = null;
+    let lastError: any = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const result = await supabase
+        .from('deployment_versions')
+        .select('build_time, version, notes, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (error) {
-      console.error('[get-deployment-version] db error:', error.message);
-      return new Response(JSON.stringify({ error: 'Failed to load deployment version' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      if (!result.error) {
+        data = result.data;
+        lastError = null;
+        break;
+      }
+      lastError = result.error;
+      console.warn(`[get-deployment-version] attempt ${attempt} failed:`, result.error.message);
+      if (attempt < 3) await new Promise((r) => setTimeout(r, 200 * attempt));
     }
+
+    if (lastError) {
+      // Graceful degrade — return 200 with nulls so the client doesn't blank-screen
+      console.error('[get-deployment-version] all retries failed:', lastError.message);
+      return new Response(
+        JSON.stringify({ buildTime: null, version: null, notes: null, deployedAt: null, source: 'unavailable' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } }
+      );
+    }
+
 
     return new Response(
       JSON.stringify({
