@@ -111,6 +111,9 @@ export function useParallelUpload({
         const { data: videoUrlData } = supabase.storage.from('videos').getPublicUrl(videoFilePath);
         publicUrl = videoUrlData.publicUrl;
       } else {
+        // Read EXIF from the ORIGINAL file (compression strips it) — non-blocking, runs in parallel
+        const exifPromise = extractExifContext(file).then(summarizeExif).catch(() => null);
+
         // Aggressive compression for fast AI calls (small payloads)
         const compressedFile = await compressImage(file, {
           maxWidth: 1024, maxHeight: 1024, quality: 0.4, maxSizeKB: 200, aggressive: true
@@ -122,6 +125,23 @@ export function useParallelUpload({
           reader.onerror = reject;
           reader.readAsDataURL(compressedFile);
         });
+
+        const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+        const uploadPromise = supabase.storage.from('images').upload(filePath, compressedFile);
+
+        const [extractedBase64, uploadResult, exifSummary] = await Promise.all([base64Promise, uploadPromise, exifPromise]);
+        base64 = extractedBase64;
+
+        if (uploadResult.error) {
+          onFileStatusUpdate(index, errStatus(mapUploadError({ rawMessage: uploadResult.error.message, context: 'upload' })));
+          return null;
+        }
+
+        const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+        publicUrl = urlData.publicUrl;
+
+        return { index, mediaFile, base64, publicUrl, startTime, exifSummary };
+      }
 
         const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
         const uploadPromise = supabase.storage.from('images').upload(filePath, compressedFile);
