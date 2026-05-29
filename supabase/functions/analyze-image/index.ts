@@ -464,7 +464,7 @@ async function callGeminiApi(
         },
         body: JSON.stringify({
           systemInstruction: {
-            parts: [{ text: systemPrompt }],
+            parts: [{ text: APP_CONTEXT + "\n\n" + systemPrompt }],
           },
           contents: [
             {
