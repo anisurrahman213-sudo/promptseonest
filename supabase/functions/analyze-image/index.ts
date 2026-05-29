@@ -663,7 +663,7 @@ Deno.serve(async (req) => {
     };
 
     console.log(`Processing ${mediaType}: ${imageName}`);
-    const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings);
+    const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings, typeof exif === 'string' ? exif : undefined);
     const aiResult = await callGeminiApi(geminiApiKey, systemPrompt, userPrompt, cleanedBase64);
 
     if (!aiResult.ok || !aiResult.data) {
