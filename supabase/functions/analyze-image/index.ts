@@ -80,7 +80,12 @@ const FORBIDDEN_WORDS = [
   'watermark', 'watermarked', 'logo', 'signature', 'copyright', 'copyrighted',
   'text overlay', 'overlay text', 'branded', 'branding', 'stamp', 'stamped',
   'marked', 'marker', 'insignia', 'emblem', 'seal', 'stock photo', 'stock image',
-  'sample', 'preview', 'demo', 'placeholder', 'licensed', 'royalty'
+  'sample', 'preview', 'demo', 'placeholder', 'licensed', 'royalty',
+  // Additional Adobe Stock rejection triggers
+  'qr code', 'barcode', 'bar code', 'trademark', 'trademarked', 'tm',
+  'caption', 'subtitle', 'lettering', 'inscription', 'tagline',
+  'editorial', 'newsworthy', 'press', 'celebrity', 'celebrities',
+  'nsfw', 'nude', 'nudity', 'explicit'
 ];
 
 const FORBIDDEN_PATTERNS = [
@@ -94,6 +99,10 @@ const FORBIDDEN_PATTERNS = [
   /\bstock\s+(photo|image)(s)?\b/gi,
   /\bsample\s*(image|photo)?\b/gi,
   /\bplaceholder\b/gi,
+  /\bqr\s*code(s)?\b/gi,
+  /\bbar\s*code(s)?\b/gi,
+  /\btrademark(ed|s)?\b/gi,
+  /\bcaption(s|ed)?\b/gi,
 ];
 
 function removeForbiddenWords(text: string): string {
