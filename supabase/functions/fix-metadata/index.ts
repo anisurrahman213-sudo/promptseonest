@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { requireUser } from "../_shared/auth.ts";
+import { APP_CONTEXT } from "../_shared/app-knowledge.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -165,7 +166,7 @@ Return ONLY this JSON:
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: APP_CONTEXT + "\n\n" + systemPrompt },
           {
             role: "user",
             content: `Fix this metadata for Adobe Stock:\n\nTITLE: ${title || "(empty)"}\n\nKEYWORDS: ${keywords || "(empty)"}\n\nDESCRIPTION: ${description || "(empty)"}\n\nPROMPT: ${prompt || "(empty)"}`,

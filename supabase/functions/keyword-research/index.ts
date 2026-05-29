@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { requireUser } from "../_shared/auth.ts";
+import { APP_CONTEXT } from "../_shared/app-knowledge.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -70,7 +71,7 @@ Subject type "${subject_type}" guides technical vocabulary.`;
           max_tokens: 800,
           response_format: { type: "json_object" },
           messages: [
-            { role: "system", content: systemPrompt + `\n\nRespond with ONLY a JSON object: {"primary":[${primaryCount} words],"secondary":[${secondaryCount} words],"supporting":[${supportingCount} words]}. No prose, no markdown.` },
+            { role: "system", content: APP_CONTEXT + "\n\n" + systemPrompt + `\n\nRespond with ONLY a JSON object: {"primary":[${primaryCount} words],"secondary":[${secondaryCount} words],"supporting":[${supportingCount} words]}. No prose, no markdown.` },
             {
               role: "user",
               content: `Subject: "${subject.trim()}" | type: ${subject_type} | platform: ${platform}`,

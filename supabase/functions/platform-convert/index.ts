@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { requireUser } from "../_shared/auth.ts";
+import { APP_CONTEXT } from "../_shared/app-knowledge.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -62,7 +63,7 @@ Score each platform 0-100 for compliance. Use the tool format.`;
         temperature: 0,
         max_tokens: 2000,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: APP_CONTEXT + "\n\n" + systemPrompt },
           {
             role: "user",
             content: `Convert this metadata from ${source_platform || "adobe_stock"} to all three platforms:\n\nTITLE: ${title}\n\nKEYWORDS: ${keywordsStr}\n\nDESCRIPTION: ${description}`,
