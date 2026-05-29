@@ -6,9 +6,13 @@ import { MediaFile } from '@/components/MediaUploader';
 import { MetadataSettings } from '@/components/dashboard/AdvancedMetadataControls';
 import { toast } from 'sonner';
 
-// Process many files concurrently for maximum speed
-const MAX_CONCURRENT = 50;
-const STAGGER_DELAY_MS = 100;
+// Keep AI requests intentionally paced to avoid provider quota bursts.
+const MAX_CONCURRENT = 3;
+const STAGGER_DELAY_MS = 750;
+const ANALYSIS_MAX_ATTEMPTS = 3;
+const ANALYSIS_RETRY_BASE_MS = 2500;
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface ProcessingFile {
   id: string;
@@ -173,15 +177,40 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
         publicUrl = urlData.publicUrl;
       }
 
-      // Step 3: AI Analysis
-      const { data, error } = await supabase.functions.invoke('analyze-image', {
-        body: { 
-          imageBase64: base64,
-          imageName: file.name,
-          mediaType: mediaFile.type,
-          settings: metadataSettings
-        }
-      });
+      // Step 3: AI Analysis with retry/backoff for temporary rate limits
+      let data: any = null;
+      let error: any = null;
+
+      for (let attempt = 1; attempt <= ANALYSIS_MAX_ATTEMPTS; attempt++) {
+        const result = await supabase.functions.invoke('analyze-image', {
+          body: { 
+            imageBase64: base64,
+            imageName: file.name,
+            mediaType: mediaFile.type,
+            settings: metadataSettings
+          }
+        });
+
+        data = result.data;
+        error = result.error;
+
+        const rawMessage = data?.error || error?.message || '';
+        const isRetryable =
+          data?.code === 'RATE_LIMITED' ||
+          /rate.?limit|quota|429|too many|temporar|timeout|network|fetch failed/i.test(rawMessage);
+
+        if (!isRetryable || attempt === ANALYSIS_MAX_ATTEMPTS) break;
+
+        const retryAfterMs = Number(data?.retryAfter || 0) > 0
+          ? Math.min(Number(data.retryAfter) * 1000, 15000)
+          : ANALYSIS_RETRY_BASE_MS * attempt;
+
+        updateFileStatus(jobId, fileId, {
+          status: 'processing',
+          errorMessage: `AI busy — retrying ${attempt}/${ANALYSIS_MAX_ATTEMPTS - 1}`
+        });
+        await wait(retryAfterMs + Math.floor(Math.random() * 600));
+      }
 
       if (error) {
         console.error('Analysis error:', error);
@@ -197,7 +226,9 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
         console.error('❌ Analysis returned error:', { success: data?.success, error: data?.error, code: data?.code });
         updateFileStatus(jobId, fileId, {
           status: 'error',
-          errorMessage: data?.error || 'Analysis failed',
+          errorMessage: data?.code === 'RATE_LIMITED'
+            ? 'AI is busy. Please retry in a minute.'
+            : data?.error || 'Analysis failed',
           endTime: Date.now()
         });
         return false;
