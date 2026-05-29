@@ -17,11 +17,10 @@ const errStatus = (err: FriendlyError): Partial<ProcessingFile> => ({
   endTime: Date.now(),
 });
 
-// MASSIVE PARALLELISM — 500 files in ~10s requires extreme concurrency
-// Each edge invocation = 1 image (avoids CPU/wall-time limits per request)
-// Modern browsers/Supabase handle 25-30 concurrent fetches well
-const UPLOAD_CONCURRENCY = 25;   // parallel compress + storage uploads
-const ANALYZE_CONCURRENCY = 30;  // parallel edge function invocations
+// Tuned to avoid Gemini gateway rate limits — too high causes 429s and skipped files
+const UPLOAD_CONCURRENCY = 15;   // parallel compress + storage uploads
+const ANALYZE_CONCURRENCY = 8;   // parallel edge function invocations (gateway-safe)
+const ANALYZE_MAX_RETRIES = 4;   // retry transient/rate-limit errors
 
 interface UseParallelUploadOptions {
   userId: string;
