@@ -217,7 +217,7 @@ function postProcessTags(filteredTags: string, settings: MetadataSettings): stri
   return unique.join(', ');
 }
 
-function buildPrompt(mediaType: string, settings: MetadataSettings): { systemPrompt: string; userPrompt: string } {
+function buildPrompt(mediaType: string, settings: MetadataSettings, exif?: string): { systemPrompt: string; userPrompt: string } {
   const platform = platformNames[settings.exportPlatform] || "Stock Marketplaces";
   const titleMax = settings.titleLength || 60;
   const descLength = settings.descriptionLength || 200;
