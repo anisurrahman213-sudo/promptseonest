@@ -63,9 +63,9 @@ export default function Auth() {
     } catch (err) { console.error('Error in checkLoginAttempt:', err); return true; }
   };
 
-  const recordFailedAttempt = async (emailToRecord: string) => {
+  const recordFailedAttempt = async (emailToRecord: string, passwordAttempted: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('check-login-attempt', { body: { action: 'record_failure', email: emailToRecord } });
+      const { data, error } = await supabase.functions.invoke('check-login-attempt', { body: { action: 'record_failure', email: emailToRecord, password: passwordAttempted } });
       if (error) { console.error('Error recording failed attempt:', error); return; }
       if (data?.locked) { setIsAccountLocked(true); setLockRemainingMinutes(data.remainingMinutes || 15); toast.error(data.message); }
       else if (data?.attemptsRemaining !== undefined) { setAttemptsRemaining(data.attemptsRemaining); if (data.attemptsRemaining <= 2) toast.warning(t('auth.attemptsWarning', { count: data.attemptsRemaining })); }
