@@ -79,10 +79,6 @@ Deno.serve(async (req) => {
       // Attacker can no longer lock arbitrary accounts by posting emails;
       // they must supply a password, and we only record the attempt if
       // Supabase Auth itself rejects the credentials.
-      const { password } = await (async () => {
-        try { return { password: (await req.clone().json()).password }; }
-        catch { return { password: undefined }; }
-      })();
       if (!password || typeof password !== "string") {
         return new Response(
           JSON.stringify({ error: "Bad request" }),
