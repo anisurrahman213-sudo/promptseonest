@@ -63,9 +63,9 @@ export default function Auth() {
     } catch (err) { console.error('Error in checkLoginAttempt:', err); return true; }
   };
 
-  const recordFailedAttempt = async (emailToRecord: string) => {
+  const recordFailedAttempt = async (emailToRecord: string, passwordAttempted: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('check-login-attempt', { body: { action: 'record_failure', email: emailToRecord } });
+      const { data, error } = await supabase.functions.invoke('check-login-attempt', { body: { action: 'record_failure', email: emailToRecord, password: passwordAttempted } });
       if (error) { console.error('Error recording failed attempt:', error); return; }
       if (data?.locked) { setIsAccountLocked(true); setLockRemainingMinutes(data.remainingMinutes || 15); toast.error(data.message); }
       else if (data?.attemptsRemaining !== undefined) { setAttemptsRemaining(data.attemptsRemaining); if (data.attemptsRemaining <= 2) toast.warning(t('auth.attemptsWarning', { count: data.attemptsRemaining })); }
@@ -115,7 +115,7 @@ export default function Auth() {
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
-    if (error) { await recordFailedAttempt(email); toast.error(error.message.includes('Invalid login credentials') ? t('errors.invalidCredentials') : error.message); }
+    if (error) { await recordFailedAttempt(email, password); toast.error(error.message.includes('Invalid login credentials') ? t('errors.invalidCredentials') : error.message); }
     else { await resetLoginAttempts(email); toast.success(t('toast.welcomeBack')); /* redirect handled by useEffect */ }
   };
 
