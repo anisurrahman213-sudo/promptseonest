@@ -75,7 +75,33 @@ Deno.serve(async (req) => {
     }
 
     if (action === "record_failure") {
-      // Record a failed login attempt
+      // SECURITY: Verify the failure server-side to prevent lockout DoS.
+      // Attacker can no longer lock arbitrary accounts by posting emails;
+      // they must supply a password, and we only record the attempt if
+      // Supabase Auth itself rejects the credentials.
+      const { password } = await (async () => {
+        try { return { password: (await req.clone().json()).password }; }
+        catch { return { password: undefined }; }
+      })();
+      if (!password || typeof password !== "string") {
+        return new Response(
+          JSON.stringify({ error: "Bad request" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const verifyClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
+      const { error: signInError } = await verifyClient.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+      if (!signInError) {
+        // Credentials were actually valid — do NOT record a failure.
+        return new Response(
+          JSON.stringify({ locked: false, attemptsRemaining: MAX_ATTEMPTS, verified: false }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const { data: existing } = await supabase
         .from("login_attempts")
         .select("*")
