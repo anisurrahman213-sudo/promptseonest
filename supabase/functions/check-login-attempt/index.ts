@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { action, email } = await req.json();
+    const { action, email, password } = await req.json();
     const normalizedEmail = email?.toLowerCase().trim();
 
     if (!normalizedEmail) {
