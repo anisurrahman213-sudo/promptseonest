@@ -115,7 +115,7 @@ export default function Auth() {
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
-    if (error) { await recordFailedAttempt(email); toast.error(error.message.includes('Invalid login credentials') ? t('errors.invalidCredentials') : error.message); }
+    if (error) { await recordFailedAttempt(email, password); toast.error(error.message.includes('Invalid login credentials') ? t('errors.invalidCredentials') : error.message); }
     else { await resetLoginAttempts(email); toast.success(t('toast.welcomeBack')); /* redirect handled by useEffect */ }
   };
 
