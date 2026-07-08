@@ -61,6 +61,7 @@ const PlatformConverter = lazyWithRetry(() => import("./pages/PlatformConverter"
 const RejectionAnalyzer = lazyWithRetry(() => import("./pages/RejectionAnalyzer"));
 const SubmissionTracker = lazyWithRetry(() => import("./pages/SubmissionTracker"));
 const TrendingKeywords = lazyWithRetry(() => import("./pages/TrendingKeywords"));
+const GitHubSetup = lazyWithRetry(() => import("./pages/GitHubSetup"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -131,6 +132,7 @@ const App = () => (
                   <Route path="/rejection-analyzer" element={<RejectionAnalyzer />} />
                   <Route path="/submission-tracker" element={<SubmissionTracker />} />
                   <Route path="/trending-keywords" element={<TrendingKeywords />} />
+                  <Route path="/github-setup" element={<GitHubSetup />} />
                   <Route path="/admin/health" element={<AdminDashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
