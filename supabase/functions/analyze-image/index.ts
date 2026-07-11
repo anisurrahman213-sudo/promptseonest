@@ -1,5 +1,6 @@
 /// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 import { requireUser } from "../_shared/auth.ts";
+import { hasSufficientCredits } from "../_shared/credits.ts";
 import { APP_CONTEXT } from "../_shared/app-knowledge.ts";
 
 const corsHeaders = {
@@ -648,6 +649,21 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Rate limit exceeded", retryAfter: Math.ceil(rateLimit.resetIn / 1000) }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000)) } }
+      );
+    // Pre-flight credit check — prevents unauthenticated AI quota drain
+    // when the caller has no credits. Mirrors deduct_credit() logic without
+    // mutating state; deduction still happens client-side after success.
+    const creditCheck = await hasSufficientCredits(auth.userId);
+    if (!creditCheck.ok) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          code: "INSUFFICIENT_CREDITS",
+          error: "Insufficient credits. Please purchase a plan to continue.",
+          balance: creditCheck.balance,
+          cost: creditCheck.cost,
+        }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
