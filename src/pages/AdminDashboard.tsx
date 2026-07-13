@@ -149,10 +149,11 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="grid w-full max-w-6xl grid-cols-8">
+          <TabsList className="grid w-full max-w-6xl grid-cols-9">
             <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" /><span className="hidden sm:inline">Users</span></TabsTrigger>
             <TabsTrigger value="credits" className="gap-2"><CreditCard className="h-4 w-4" /><span className="hidden sm:inline">Credits</span></TabsTrigger>
             <TabsTrigger value="generations" className="gap-2"><Trash2 className="h-4 w-4" /><span className="hidden sm:inline">Generations</span></TabsTrigger>
+            <TabsTrigger value="support" className="gap-2"><MessageSquare className="h-4 w-4" /><span className="hidden sm:inline">Support</span></TabsTrigger>
             <TabsTrigger value="tutorials" className="gap-2"><Video className="h-4 w-4" /><span className="hidden sm:inline">Tutorials</span></TabsTrigger>
             <TabsTrigger value="demo" className="gap-2"><Play className="h-4 w-4" /><span className="hidden sm:inline">Demo</span></TabsTrigger>
             <TabsTrigger value="hero" className="gap-2"><Wallpaper className="h-4 w-4" /><span className="hidden sm:inline">Hero BG</span></TabsTrigger>
