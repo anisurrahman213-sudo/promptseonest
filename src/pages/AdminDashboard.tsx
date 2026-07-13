@@ -9,7 +9,8 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Video, Play, AlertCircle, CheckCircle, DollarSign, Activity } from 'lucide-react';
+import { Loader2, Users, CreditCard, ArrowLeft, ImageIcon, Wallpaper, Trash2, Video, Play, AlertCircle, CheckCircle, DollarSign, Activity, MessageSquare } from 'lucide-react';
+import { SupportTicketsManagement } from '@/components/admin/SupportTicketsManagement';
 import { FeatureCardManagement } from '@/components/admin/FeatureCardManagement';
 import { HeroBackgroundManagement } from '@/components/admin/HeroBackgroundManagement';
 import { DemoVideoManagement } from '@/components/admin/DemoVideoManagement';
@@ -148,10 +149,11 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="grid w-full max-w-6xl grid-cols-8">
+          <TabsList className="grid w-full max-w-6xl grid-cols-9">
             <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" /><span className="hidden sm:inline">Users</span></TabsTrigger>
             <TabsTrigger value="credits" className="gap-2"><CreditCard className="h-4 w-4" /><span className="hidden sm:inline">Credits</span></TabsTrigger>
             <TabsTrigger value="generations" className="gap-2"><Trash2 className="h-4 w-4" /><span className="hidden sm:inline">Generations</span></TabsTrigger>
+            <TabsTrigger value="support" className="gap-2"><MessageSquare className="h-4 w-4" /><span className="hidden sm:inline">Support</span></TabsTrigger>
             <TabsTrigger value="tutorials" className="gap-2"><Video className="h-4 w-4" /><span className="hidden sm:inline">Tutorials</span></TabsTrigger>
             <TabsTrigger value="demo" className="gap-2"><Play className="h-4 w-4" /><span className="hidden sm:inline">Demo</span></TabsTrigger>
             <TabsTrigger value="hero" className="gap-2"><Wallpaper className="h-4 w-4" /><span className="hidden sm:inline">Hero BG</span></TabsTrigger>
@@ -215,6 +217,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="generations"><GenerationsManagement /></TabsContent>
+          <TabsContent value="support"><SupportTicketsManagement /></TabsContent>
           <TabsContent value="credits"><CreditSettings /></TabsContent>
           <TabsContent value="tutorials"><TutorialManagement /></TabsContent>
           <TabsContent value="demo"><DemoVideoManagement /></TabsContent>

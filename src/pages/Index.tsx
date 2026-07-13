@@ -17,6 +17,7 @@ import extensionScreenshot from "@/assets/extension-screenshot-1.jpg";
 
 // Eager import critical above-fold-ish content (Stock Tools is core landing content)
 import StockToolsShowcase from "@/components/landing/StockToolsShowcase";
+import { SupportTicketButton } from "@/components/SupportTicketButton";
 // Lazy load truly below-fold / non-critical components
 const DemoVideoSection = lazy(() => import("@/components/landing/DemoVideoSection"));
 const ProductHuntBanner = lazy(() => import("@/components/landing/ProductHuntBanner").then(m => ({ default: m.ProductHuntBanner })));
@@ -630,6 +631,7 @@ const Index = () => {
           </div>
         </div>
       </footer>
+      <SupportTicketButton />
     </div>;
 };
 export default Index;

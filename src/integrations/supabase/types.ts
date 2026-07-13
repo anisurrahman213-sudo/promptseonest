@@ -554,6 +554,51 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          admin_reply: string | null
+          created_at: string
+          id: string
+          message: string
+          replied_at: string | null
+          replied_by: string | null
+          status: Database["public"]["Enums"]["support_ticket_status"]
+          subject: string
+          updated_at: string
+          user_email: string
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          admin_reply?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          replied_at?: string | null
+          replied_by?: string | null
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          subject: string
+          updated_at?: string
+          user_email: string
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          admin_reply?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          replied_at?: string | null
+          replied_by?: string | null
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          subject?: string
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -745,6 +790,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       submission_status: "pending" | "approved" | "rejected"
+      support_ticket_status: "open" | "replied" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -874,6 +920,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       submission_status: ["pending", "approved", "rejected"],
+      support_ticket_status: ["open", "replied", "closed"],
     },
   },
 } as const
