@@ -217,6 +217,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="generations"><GenerationsManagement /></TabsContent>
+          <TabsContent value="support"><SupportTicketsManagement /></TabsContent>
           <TabsContent value="credits"><CreditSettings /></TabsContent>
           <TabsContent value="tutorials"><TutorialManagement /></TabsContent>
           <TabsContent value="demo"><DemoVideoManagement /></TabsContent>
