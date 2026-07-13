@@ -2,6 +2,10 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { requireAdmin } from "../_shared/auth.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+// Set RESEND_FROM to e.g. "PromptNest <noreply@yourdomain.com>" once your domain
+// is verified at resend.com/domains. Until then, Resend only delivers to the
+// account owner's own email (onboarding@resend.dev sandbox limit).
+const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "PromptNest <onboarding@resend.dev>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
