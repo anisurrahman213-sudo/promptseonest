@@ -132,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "PromptNest <onboarding@resend.dev>",
+        from: RESEND_FROM,
         to: [to],
         subject: emailSubject,
         html: emailHtml,
