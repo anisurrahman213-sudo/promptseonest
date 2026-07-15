@@ -394,7 +394,7 @@ export function AiAskPopup() {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="h-[350px]" ref={scrollAreaRef}>
+            <ScrollArea className="h-[min(350px,50vh)]" ref={scrollAreaRef}>
               <div className="p-4">
                 {messages.length === 0 && (
                   <div className="text-center py-6 text-muted-foreground">
