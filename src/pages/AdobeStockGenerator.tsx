@@ -656,11 +656,11 @@ export default function AdobeStockGenerator() {
                             <div className="flex items-center justify-between">
                               <p className="font-medium text-sm truncate max-w-[200px]">{selected.file.name}</p>
                               <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="icon" className="h-7 w-7" disabled={selectedIndex === 0} onClick={() => setSelectedIndex(i => i - 1)}>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" disabled={selectedIndex === 0} onClick={() => setSelectedIndex(i => i - 1)} aria-label="Previous image">
                                   <ChevronLeft className="h-4 w-4" />
                                 </Button>
                                 <span className="text-xs text-muted-foreground">{selectedIndex + 1}/{images.length}</span>
-                                <Button variant="ghost" size="icon" className="h-7 w-7" disabled={selectedIndex === images.length - 1} onClick={() => setSelectedIndex(i => i + 1)}>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" disabled={selectedIndex === images.length - 1} onClick={() => setSelectedIndex(i => i + 1)} aria-label="Next image">
                                   <ChevronRight className="h-4 w-4" />
                                 </Button>
                               </div>
