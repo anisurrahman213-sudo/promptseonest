@@ -310,7 +310,7 @@ export function AiAskPopup() {
       <Button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
+          "fixed bottom-24 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
           "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
           "transition-all duration-300 hover:scale-110",
           isOpen && "hidden"
