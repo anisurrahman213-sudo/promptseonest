@@ -66,6 +66,7 @@ export default function Pricing() {
           </p>
         </div>
 
+        <h2 className="sr-only">Available plans</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {plans?.map((plan) => (
             <Card 
