@@ -310,7 +310,7 @@ export function AiAskPopup() {
       <Button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
+          "fixed bottom-24 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
           "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
           "transition-all duration-300 hover:scale-110",
           isOpen && "hidden"
@@ -322,7 +322,7 @@ export function AiAskPopup() {
 
       {/* Chat Popup */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] animate-in slide-in-from-bottom-4 fade-in duration-300">
           <div className="rounded-2xl border bg-background shadow-2xl overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-primary/80 p-4 text-primary-foreground">
