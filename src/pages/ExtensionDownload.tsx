@@ -67,12 +67,14 @@ function ScreenshotGallery() {
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); prev(); }}
+            aria-label="Previous image"
             className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/80 backdrop-blur-sm border shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); next(); }}
+            aria-label="Next image"
             className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/80 backdrop-blur-sm border shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <ChevronRight className="h-4 w-4" />
