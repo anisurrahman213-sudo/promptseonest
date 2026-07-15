@@ -322,7 +322,7 @@ export function AiAskPopup() {
 
       {/* Chat Popup */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] animate-in slide-in-from-bottom-4 fade-in duration-300">
           <div className="rounded-2xl border bg-background shadow-2xl overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-primary/80 p-4 text-primary-foreground">
