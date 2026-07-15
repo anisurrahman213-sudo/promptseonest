@@ -106,11 +106,12 @@ function ScreenshotGallery() {
       {/* Lightbox */}
       {lightbox && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setLightbox(false)}>
-          <button className="absolute top-4 right-4 text-white/70 hover:text-white" onClick={() => setLightbox(false)}>
+          <button className="absolute top-4 right-4 text-white/70 hover:text-white" onClick={() => setLightbox(false)} aria-label="Close preview">
             <X className="h-6 w-6" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); prev(); }}
+            aria-label="Previous image"
             className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -123,6 +124,7 @@ function ScreenshotGallery() {
           />
           <button
             onClick={(e) => { e.stopPropagation(); next(); }}
+            aria-label="Next image"
             className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
           >
             <ChevronRight className="h-5 w-5" />
