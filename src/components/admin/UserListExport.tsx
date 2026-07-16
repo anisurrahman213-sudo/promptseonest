@@ -117,12 +117,13 @@ export function UserListExport({ users, filename = 'users' }: UserListExportProp
       const headers = ['Name', 'Email', 'Phone', 'Credits', 'Signup Date'];
       
       const rows = users.map(user => [
-        user.full_name || '',
-        user.email || '',
-        user.phone_number || '',
+        neutralizeFormula(user.full_name || ''),
+        neutralizeFormula(user.email || ''),
+        neutralizeFormula(user.phone_number || ''),
         String(user.credits ?? 0),
         formatDate(user.created_at),
       ]);
+
 
       // Tab-separated values work better with Excel
       const tsvContent = [
