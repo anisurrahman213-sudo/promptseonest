@@ -1,7 +1,34 @@
 /// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireUser } from "../_shared/auth.ts";
-import { hasSufficientCredits } from "../_shared/credits.ts";
 import { APP_CONTEXT } from "../_shared/app-knowledge.ts";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+async function deductCredits(userId: string, count: number): Promise<boolean> {
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const { data, error } = await admin.rpc("deduct_credits_for_user", {
+    p_user_id: userId,
+    p_count: count,
+  });
+  if (error) {
+    console.error("deduct_credits_for_user error:", error);
+    return false;
+  }
+  return data === true;
+}
+
+async function refundCredits(userId: string, count: number): Promise<void> {
+  if (count <= 0) return;
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const { error } = await admin.rpc("refund_credits_for_user", {
+    p_user_id: userId,
+    p_count: count,
+  });
+  if (error) console.error("refund_credits_for_user error:", error);
+}
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
