@@ -677,21 +677,6 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: "Rate limit exceeded", retryAfter: Math.ceil(rateLimit.resetIn / 1000) }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000)) } }
       );
-    // Pre-flight credit check — prevents unauthenticated AI quota drain
-    // when the caller has no credits. Mirrors deduct_credit() logic without
-    // mutating state; deduction still happens client-side after success.
-    const creditCheck = await hasSufficientCredits(auth.userId);
-    if (!creditCheck.ok) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          code: "INSUFFICIENT_CREDITS",
-          error: "Insufficient credits. Please purchase a plan to continue.",
-          balance: creditCheck.balance,
-          cost: creditCheck.cost,
-        }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     const body = await req.json();
@@ -719,9 +704,30 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Atomically deduct one credit per batch item BEFORE calling the AI gateway.
+      // Prevents unlimited free AI use by clients that skip the deduction step.
+      const debited = await deductCredits(auth.userId, items.length);
+      if (!debited) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            code: "INSUFFICIENT_CREDITS",
+            error: "Insufficient credits for this batch. Please purchase more credits.",
+          }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       console.log(`📦 Batch processing ${items.length} items`);
       const results = await processBatch(items, settings, lovableApiKey);
-      console.log(`✅ Batch complete: ${results.filter(r => r.success).length}/${items.length} succeeded`);
+      const successCount = results.filter(r => r.success).length;
+      const failedCount = items.length - successCount;
+      console.log(`✅ Batch complete: ${successCount}/${items.length} succeeded`);
+
+      // Refund credits for failed items so users are only charged for successful generations.
+      if (failedCount > 0) {
+        await refundCredits(auth.userId, failedCount);
+      }
 
       return new Response(
         JSON.stringify({ success: true, batch: true, results }),
@@ -761,11 +767,26 @@ Deno.serve(async (req) => {
       imageType: 'none', prefix: '', suffix: '', negativeTitleWords: '', negativeKeywords: '',
     };
 
+    // Atomically deduct 1 credit BEFORE calling the AI gateway. Refund on failure.
+    const debited = await deductCredits(auth.userId, 1);
+    if (!debited) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          code: "INSUFFICIENT_CREDITS",
+          error: "Insufficient credits. Please purchase a plan to continue.",
+        }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     console.log(`Processing ${mediaType}: ${imageName}`);
     const { systemPrompt, userPrompt } = buildPrompt(mediaType, metadataSettings, typeof exif === 'string' ? exif : undefined);
     const aiResult = await callAiGateway(lovableApiKey, systemPrompt, userPrompt, cleanedBase64);
 
     if (!aiResult.ok || !aiResult.data) {
+      // Refund the credit we just charged since the AI call failed.
+      await refundCredits(auth.userId, 1);
       if (aiResult.code === "RATE_LIMITED") {
         return new Response(
           JSON.stringify({ success: false, code: "RATE_LIMITED", error: aiResult.error, retryAfter: 60 }),
@@ -793,6 +814,7 @@ Deno.serve(async (req) => {
   } catch (error: unknown) {
     console.error("Error in analyze-image function:", error);
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
+
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
