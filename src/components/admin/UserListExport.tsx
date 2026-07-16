@@ -36,13 +36,23 @@ export function UserListExport({ users, filename = 'users' }: UserListExportProp
     }
   };
 
+  // Neutralize CSV/formula injection: prefix cells starting with formula
+  // triggers (=, +, -, @, tab, CR) with a leading apostrophe so spreadsheet
+  // apps treat the value as plain text.
+  const neutralizeFormula = (value: string) => {
+    if (value && /^[=+\-@\t\r]/.test(value)) {
+      return `'${value}`;
+    }
+    return value;
+  };
+
   const generateCSV = () => {
     const headers = ['Name', 'Email', 'Phone', 'Credits', 'Signup Date'];
-    
+
     const rows = users.map(user => [
-      user.full_name || '',
-      user.email || '',
-      user.phone_number || '',
+      neutralizeFormula(user.full_name || ''),
+      neutralizeFormula(user.email || ''),
+      neutralizeFormula(user.phone_number || ''),
       String(user.credits ?? 0),
       formatDate(user.created_at),
     ]);
@@ -54,6 +64,7 @@ export function UserListExport({ users, filename = 'users' }: UserListExportProp
       }
       return value;
     };
+
 
     const csvContent = [
       headers.join(','),
@@ -106,12 +117,13 @@ export function UserListExport({ users, filename = 'users' }: UserListExportProp
       const headers = ['Name', 'Email', 'Phone', 'Credits', 'Signup Date'];
       
       const rows = users.map(user => [
-        user.full_name || '',
-        user.email || '',
-        user.phone_number || '',
+        neutralizeFormula(user.full_name || ''),
+        neutralizeFormula(user.email || ''),
+        neutralizeFormula(user.phone_number || ''),
         String(user.credits ?? 0),
         formatDate(user.created_at),
       ]);
+
 
       // Tab-separated values work better with Excel
       const tsvContent = [

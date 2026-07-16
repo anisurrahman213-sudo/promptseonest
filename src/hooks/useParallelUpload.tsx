@@ -189,29 +189,25 @@ export function useParallelUpload({
           return false;
         }
 
-        const [creditResult, saveResult] = await Promise.all([
-          supabase.rpc('deduct_credit'),
-          supabase.from('generations').insert({
-            user_id: userId,
-            image_name: prep.mediaFile.file.name,
-            image_url: prep.publicUrl,
-            prompt: data.data.prompt,
-            title: data.data.title,
-            description: data.data.description,
-            tags: data.data.tags,
-            media_type: prep.mediaFile.type,
-            category: data.data.category || '',
-          }).select().single(),
-        ]);
+        // Credit deduction happens atomically inside the analyze-image edge function
+        // before the AI call, so no client-side deduct_credit is needed here.
+        const saveResult = await supabase.from('generations').insert({
+          user_id: userId,
+          image_name: prep.mediaFile.file.name,
+          image_url: prep.publicUrl,
+          prompt: data.data.prompt,
+          title: data.data.title,
+          description: data.data.description,
+          tags: data.data.tags,
+          media_type: prep.mediaFile.type,
+          category: data.data.category || '',
+        }).select().single();
 
         if (saveResult.error) {
           onFileStatusUpdate(prep.index, errStatus(mapUploadError({ rawMessage: saveResult.error.message, context: 'save' })));
           return false;
         }
-        if (creditResult.data === false) {
-          onFileStatusUpdate(prep.index, errStatus(mapUploadError({ context: 'credit' })));
-          return false;
-        }
+
 
         onFileStatusUpdate(prep.index, { status: 'success', endTime: Date.now() });
         onSuccess(saveResult.data);
