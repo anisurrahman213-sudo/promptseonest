@@ -245,41 +245,30 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
         return false;
       }
 
-      // Step 4: Deduct credit and save to database in parallel
-      const [creditResult, saveResult] = await Promise.all([
-        supabase.rpc('deduct_credit'),
-        supabase
-          .from('generations')
-          .insert({
-            user_id: userId,
-            image_name: file.name,
-            image_url: publicUrl,
-            prompt: data.data.prompt,
-            title: data.data.title,
-            description: data.data.description,
-            tags: data.data.tags,
-            media_type: mediaFile.type,
-            category: data.data.category || ''
-          })
-          .select()
-          .single()
-      ]);
-
-      if (creditResult.error) {
-        console.error('❌ Credit RPC error:', creditResult.error);
-        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: `Credit error: ${creditResult.error.message}`, endTime: Date.now() });
-        return false;
-      }
-      if (creditResult.data === false) {
-        updateFileStatus(jobId, fileId, { status: 'error', errorMessage: 'Insufficient credits', endTime: Date.now() });
-        return false;
-      }
+      // Step 4: Save to database. Credit deduction happens atomically inside
+      // the analyze-image edge function, so no client-side deduct_credit call.
+      const saveResult = await supabase
+        .from('generations')
+        .insert({
+          user_id: userId,
+          image_name: file.name,
+          image_url: publicUrl,
+          prompt: data.data.prompt,
+          title: data.data.title,
+          description: data.data.description,
+          tags: data.data.tags,
+          media_type: mediaFile.type,
+          category: data.data.category || ''
+        })
+        .select()
+        .single();
 
       if (saveResult.error) {
         console.error('❌ Save error:', saveResult.error, 'payload:', { user_id: userId, image_name: file.name, has_data: !!data.data });
         updateFileStatus(jobId, fileId, { status: 'error', errorMessage: `Save failed: ${saveResult.error.message}`, endTime: Date.now() });
         return false;
       }
+
 
       // Success!
       updateFileStatus(jobId, fileId, { status: 'success', endTime: Date.now() });
