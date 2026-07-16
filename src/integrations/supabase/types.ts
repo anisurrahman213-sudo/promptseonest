@@ -737,6 +737,10 @@ export type Database = {
       deduct_credit:
         | { Args: never; Returns: boolean }
         | { Args: { p_user_id: string }; Returns: boolean }
+      deduct_credits_for_user: {
+        Args: { p_count: number; p_user_id: string }
+        Returns: boolean
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -784,6 +788,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      refund_credits_for_user: {
+        Args: { p_count: number; p_user_id: string }
+        Returns: boolean
       }
       sync_user_emails: { Args: never; Returns: undefined }
     }
