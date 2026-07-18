@@ -190,6 +190,10 @@ export function AiAskPopup() {
   });
 
   const startDrag = (e: React.PointerEvent<HTMLElement>) => {
+    const tgt = e.target as HTMLElement;
+    if (tgt.closest('button, [role="combobox"], input, a, select, [data-no-drag]') && tgt !== e.currentTarget) {
+      return;
+    }
     const el = e.currentTarget as HTMLElement;
     // Find outermost draggable wrapper
     const wrapper = el.closest('[data-ai-drag-root]') as HTMLElement | null;
