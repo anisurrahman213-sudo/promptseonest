@@ -191,7 +191,8 @@ export function AiAskPopup() {
 
   const startDrag = (e: React.PointerEvent<HTMLElement>) => {
     const tgt = e.target as HTMLElement;
-    if (tgt.closest('button, [role="combobox"], input, a, select, [data-no-drag]') && tgt !== e.currentTarget) {
+    const interactive = tgt.closest('button, [role="combobox"], input, a, select, [data-no-drag]');
+    if (interactive && interactive !== e.currentTarget && e.currentTarget.contains(interactive)) {
       return;
     }
     const el = e.currentTarget as HTMLElement;
