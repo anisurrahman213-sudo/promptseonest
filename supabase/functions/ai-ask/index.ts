@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { requireUser } from "../_shared/auth.ts";
 import { KNOWLEDGE_BASE } from "../_shared/app-knowledge.ts";
 
 const corsHeaders = {
@@ -68,8 +67,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const auth = await requireUser(req, corsHeaders);
-  if (!auth.ok) return auth.response;
+  // Public endpoint — AI Ask is available to all visitors (landing page chatbot).
+
 
   try {
     const { messages, language = "en" } = await req.json();
