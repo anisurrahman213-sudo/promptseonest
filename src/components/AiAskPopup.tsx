@@ -168,6 +168,82 @@ export function AiAskPopup() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Draggable position (top-left px). null = default anchored bottom-right.
+  const POS_KEY = "promptnest-chat-pos";
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
+    try {
+      const raw = localStorage.getItem(POS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+  const dragRef = useRef<{
+    startX: number; startY: number; origX: number; origY: number;
+    w: number; h: number; moved: boolean; pointerId: number;
+  } | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const clampPos = (x: number, y: number, w: number, h: number) => ({
+    x: Math.max(4, Math.min(window.innerWidth - w - 4, x)),
+    y: Math.max(4, Math.min(window.innerHeight - h - 4, y)),
+  });
+
+  const startDrag = (e: React.PointerEvent<HTMLElement>) => {
+    const el = e.currentTarget as HTMLElement;
+    // Find outermost draggable wrapper
+    const wrapper = el.closest('[data-ai-drag-root]') as HTMLElement | null;
+    const target = wrapper || el;
+    const rect = target.getBoundingClientRect();
+    dragRef.current = {
+      startX: e.clientX, startY: e.clientY,
+      origX: rect.left, origY: rect.top,
+      w: rect.width, h: rect.height,
+      moved: false, pointerId: e.pointerId,
+    };
+    try { el.setPointerCapture(e.pointerId); } catch {}
+  };
+
+  const onDragMove = (e: React.PointerEvent<HTMLElement>) => {
+    const d = dragRef.current;
+    if (!d || e.pointerId !== d.pointerId) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (!d.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+    if (!d.moved) { d.moved = true; setDragging(true); }
+    const next = clampPos(d.origX + dx, d.origY + dy, d.w, d.h);
+    setPos(next);
+  };
+
+  const endDrag = (e: React.PointerEvent<HTMLElement>, onTapClick?: () => void) => {
+    const d = dragRef.current;
+    if (!d) return;
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    dragRef.current = null;
+    if (d.moved) {
+      setDragging(false);
+      try { localStorage.setItem(POS_KEY, JSON.stringify({ x: d.origX + (e.clientX - d.startX), y: d.origY + (e.clientY - d.startY) })); } catch {}
+    } else if (onTapClick) {
+      onTapClick();
+    }
+  };
+
+  // Keep in-bounds on resize
+  useEffect(() => {
+    const onResize = () => {
+      setPos((p) => {
+        if (!p) return p;
+        return clampPos(p.x, p.y, 360, 400);
+      });
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const positionStyle: React.CSSProperties = pos
+    ? { left: pos.x, top: pos.y, right: "auto", bottom: "auto" }
+    : {};
+
   // Save chat language preference
   const handleLanguageChange = (lang: string) => {
     setChatLanguage(lang);
