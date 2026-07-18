@@ -67,8 +67,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const auth = await requireUser(req, corsHeaders);
-  if (!auth.ok) return auth.response;
+  // Public endpoint — AI Ask is available to all visitors (landing page chatbot).
+
 
   try {
     const { messages, language = "en" } = await req.json();
