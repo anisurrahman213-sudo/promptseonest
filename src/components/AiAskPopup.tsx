@@ -384,11 +384,17 @@ export function AiAskPopup() {
     <>
       {/* Floating Button */}
       <Button
-        onClick={() => setIsOpen(true)}
+        onPointerDown={startDrag}
+        onPointerMove={onDragMove}
+        onPointerUp={(e) => endDrag(e, () => setIsOpen(true))}
+        onPointerCancel={(e) => endDrag(e)}
+        style={positionStyle}
         className={cn(
-          "fixed bottom-24 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
+          "fixed z-50 h-14 w-14 rounded-full shadow-lg touch-none select-none",
+          !pos && "bottom-24 right-6",
           "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
-          "transition-all duration-300 hover:scale-110",
+          "transition-transform duration-200",
+          dragging ? "cursor-grabbing scale-105" : "cursor-grab hover:scale-110",
           isOpen && "hidden"
         )}
         size="icon"
@@ -398,10 +404,26 @@ export function AiAskPopup() {
 
       {/* Chat Popup */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div
+          data-ai-drag-root
+          style={positionStyle}
+          className={cn(
+            "fixed z-50 w-[360px] max-w-[calc(100vw-3rem)] animate-in slide-in-from-bottom-4 fade-in duration-300",
+            !pos && "bottom-24 right-6"
+          )}
+        >
           <div className="rounded-2xl border bg-background shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-primary to-primary/80 p-4 text-primary-foreground">
+            <div
+              onPointerDown={startDrag}
+              onPointerMove={onDragMove}
+              onPointerUp={(e) => endDrag(e)}
+              onPointerCancel={(e) => endDrag(e)}
+              className={cn(
+                "bg-gradient-to-r from-primary to-primary/80 p-4 text-primary-foreground touch-none select-none",
+                dragging ? "cursor-grabbing" : "cursor-grab"
+              )}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
