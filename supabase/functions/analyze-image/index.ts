@@ -807,6 +807,8 @@ Deno.serve(async (req) => {
     }
 
     const processed = processAnalysisResult(aiResult.data, metadataSettings, imageName, mediaType);
+    console.log(`✅ Metadata generated for ${imageName}`);
+
 
     return new Response(
       JSON.stringify({ success: true, data: processed }),
