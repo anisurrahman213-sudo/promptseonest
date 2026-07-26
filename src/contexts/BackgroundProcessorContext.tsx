@@ -228,7 +228,9 @@ export function BackgroundProcessorProvider({ children }: { children: ReactNode 
           status: 'error',
           errorMessage: data?.code === 'RATE_LIMITED'
             ? 'AI is busy. Please retry in a minute.'
-            : data?.error || 'Analysis failed',
+            : data?.code === 'AI_CREDITS_EXHAUSTED'
+              ? 'AI credits exhausted — please top up AI credits to continue.'
+              : data?.error || 'Analysis failed',
           endTime: Date.now()
         });
         return false;
