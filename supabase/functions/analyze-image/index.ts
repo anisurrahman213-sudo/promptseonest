@@ -785,6 +785,7 @@ Deno.serve(async (req) => {
     const aiResult = await callAiGateway(lovableApiKey, systemPrompt, userPrompt, cleanedBase64);
 
     if (!aiResult.ok || !aiResult.data) {
+      console.error(`❌ AI failed for ${imageName} — code=${aiResult.code ?? "UNKNOWN"} error=${String(aiResult.error).slice(0, 500)}`);
       // Refund the credit we just charged since the AI call failed.
       await refundCredits(auth.userId, 1);
       if (aiResult.code === "RATE_LIMITED") {
@@ -806,6 +807,8 @@ Deno.serve(async (req) => {
     }
 
     const processed = processAnalysisResult(aiResult.data, metadataSettings, imageName, mediaType);
+    console.log(`✅ Metadata generated for ${imageName}`);
+
 
     return new Response(
       JSON.stringify({ success: true, data: processed }),
