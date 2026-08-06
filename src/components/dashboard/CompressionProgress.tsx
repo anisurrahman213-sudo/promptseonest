@@ -81,14 +81,14 @@ const CompressionFileRow = forwardRef<HTMLDivElement, { file: ExtendedCompressio
         
         {/* Reduction badge */}
         {reduction > 0 && file.status === 'done' && (
-          <span className="px-1.5 py-0.5 rounded bg-green-500/20 text-green-600 font-mono text-[10px]">
+          <span className="px-1.5 py-0.5 rounded-sm bg-green-500/20 text-green-600 font-mono text-[10px]">
             -{reduction}%
           </span>
         )}
         
         {/* WebCodecs speedup badge */}
         {file.method === 'webcodecs' && file.speedup && file.speedup > 1 && file.status === 'done' && (
-          <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-600 font-mono text-[10px]">
+          <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-sm bg-purple-500/20 text-purple-600 font-mono text-[10px]">
             <Rocket className="h-2.5 w-2.5" />
             {file.speedup.toFixed(1)}x
           </span>

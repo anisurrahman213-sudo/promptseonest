@@ -61,7 +61,7 @@ function SortablePlanCard({ plan, onEdit, onDelete }: SortablePlanCardProps) {
             <button
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded touch-none"
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded-sm touch-none"
             >
               <GripVertical className="h-4 w-4 text-muted-foreground" />
             </button>

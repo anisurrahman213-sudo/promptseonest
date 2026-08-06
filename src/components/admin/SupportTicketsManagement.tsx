@@ -145,7 +145,7 @@ export function SupportTicketsManagement() {
                     </p>
                   </div>
                 </div>
-                <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/40 p-3 rounded">{t.message}</p>
+                <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/40 p-3 rounded-sm">{t.message}</p>
                 {t.admin_reply && (
                   <div className="text-sm border-l-2 border-primary pl-3">
                     <p className="text-xs text-muted-foreground mb-1">Admin reply · {t.replied_at ? new Date(t.replied_at).toLocaleString() : ""}</p>
@@ -178,7 +178,7 @@ export function SupportTicketsManagement() {
             <DialogTitle>Reply to {replyDialog?.user_email}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="text-sm bg-muted/40 p-3 rounded">
+            <div className="text-sm bg-muted/40 p-3 rounded-sm">
               <p className="font-medium">{replyDialog?.subject}</p>
               <p className="text-muted-foreground whitespace-pre-wrap mt-1">{replyDialog?.message}</p>
             </div>

@@ -156,7 +156,7 @@ const PreviewRow = memo(({
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.02 }}
-      className="border rounded-lg overflow-hidden bg-card hover:shadow-sm transition-shadow"
+      className="border rounded-lg overflow-hidden bg-card hover:shadow-xs transition-shadow"
     >
       {/* Compact Header Row */}
       <div 
@@ -1201,7 +1201,7 @@ ${t('export.readme.footer')}
               type="checkbox"
               checked={bundleAsZip}
               onChange={(e) => setBundleAsZip(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-border accent-primary cursor-pointer"
+              className="mt-0.5 h-4 w-4 rounded-sm border-border accent-primary cursor-pointer"
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 text-sm font-medium">

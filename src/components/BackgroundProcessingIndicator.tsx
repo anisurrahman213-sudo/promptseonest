@@ -118,7 +118,7 @@ export function BackgroundProcessingIndicator() {
                     {currentJob.files.slice(0, 5).map((file) => (
                       <div 
                         key={file.id}
-                        className="flex items-center justify-between text-xs py-1 px-2 rounded bg-muted/30"
+                        className="flex items-center justify-between text-xs py-1 px-2 rounded-sm bg-muted/30"
                       >
                         <span className="truncate flex-1 mr-2">{file.name}</span>
                         {file.status === 'pending' && (

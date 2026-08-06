@@ -202,9 +202,9 @@ export function VirtualGenerationList({
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-xs">
                 <div className="space-y-1">
-                  <p><kbd className="px-1 py-0.5 bg-muted rounded text-[10px]">Ctrl+A</kbd> Select All</p>
-                  <p><kbd className="px-1 py-0.5 bg-muted rounded text-[10px]">Delete</kbd> Delete Selected</p>
-                  <p><kbd className="px-1 py-0.5 bg-muted rounded text-[10px]">Esc</kbd> Exit Selection</p>
+                  <p><kbd className="px-1 py-0.5 bg-muted rounded-sm text-[10px]">Ctrl+A</kbd> Select All</p>
+                  <p><kbd className="px-1 py-0.5 bg-muted rounded-sm text-[10px]">Delete</kbd> Delete Selected</p>
+                  <p><kbd className="px-1 py-0.5 bg-muted rounded-sm text-[10px]">Esc</kbd> Exit Selection</p>
                 </div>
               </TooltipContent>
             </Tooltip>

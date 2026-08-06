@@ -271,7 +271,7 @@ export function HealthCheckPanel({ embedded = false }: { embedded?: boolean }) {
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
-                <span>Admin role checks via security-definer <code className="text-xs bg-muted px-1 rounded">has_role()</code> function</span>
+                <span>Admin role checks via security-definer <code className="text-xs bg-muted px-1 rounded-sm">has_role()</code> function</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
@@ -355,7 +355,7 @@ function CheckGrid({ checks }: { checks: CheckResult[] }) {
                   <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
                     Details
                   </summary>
-                  <pre className="text-xs mt-1 p-2 bg-muted rounded overflow-auto max-h-32">
+                  <pre className="text-xs mt-1 p-2 bg-muted rounded-sm overflow-auto max-h-32">
                     {JSON.stringify(c.details, null, 2)}
                   </pre>
                 </details>

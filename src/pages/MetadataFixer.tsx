@@ -366,7 +366,7 @@ export default function MetadataFixer() {
                       <CardContent className="pt-3 pb-3 space-y-1.5">
                         <Label className="text-xs text-muted-foreground font-medium">3 Alternative Titles</Label>
                         {result.alt_titles.map((at, i) => (
-                          <div key={i} className="flex items-center justify-between gap-2 text-xs bg-muted/30 rounded p-2">
+                          <div key={i} className="flex items-center justify-between gap-2 text-xs bg-muted/30 rounded-sm p-2">
                             <span className="flex-1">{at}</span>
                             <Button variant="ghost" size="sm" className="h-6 text-[10px] shrink-0" onClick={() => copy(at, `Alt ${i + 1}`)}>
                               {copiedField === `Alt ${i + 1}` ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -430,7 +430,7 @@ export default function MetadataFixer() {
                           ))}
                         </div>
                         {result.prompt_suggestions?.length > 0 && (
-                          <div className="mt-3 p-2 rounded bg-warning/10 border border-warning/20">
+                          <div className="mt-3 p-2 rounded-sm bg-warning/10 border border-warning/20">
                             <p className="text-xs font-medium text-warning mb-1">💡 Suggestions to improve prompt:</p>
                             <ul className="text-xs text-muted-foreground space-y-0.5">
                               {result.prompt_suggestions.map((s, i) => <li key={i}>• {s}</li>)}
@@ -453,7 +453,7 @@ export default function MetadataFixer() {
                       <CardContent className="pb-3">
                         <div className="space-y-1 max-h-[200px] overflow-y-auto">
                           {result.changes_made.map((change, i) => (
-                            <div key={i} className="text-xs p-2 rounded bg-muted/40 flex items-start gap-2">
+                            <div key={i} className="text-xs p-2 rounded-sm bg-muted/40 flex items-start gap-2">
                               <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0 mt-0.5" />
                               <span>{change}</span>
                             </div>
@@ -507,7 +507,7 @@ function InlineIssues({ issues }: { issues: { text: string; type: "error" | "war
   return (
     <div className="flex flex-wrap gap-1">
       {issues.map((is, i) => (
-        <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded ${is.type === "error" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"}`}>
+        <span key={i} className={`text-[10px] px-1.5 py-0.5 rounded-sm ${is.type === "error" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"}`}>
           {is.type === "error" ? "❌" : "⚠️"} {is.text}
         </span>
       ))}
@@ -592,7 +592,7 @@ function FixedField({ label, value, counter, counterOk, copied, onCopy, multilin
             </Button>
           </div>
         </div>
-        <div className={`text-sm bg-green-500/5 rounded p-2.5 border border-green-500/10 ${multiline ? "whitespace-pre-wrap break-words" : ""}`}>{value}</div>
+        <div className={`text-sm bg-green-500/5 rounded-sm p-2.5 border border-green-500/10 ${multiline ? "whitespace-pre-wrap break-words" : ""}`}>{value}</div>
       </CardContent>
     </Card>
   );
