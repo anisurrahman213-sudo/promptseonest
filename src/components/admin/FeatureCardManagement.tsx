@@ -142,7 +142,7 @@ function SortableFeatureCard({
       <div
         {...attributes}
         {...listeners}
-        className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing bg-background/80 backdrop-blur-sm rounded p-1 hover:bg-muted"
+        className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing bg-background/80 backdrop-blur-sm rounded-sm p-1 hover:bg-muted"
       >
         <GripVertical className="h-5 w-5 text-muted-foreground" />
       </div>
@@ -204,7 +204,7 @@ function SortableFeatureCard({
           }}
         />
         <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
-          <div className="flex items-center gap-1 text-xs text-white/80 bg-black/50 px-2 py-1 rounded">
+          <div className="flex items-center gap-1 text-xs text-white/80 bg-black/50 px-2 py-1 rounded-sm">
             <Info className="h-3 w-3" />
             <span>1280×720 (16:9), Max 10MB</span>
           </div>

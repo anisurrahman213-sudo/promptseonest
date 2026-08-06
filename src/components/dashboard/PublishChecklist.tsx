@@ -360,7 +360,7 @@ export function PublishChecklist() {
                 <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 <AlertDescription className="text-xs sm:text-sm">
                   Your UI changes are <strong>only visible in Preview</strong>. Visitors on{' '}
-                  <code className="px-1 py-0.5 rounded bg-muted text-[11px]">promptseonest.com</code> still see
+                  <code className="px-1 py-0.5 rounded-sm bg-muted text-[11px]">promptseonest.com</code> still see
                   the previously published version. Click <strong>Publish → Update</strong> to push them live.
                 </AlertDescription>
               </Alert>
@@ -371,7 +371,7 @@ export function PublishChecklist() {
               <div className="flex items-center gap-2 mb-2">
                 <Layout className="h-4 w-4 text-primary" />
                 <h4 className="text-sm font-semibold">Frontend (UI / Pages)</h4>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-400 font-medium">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-amber-500/15 text-amber-700 dark:text-amber-400 font-medium">
                   Manual publish required
                 </span>
               </div>
@@ -387,7 +387,7 @@ export function PublishChecklist() {
               <div className="flex items-center gap-2 mb-2">
                 <Server className="h-4 w-4 text-primary" />
                 <h4 className="text-sm font-semibold">Backend (Edge Functions / DB)</h4>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-medium">
                   Auto-deploys
                 </span>
               </div>
@@ -488,7 +488,7 @@ export function PublishChecklist() {
                     Error: {pingResult.error}
                   </p>
                 )}
-                <pre className="text-[11px] leading-relaxed bg-muted/40 rounded p-2 overflow-auto max-h-48 font-mono">
+                <pre className="text-[11px] leading-relaxed bg-muted/40 rounded-sm p-2 overflow-auto max-h-48 font-mono">
                   {typeof pingResult.body === 'string'
                     ? pingResult.body
                     : JSON.stringify(pingResult.body, null, 2)}

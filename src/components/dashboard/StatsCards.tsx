@@ -93,7 +93,7 @@ export function StatsCards({ totalGenerations, credits, todayGenerations }: Stat
                   </div>
                   <motion.div 
                     className={cn(
-                      "p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl order-1 sm:order-2 shadow-sm",
+                      "p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl order-1 sm:order-2 shadow-xs",
                       stat.iconBg
                     )}
                     whileHover={{ rotate: [0, -10, 10, -5, 0], scale: 1.1 }}

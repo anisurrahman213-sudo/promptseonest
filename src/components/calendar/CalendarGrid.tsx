@@ -106,15 +106,15 @@ export function CalendarGrid({ currentMonth, year, monthEvents, onDateClick }: C
         {/* Legend */}
         <div className="mt-6 flex flex-wrap gap-4 justify-center text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-white border shadow"></span>
+            <span className="w-3 h-3 rounded-full bg-white border shadow-sm"></span>
             <span>Single event</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-white border shadow flex items-center justify-center text-[9px] font-bold text-foreground">2</span>
+            <span className="w-4 h-4 rounded-full bg-white border shadow-sm flex items-center justify-center text-[9px] font-bold text-foreground">2</span>
             <span>Multiple events</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-amber-400 shadow"></span>
+            <span className="w-3 h-3 rounded-full bg-amber-400 shadow-sm"></span>
             <span>Your custom</span>
           </div>
           <div className="flex items-center gap-2">

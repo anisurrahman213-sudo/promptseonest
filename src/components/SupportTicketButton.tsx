@@ -67,7 +67,7 @@ export function SupportTicketButton() {
         type="button"
         onClick={handleOpen}
         aria-label="Contact support"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2"
       >
         <MessageCircle className="h-5 w-5" />
         <span className="hidden sm:inline text-sm font-medium">Contact / Complaint</span>

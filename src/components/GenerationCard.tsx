@@ -318,7 +318,7 @@ interface GenerationCardProps {
               
               {/* Media Type Badge */}
               <div className={cn(
-                "absolute top-2 left-2 px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-1",
+                "absolute top-2 left-2 px-1.5 py-0.5 rounded-sm text-[10px] font-medium flex items-center gap-1",
                 generation.media_type === 'video' 
                   ? "bg-secondary/90 text-secondary-foreground" 
                   : "bg-primary/90 text-primary-foreground"
@@ -341,7 +341,7 @@ interface GenerationCardProps {
                  <Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
                    <PopoverTrigger asChild>
                      <button 
-                       className="absolute top-2 left-16 px-1.5 py-0.5 rounded text-[10px] font-medium flex items-center gap-1 bg-accent/90 text-accent-foreground hover:bg-accent transition-colors cursor-pointer"
+                       className="absolute top-2 left-16 px-1.5 py-0.5 rounded-sm text-[10px] font-medium flex items-center gap-1 bg-accent/90 text-accent-foreground hover:bg-accent transition-colors cursor-pointer"
                        onClick={(e) => e.stopPropagation()}
                      >
                        <Folder className="h-3 w-3" />

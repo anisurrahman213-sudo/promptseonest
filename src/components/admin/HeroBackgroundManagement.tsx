@@ -468,7 +468,7 @@ export function HeroBackgroundManagement() {
                     type="color"
                     value={textColor || '#ffffff'}
                     onChange={(e) => setTextColor(e.target.value)}
-                    className="h-10 w-16 cursor-pointer rounded border border-border"
+                    className="h-10 w-16 cursor-pointer rounded-sm border border-border"
                   />
                   <Input
                     value={textColor}
@@ -521,7 +521,7 @@ export function HeroBackgroundManagement() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                0 = No shadow, higher values = stronger shadow
+                0 = No shadow-sm, higher values = stronger shadow-sm
               </p>
               {/* Preview */}
               <div 

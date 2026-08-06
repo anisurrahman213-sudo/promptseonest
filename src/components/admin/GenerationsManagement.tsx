@@ -326,7 +326,7 @@ export function GenerationsManagement() {
                       />
                     </TableCell>
                     <TableCell>
-                      <div className="h-10 w-10 rounded overflow-hidden bg-muted">
+                      <div className="h-10 w-10 rounded-sm overflow-hidden bg-muted">
                         <img
                           src={gen.image_url}
                           alt={gen.title}

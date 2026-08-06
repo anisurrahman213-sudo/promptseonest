@@ -434,7 +434,7 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Label className="text-sm font-medium">Title Length</Label>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary">
                       max {currentLimits.title}
                     </span>
                   </div>
@@ -467,7 +467,7 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Label className="text-sm font-medium">Description Length</Label>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary">
                       max {currentLimits.description}
                     </span>
                   </div>
@@ -500,7 +500,7 @@ export function AdvancedMetadataControls({ settings, onSettingsChange }: Advance
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Label className="text-sm font-medium">Keywords Count</Label>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary">
                       max {currentLimits.keywords}
                     </span>
                   </div>

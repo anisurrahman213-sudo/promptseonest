@@ -483,7 +483,7 @@ interface MediaUploaderProps {
                     
                     {/* Media type badge */}
                     <div className={cn(
-                      "absolute top-1 left-1 sm:top-2 sm:left-2 px-1.5 py-0.5 rounded text-[10px] font-medium",
+                      "absolute top-1 left-1 sm:top-2 sm:left-2 px-1.5 py-0.5 rounded-sm text-[10px] font-medium",
                       mediaFile.type === 'video' 
                         ? "bg-secondary/90 text-secondary-foreground" 
                         : "bg-primary/90 text-primary-foreground"

@@ -233,7 +233,7 @@ export function CustomerHistoryDialog({
                                 </div>
                               </div>
                               {payment.admin_notes && (
-                                <div className="mt-2 p-2 rounded bg-muted/50 text-sm">
+                                <div className="mt-2 p-2 rounded-sm bg-muted/50 text-sm">
                                   <span className="text-muted-foreground">Notes: </span>
                                   {payment.admin_notes}
                                 </div>
