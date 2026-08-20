@@ -231,7 +231,7 @@ export default function AdminDashboard() {
       <EmailDialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen} emailTo={emailTo} subject={emailSubject} setSubject={setEmailSubject} body={emailBody} setBody={setEmailBody} isPending={sendEmailMutation.isPending} onSubmit={handleSendEmail} />
       <DeleteUserDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} email={userToDelete?.email || ''} isPending={deleteUserMutation.isPending} onConfirm={() => { if (userToDelete) deleteUserMutation.mutate(userToDelete.userId, { onSuccess: () => { setDeleteDialogOpen(false); setUserToDelete(null); } }); }} />
       <CustomerHistoryDialog customer={selectedCustomer} open={historyDialogOpen} onOpenChange={setHistoryDialogOpen} />
-      <BulkEmailDialog open={bulkEmailDialogOpen} onOpenChange={(open) => { setBulkEmailDialogOpen(open); if (!open) setSelectedUserIds(new Set()); }} selectedUsers={filteredUsersForEmail} />
+      <BulkEmailDialog open={bulkEmailDialogOpen} onOpenChange={(open) => { setBulkEmailDialogOpen(open); if (!open) setSelectedUserIds(new Set()); }} selectedUsers={filteredUsersForEmail as { email: string; full_name: string | null }[]} />
     </div>
   );
 }
