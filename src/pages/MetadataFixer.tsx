@@ -12,7 +12,7 @@ import {
   Wand2, Copy, Check, AlertTriangle, CheckCircle2, ArrowLeft, Loader2,
   XCircle, ArrowRight, Info, ClipboardCopy, ShieldCheck, Eye, Sparkles,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead } from "@/components/SEOHead";
 

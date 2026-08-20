@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { SEOHead } from '@/components/SEOHead';
-import { Link } from 'react-router-dom';
+import { Link } from "@/lib/router-compat";
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { Sparkles, Moon, Sun, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link } from "@/lib/router-compat";
 import { supabase } from '@/integrations/supabase/client';
 import { LoginForm, SignupForm } from '@/components/auth/AuthForms';
 import { ForgotPasswordForm, ResetPasswordForm } from '@/components/auth/PasswordForms';

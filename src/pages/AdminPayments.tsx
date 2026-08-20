@@ -3,7 +3,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { Header } from '@/components/layout/Header';
 import { useAdminPaymentRequests, useAdminUsers, useApprovePayment, useRejectPayment, useIsAdmin, useSendCustomEmail } from '@/hooks/usePaymentRequests';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from "@/lib/router-compat";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

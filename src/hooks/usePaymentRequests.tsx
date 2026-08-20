@@ -39,7 +39,7 @@ export function usePaymentRequests() {
       const { data, error } = await supabase
         .from('payment_requests')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user!.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -261,7 +261,7 @@ export function useIsAdmin() {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', user?.id)
+        .eq('user_id', user!.id)
         .eq('role', 'admin')
         .maybeSingle();
 
