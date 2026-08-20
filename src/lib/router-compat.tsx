@@ -64,7 +64,10 @@ export function useLocation() {
 }
 
 export function useParams<T = Record<string, string>>(): T {
-  return useRouterState({ select: (s) => s.matches.at(-1)?.params ?? {} }) as T;
+  const params = useRouterState({
+    select: (s): Record<string, unknown> => (s.matches.at(-1)?.params ?? {}) as Record<string, unknown>,
+  });
+  return params as T;
 }
 
 export function useSearchParams(): [URLSearchParams, (next: URLSearchParams | Record<string, string>) => void] {
