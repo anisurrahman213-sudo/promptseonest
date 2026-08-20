@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Download, Chrome, Settings, Globe, ChevronLeft, ChevronRight, X, Images } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { useState, useCallback } from "react";
 import { SEOHead } from "@/components/SEOHead";
 

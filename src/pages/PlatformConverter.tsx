@@ -3,7 +3,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from "@/lib/router-compat";
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRightLeft, Download, Loader2, Sparkles, Layers } from 'lucide-react';

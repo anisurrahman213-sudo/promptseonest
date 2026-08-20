@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { SEOHead } from '@/components/SEOHead';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from "@/lib/router-compat";
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminUsers, useIsAdmin, useDeleteUser, useSendCustomEmail, useAdminPaymentRequests } from '@/hooks/usePaymentRequests';
 import { supabase } from '@/integrations/supabase/client';

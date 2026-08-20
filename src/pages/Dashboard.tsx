@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { SEOHead } from '@/components/SEOHead';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from "@/lib/router-compat";
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { MediaUploader, MediaFile } from '@/components/MediaUploader';

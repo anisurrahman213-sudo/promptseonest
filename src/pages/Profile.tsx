@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';

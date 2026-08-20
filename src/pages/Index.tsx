@@ -1,12 +1,12 @@
 import { useEffect, lazy, Suspense, useState } from "react";
 import { SEOHead } from "@/components/SEOHead";
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router-compat";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { toast } from "@/hooks/use-toast";
 import { useFeatureCards } from "@/hooks/useFeatureCards";
 import { useSiteSettingsBatch, getSettingValue } from "@/hooks/useSiteSettings";

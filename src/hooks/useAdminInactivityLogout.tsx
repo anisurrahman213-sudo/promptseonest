@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from './useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "@/lib/router-compat";
 import { toast } from 'sonner';
 
 const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, Clock, Trash2, Download, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { differenceInDays, differenceInHours } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link } from "@/lib/router-compat";
 
 interface Generation {
   id: string;
