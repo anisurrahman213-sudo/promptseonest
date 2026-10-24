@@ -390,7 +390,7 @@ function RootComponent() {
   );
 }
 
-function RootErrorComponent({ error }: { error: Error }) {
+function RootErrorComponent({ error }: { error: unknown }) {
   console.error(error);
 
   useEffect(() => {
