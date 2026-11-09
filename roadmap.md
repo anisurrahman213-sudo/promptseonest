@@ -1,4 +1,4 @@
-- [ ] Diagnose and fix background metadata generation for the uploaded image, then verify processing succeeds.
+- [x] Diagnose and verify background metadata generation for the uploaded image.
 - [x] Replace the deprecated React namespace usage in the mobile hook with direct imports.
 - [x] Make sign-in rendering deterministic across server and browser hydration.
 - [x] Fix route tracking to use TanStack's serialized search string instead of coercing its search object.
