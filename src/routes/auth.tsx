@@ -1,5 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ClientOnly } from "@tanstack/react-router";
 import Auth from "@/pages/Auth";
+
+function AuthRoute() {
+  return (
+    <ClientOnly fallback={<div className="min-h-screen bg-background" />}>
+      <Auth />
+    </ClientOnly>
+  );
+}
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -12,5 +21,5 @@ export const Route = createFileRoute("/auth")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Auth,
+  component: AuthRoute,
 });

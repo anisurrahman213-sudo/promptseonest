@@ -12,7 +12,7 @@ export function RouteTracker() {
   useEffect(() => {
     // Defer to next tick so document.title is updated by react-helmet-async first
     const id = window.setTimeout(() => {
-      trackPageView(location.pathname + location.search, document.title);
+      trackPageView(location.pathname + location.searchStr, document.title);
     }, 0);
     return () => window.clearTimeout(id);
   }, [location.pathname, location.search]);
