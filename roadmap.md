@@ -1,0 +1,3 @@
+- [x] Replace the deprecated React namespace usage in the mobile hook with direct imports.
+- [x] Make sign-in rendering deterministic across server and browser hydration.
+- [ ] Verify a fresh sign-in page load has no hydration errors.
