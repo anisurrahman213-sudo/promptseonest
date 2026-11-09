@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import translations
 import en from './locales/en.json';
@@ -46,19 +45,34 @@ const resources = {
 };
 
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: 'en',
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
     },
-    detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage'],
-      lookupLocalStorage: 'i18nextLng',
-    },
   });
+
+export function syncClientLanguage() {
+  if (typeof window === 'undefined') return;
+
+  let savedLanguage: string | null = null;
+  try {
+    savedLanguage = window.localStorage.getItem('i18nextLng');
+  } catch {
+    // Continue with the browser language when local storage is unavailable.
+  }
+
+  const browserLanguage = window.navigator.language.split('-')[0];
+  const preferredLanguage = savedLanguage || browserLanguage;
+  const language = languages.find((item) => item.code === preferredLanguage)?.code ?? 'en';
+  const languageConfig = languages.find((item) => item.code === language);
+
+  void i18n.changeLanguage(language);
+  document.documentElement.lang = language;
+  document.documentElement.dir = languageConfig?.dir ?? 'ltr';
+}
 
 export default i18n;

@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, type ComponentType } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
+  ClientOnly,
   createRootRouteWithContext,
   HeadContent,
   Outlet,
@@ -18,6 +19,7 @@ import { RouteTracker } from "@/components/RouteTracker";
 import { useBuildVersionCheck } from "@/hooks/useBuildVersionCheck";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
+import { syncClientLanguage } from "@/i18n/config";
 import NotFound from "@/pages/NotFound";
 import appCss from "@/styles.css?url";
 
@@ -346,9 +348,8 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  // ported from main.tsx — defer i18n initialization until after first paint
   useEffect(() => {
-    import("@/i18n/config");
+    syncClientLanguage();
   }, []);
 
   return (
@@ -360,12 +361,14 @@ function RootComponent() {
               <BackgroundProcessorProvider>
                 <TooltipProvider>
                   <VersionWatcher />
-                  <Suspense fallback={null}>
-                    <NetworkStatusIndicator />
-                    <PWAInstallPrompt />
-                    <BackgroundProcessingIndicator />
-                    <AiAskPopup />
-                  </Suspense>
+                  <ClientOnly fallback={null}>
+                    <Suspense fallback={null}>
+                      <NetworkStatusIndicator />
+                      <PWAInstallPrompt />
+                      <BackgroundProcessingIndicator />
+                      <AiAskPopup />
+                    </Suspense>
+                  </ClientOnly>
                   <Toaster />
                   <Sonner />
                   <a

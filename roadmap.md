@@ -1,0 +1,4 @@
+- [x] Replace the deprecated React namespace usage in the mobile hook with direct imports.
+- [x] Make sign-in rendering deterministic across server and browser hydration.
+- [x] Fix route tracking to use TanStack's serialized search string instead of coercing its search object.
+- [x] Verify fresh English and Bengali sign-in loads have no hydration errors.
