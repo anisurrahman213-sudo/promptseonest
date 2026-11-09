@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useIsAdmin } from '@/hooks/usePaymentRequests';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,16 +34,21 @@ interface ApiStatus {
 }
 
 export function ApiStatusPanel() {
+  const { session } = useAuth();
+  const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   const [status, setStatus] = useState<ApiStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchStatus = useCallback(async (isManual = false) => {
+    if (adminLoading || !isAdmin || !session?.access_token) return;
     if (isManual) setRefreshing(true);
     else setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('check-gemini-status');
+      const { data, error } = await supabase.functions.invoke('check-gemini-status', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
       if (error) throw error;
       setStatus(data as ApiStatus);
     } catch (err) {
@@ -61,7 +68,7 @@ export function ApiStatusPanel() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [adminLoading, isAdmin, session?.access_token]);
 
   useEffect(() => {
     fetchStatus();
@@ -69,6 +76,8 @@ export function ApiStatusPanel() {
     const interval = setInterval(() => fetchStatus(), 60000);
     return () => clearInterval(interval);
   }, [fetchStatus]);
+
+  if (adminLoading || !isAdmin || !session) return null;
 
   if (loading) {
     return (
